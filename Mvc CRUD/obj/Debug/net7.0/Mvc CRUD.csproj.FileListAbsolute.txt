@@ -1,0 +1,46 @@
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.AssemblyReference.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rpswa.dswa.cache.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfoInputs.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfo.cs
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.CoreCompileInputs.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cs
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.Development.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.runtime.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.endpoints.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.exe
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.deps.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.runtimeconfig.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.pdb
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\AutoMapper.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Humanizer.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Design.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mono.TextTemplating.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\System.CodeDom.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjimswa.dswa.cache.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmrazor.dswa.cache.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmcshtml.dswa.cache.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\bundle\Mvc CRUD.styles.css
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\projectbundle\Mvc CRUD.bundle.scp.css
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.json.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.development.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.endpoints.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.upToDateCheck.txt
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.Up2Date
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.pdb
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.genruntimeconfig.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll
