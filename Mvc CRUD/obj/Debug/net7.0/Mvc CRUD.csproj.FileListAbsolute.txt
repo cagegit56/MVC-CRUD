@@ -1,12 +1,3 @@
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.AssemblyReference.cache
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rpswa.dswa.cache.json
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfoInputs.cache
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfo.cs
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.CoreCompileInputs.cache
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cache
-C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cs
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.Development.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.runtime.json
@@ -27,6 +18,16 @@ C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Mono.TextTemplatin
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.dll
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\System.CodeDom.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.AssemblyReference.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rpswa.dswa.cache.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfoInputs.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfo.cs
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.CoreCompileInputs.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cache
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cs
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.sourcelink.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjimswa.dswa.cache.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmrazor.dswa.cache.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmcshtml.dswa.cache.json

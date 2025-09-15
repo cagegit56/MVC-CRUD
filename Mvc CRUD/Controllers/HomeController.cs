@@ -27,14 +27,20 @@ namespace Mvc_CRUD.Controllers
             _cache = cache;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string? filter)
+        public IActionResult Index()
         {
-            string cacheKey = "cacheGetById";
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] PaginationFilter pgFilter, string? filter)
+        {
+            try { 
+            string cacheKey = "cacheAll";
             if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
             {
                 res = await _context.Chats.AsNoTracking().ToListAsync();
-                _cache.Set(cacheKey, res, TimeSpan.FromMinutes(5));
+                _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
             }
 
             IEnumerable<Chat>? queryData = res;
@@ -44,23 +50,59 @@ namespace Mvc_CRUD.Controllers
                 queryData = queryData.Where(x => x.UserName.Contains(filter) ||
                     x.ToUser.Contains(filter) ||
                     x.Message.Contains(filter));
-                res = queryData.ToList();
             }
 
-            var paginatedRes = await _pagination.Paginate(res, pgFilter);
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
+
+            return Json(new
             {
-                return Json(new
-                {
-                    data = paginatedRes.Data,      
-                    pageNumber = paginatedRes.PageNumber,
-                    pageSize = paginatedRes.PageSize,
-                    totalRecords = paginatedRes.TotalRecords,
-                    totalPages = paginatedRes.TotalPages
-                });
+                Data = paginatedRes.Data,
+                TotalRecords = paginatedRes.TotalRecords,
+                TotalPages = paginatedRes.TotalPages,
+                CurrentPage = pgFilter.PageNumber,
+                PageSize = pgFilter.PageSize
+            });
+                }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message
+            });
             }
-            return View(paginatedRes);
         }
+
+        //[HttpGet]
+        //public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string? filter)
+        //{
+        //    string cacheKey = "cacheAll";
+        //    if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
+        //    {
+        //        res = await _context.Chats.AsNoTracking().ToListAsync();
+        //        _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
+        //    }
+
+        //    IEnumerable<Chat>? queryData = res;
+        //    if (!string.IsNullOrEmpty(filter))
+        //    {
+        //        filter = filter.ToLower();
+        //        queryData = queryData.Where(x => x.UserName.Contains(filter) ||
+        //            x.ToUser.Contains(filter) ||
+        //            x.Message.Contains(filter));
+        //    }
+
+        //    var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
+        //    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        //    {
+        //        return Json(new
+        //        {
+        //            data = paginatedRes.Data,      
+        //            pageNumber = paginatedRes.PageNumber,
+        //            pageSize = paginatedRes.PageSize,
+        //            totalRecords = paginatedRes.TotalRecords,
+        //            totalPages = paginatedRes.TotalPages
+        //        });
+        //    }
+        //    return View(paginatedRes);
+        //}
 
         [HttpGet]
         public async Task<IActionResult> AddData(int? Id)
@@ -81,12 +123,6 @@ namespace Mvc_CRUD.Controllers
             {
                if (model.Id == 0)
                 {
-                    var exists = await _context.Chats.FirstOrDefaultAsync(x => x.UserName == model.UserName);
-                    if (exists != null)
-                    {
-                        TempData["ErrorMessage"] = "UserName Already Exists! Enter a new one";
-                        return View(model);
-                    }
                   await _context.Chats.AddAsync(model);
                 }
                else
@@ -95,6 +131,7 @@ namespace Mvc_CRUD.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+                _cache.Remove("cacheAll");
                 return RedirectToAction("Index");
             }
             return View(model);
@@ -105,6 +142,7 @@ namespace Mvc_CRUD.Controllers
             var rec = await _context.Chats.FirstOrDefaultAsync(x => x.Id == Id);
             _context.Chats.Remove(rec);
             await _context.SaveChangesAsync();
+            _cache.Remove("cacheAll");
             TempData["Message"] = "Deleted record Successfully!";
             return RedirectToAction("Index");
         }
