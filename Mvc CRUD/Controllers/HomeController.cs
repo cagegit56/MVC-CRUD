@@ -56,11 +56,11 @@ namespace Mvc_CRUD.Controllers
 
             return Json(new
             {
-                Data = paginatedRes.Data,
-                TotalRecords = paginatedRes.TotalRecords,
-                TotalPages = paginatedRes.TotalPages,
+                data = paginatedRes.Data,
+                totalRecords = paginatedRes.TotalRecords,
+                totalPages = paginatedRes.TotalPages,
                 CurrentPage = pgFilter.PageNumber,
-                PageSize = pgFilter.PageSize
+                pageSize = pgFilter.PageSize
             });
                 }
             catch (Exception ex)
@@ -69,40 +69,6 @@ namespace Mvc_CRUD.Controllers
             });
             }
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string? filter)
-        //{
-        //    string cacheKey = "cacheAll";
-        //    if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
-        //    {
-        //        res = await _context.Chats.AsNoTracking().ToListAsync();
-        //        _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
-        //    }
-
-        //    IEnumerable<Chat>? queryData = res;
-        //    if (!string.IsNullOrEmpty(filter))
-        //    {
-        //        filter = filter.ToLower();
-        //        queryData = queryData.Where(x => x.UserName.Contains(filter) ||
-        //            x.ToUser.Contains(filter) ||
-        //            x.Message.Contains(filter));
-        //    }
-
-        //    var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
-        //    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-        //    {
-        //        return Json(new
-        //        {
-        //            data = paginatedRes.Data,      
-        //            pageNumber = paginatedRes.PageNumber,
-        //            pageSize = paginatedRes.PageSize,
-        //            totalRecords = paginatedRes.TotalRecords,
-        //            totalPages = paginatedRes.TotalPages
-        //        });
-        //    }
-        //    return View(paginatedRes);
-        //}
 
         [HttpGet]
         public async Task<IActionResult> AddData(int? Id)
@@ -144,7 +110,7 @@ namespace Mvc_CRUD.Controllers
             await _context.SaveChangesAsync();
             _cache.Remove("cacheAll");
             TempData["Message"] = "Deleted record Successfully!";
-            return RedirectToAction("Index");
+            return Json(new { success = true, message = "Deleted successfully", id = Id });
         }
 
         public IActionResult Privacy()
