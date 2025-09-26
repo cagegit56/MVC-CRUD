@@ -6,6 +6,7 @@ using Mvc_CRUD.Common;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using Mvc_CRUD.Services;
+using Newtonsoft.Json;
 
 namespace Mvc_CRUD.Controllers
 {
@@ -27,46 +28,48 @@ namespace Mvc_CRUD.Controllers
             _cache = cache;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationFilter pgFilter, string? filter)
+        public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string? filter)
         {
-            try { 
-            string cacheKey = "cacheAll";
-            if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
+            try
             {
-                res = await _context.Chats.AsNoTracking().ToListAsync();
-                _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
-            }
-
-            IEnumerable<Chat>? queryData = res;
-            if (!string.IsNullOrEmpty(filter))
-            {
-                filter = filter.ToLower();
-                queryData = queryData.Where(x => x.UserName.Contains(filter) ||
-                    x.ToUser.Contains(filter) ||
-                    x.Message.Contains(filter));
-            }
-
-            var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
-
-            return Json(new
-            {
-                data = paginatedRes.Data,
-                totalRecords = paginatedRes.TotalRecords,
-                totalPages = paginatedRes.TotalPages,
-                CurrentPage = pgFilter.PageNumber,
-                pageSize = pgFilter.PageSize
-            });
+                string cacheKey = "cacheAll";
+                if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
+                {
+                    res = await _context.Chats.AsNoTracking().ToListAsync();
+                    _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
                 }
+
+                IEnumerable<Chat>? queryData = res;
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    filter = filter.ToLower();
+                    queryData = queryData.Where(x => x.UserName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                        x.ToUser.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                        x.Message.Contains(filter, StringComparison.OrdinalIgnoreCase));
+                }
+
+                var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
+
+                if(Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new
+                {
+                    data = paginatedRes.Data,
+                    totalRecords = paginatedRes.TotalRecords,
+                    totalPages = paginatedRes.TotalPages,
+                    CurrentPage = pgFilter.PageNumber,
+                    pageSize = pgFilter.PageSize
+                });
+
+                return View(paginatedRes);
+
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = ex.Message
-            });
+                return StatusCode(500, new
+                {
+                    error = ex.Message
+                });
             }
         }
 

@@ -45,3 +45,4 @@ C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.dl
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.pdb
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.genruntimeconfig.cache
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\bin\Debug\net7.0\Newtonsoft.Json.dll
