@@ -6,6 +6,7 @@ namespace Mvc_CRUD.Models;
     {
 
      public virtual DbSet<Chat> Chats { get; set; }
+     public virtual DbSet<Chat_Users> ChatUsers { get; set; }
     public DataDbContext(DbContextOptions<DataDbContext> options) : base(options) 
     {
 

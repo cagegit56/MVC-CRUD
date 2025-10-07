@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -7,6 +10,8 @@ using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using Mvc_CRUD.Services;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Security.Claims;
 
 namespace Mvc_CRUD.Controllers
 {
@@ -28,7 +33,9 @@ namespace Mvc_CRUD.Controllers
             _cache = cache;
         }
 
+        
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string? filter)
         {
             try
@@ -37,8 +44,10 @@ namespace Mvc_CRUD.Controllers
                 if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
                 {
                     res = await _context.Chats.AsNoTracking().ToListAsync();
+                    await AddUser();
                     _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
                 }
+
 
                 IEnumerable<Chat>? queryData = res;
                 if (!string.IsNullOrEmpty(filter))
@@ -51,15 +60,18 @@ namespace Mvc_CRUD.Controllers
 
                 var paginatedRes = await _pagination.Paginate(queryData.ToList(), pgFilter);
 
-                if(Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Json(new
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    data = paginatedRes.Data,
-                    totalRecords = paginatedRes.TotalRecords,
-                    totalPages = paginatedRes.TotalPages,
-                    CurrentPage = pgFilter.PageNumber,
-                    pageSize = pgFilter.PageSize
-                });
+                    Response.ContentType = "application/json";
+                    return Json(new
+                    {
+                        data = paginatedRes.Data,
+                        totalRecords = paginatedRes.TotalRecords,
+                        totalPages = paginatedRes.TotalPages,
+                        CurrentPage = pgFilter.PageNumber,
+                        pageSize = pgFilter.PageSize
+                    });
+                }
 
                 return View(paginatedRes);
 
@@ -114,6 +126,64 @@ namespace Mvc_CRUD.Controllers
             _cache.Remove("cacheAll");
             TempData["Message"] = "Deleted record Successfully!";
             return Json(new { success = true, message = "Deleted successfully", id = Id });
+        }
+
+        public IActionResult UserProfile()
+        {
+            var user = User;
+
+            var username = user.FindFirst(ClaimTypes.Name)?.Value
+                           ?? user.FindFirst("preferred_username")?.Value;
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                 ?? User.FindFirst("sub")?.Value;
+            var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value
+                     ?? User.FindFirst("given_name")?.Value;
+
+            var lastName = User.FindFirst(ClaimTypes.Surname)?.Value
+                           ?? User.FindFirst("family_name")?.Value;
+
+            ViewBag.FirstName = firstName;
+            ViewBag.LastName = lastName;
+            ViewBag.UserId = userId;
+            ViewBag.Username = username;
+            ViewBag.Email = email;
+            ViewBag.Roles = string.Join(", ", roles);
+
+            return View();
+        }
+
+        public async Task AddUser()
+        {
+            var model = new Chat_Users();
+            var user = User;
+            model.UserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == model.UserId);
+            if (existingUser)
+                return;
+
+            model.UserName = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+            model.FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
+            model.LastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
+            model.Email = user.FindFirst(ClaimTypes.Email)?.Value;
+            var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+
+            await _context.ChatUsers.AddAsync(model);
+            await _context.SaveChangesAsync();
+            Console.WriteLine("Data saved to users tablex");
+
+        }
+
+        public IActionResult Logout()
+        {
+            return SignOut(
+                new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("Index", "Home")
+                },
+                OpenIdConnectDefaults.AuthenticationScheme,
+                CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         public IActionResult Privacy()
