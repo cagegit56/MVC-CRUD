@@ -42,6 +42,11 @@ builder.Services.AddAuthentication(options =>
     builder.Configuration.Bind("Authentication:Schemes:OpenIdConnect", options);
     options.SignedOutCallbackPath = "/signout-callback-oidc";
 
+    options.NonceCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+
     options.Events = new Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents
     {
         OnRedirectToIdentityProviderForSignOut = context =>
