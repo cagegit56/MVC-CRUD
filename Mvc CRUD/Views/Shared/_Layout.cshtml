@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -11,15 +12,6 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-    <style>
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            font-size: 1.5rem;
-            color: #6c63ff;
-            display: flex;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -44,6 +36,29 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="UserProfile">Profile</a>
                         </li>
+
+                        @{
+                            var user = User;
+                            var username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+                            var initial = !string.IsNullOrEmpty(username) ? username.Substring(0, 1).ToUpper() : "XX";
+                        }
+
+                        <li class="nav-item dropdown ms-auto">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="text-white rounded-circle d-flex justify-content-center align-items-center"
+                                     style="width:27px;height:27px;font-size:17px; background-color:#6c63ff">
+                                    <strong>@initial</strong>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><a class="dropdown-item" href="#">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Home")">Logout</a></li>
+                            </ul>
+                        </li>
+                        
                     </ul>
                 </div>
             </div>
