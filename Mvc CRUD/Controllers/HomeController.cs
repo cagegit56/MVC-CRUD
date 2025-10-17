@@ -175,6 +175,54 @@ namespace Mvc_CRUD.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> SendingText(string? toFriend)
+        {
+            var user = User;
+            var UserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            if (UserId.Count() == 0)
+                return Logout();
+            var Username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+            var frnd = await _context.Friends.Where(x => x.UserId == UserId)
+                                             .Select(x => x.FriendId)
+                                             .ToListAsync();
+            var res = new List<Chat>();
+            foreach (var k in frnd)
+            {
+                var frndInfo = _context.ChatUsers.Where(x => x.UserId == k)
+                                                  .Select(x => x.UserName);
+                string friendName = frndInfo.FirstOrDefault();
+                var msg = await _context.Chats.Where(x => x.UserName == Username && x.ToUser == friendName || x.UserName == friendName && x.ToUser == Username)
+                                          .OrderByDescending(x => x.SentOn) 
+                                          .ToListAsync();
+                if (msg.Count == 0)
+                {
+                    var emptyMsg = new Chat()
+                    {
+                        UserName = Username,
+                        ToUser = friendName,
+                        Message = $"You are now Friends with {char.ToUpper(friendName[0]) + friendName.Substring(1)} Send a Message to Start a Chat",
+                        SentOn = DateTime.UtcNow.AddMonths(-2),
+                    };
+                    res.Add(emptyMsg);
+                }
+                res.AddRange(msg);
+            }
+
+            var count = res.Count();
+            
+            if (!string.IsNullOrEmpty(toFriend))
+            {
+                res = res.Where(x => (x.UserName.Equals(Username, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(toFriend, StringComparison.OrdinalIgnoreCase))
+                || (x.UserName.Equals(toFriend, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(Username, StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(x => x.SentOn)
+                    .ToList();
+                return Json(res);
+            }
+                 
+            return View(res);
+        }
+
         public IActionResult Logout()
         {
             return SignOut(
