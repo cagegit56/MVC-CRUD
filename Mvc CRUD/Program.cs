@@ -17,8 +17,8 @@ builder.Services.AddScoped<IGetAllService, GetAllService>();
 builder.Services.AddScoped<IPaginationService, PaginationService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(Program));
-
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 
 builder.Services.AddAuthentication(options =>
@@ -81,6 +81,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.MapHub<Mvc_CRUD.Services.SignalRHub>("/signalRHub");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

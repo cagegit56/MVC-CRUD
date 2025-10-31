@@ -100,8 +100,10 @@ namespace Mvc_CRUD.Controllers
         [HttpPost]
         public async Task<IActionResult> AddData(Chat model)
         {
+            Console.WriteLine(model);
             if (ModelState.IsValid)
             {
+               
                if (model.Id == 0)
                 {
                   await _context.Chats.AddAsync(model);
@@ -115,7 +117,13 @@ namespace Mvc_CRUD.Controllers
                 _cache.Remove("cacheAll");
                 return RedirectToAction("Index");
             }
-            return View(model);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(model);
+            }
+
+                return View(model);
         }
 
         public async Task<IActionResult> DeleteData(int Id)
@@ -154,24 +162,33 @@ namespace Mvc_CRUD.Controllers
             return View();
         }
 
-        public async Task AddUser()
+        public async Task<IActionResult> AddUser()
         {
-            var model = new Chat_Users();
-            var user = User;
-            model.UserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == model.UserId);
-            if (existingUser)
-                return;
+            try
+            {
+                var model = new Chat_Users();
+                var user = User;
+                model.UserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+                bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == model.UserId);
+                if (existingUser)
+                    return Ok();
 
-            model.UserName = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-            model.FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
-            model.LastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
-            model.Email = user.FindFirst(ClaimTypes.Email)?.Value;
-            var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+                model.UserName = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+                model.FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
+                model.LastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
+                model.Email = user.FindFirst(ClaimTypes.Email)?.Value;
+                var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-            await _context.ChatUsers.AddAsync(model);
-            await _context.SaveChangesAsync();
-            Console.WriteLine("Data saved to users tablex");
+                await _context.ChatUsers.AddAsync(model);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Data saved to users table");
+                return Ok("Saved Successfully");
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Unable to save User's Info : {ex.Message}");
+                return BadRequest($"Unable to save User's Info : {ex.Message}");
+            }
 
         }
 
@@ -184,12 +201,11 @@ namespace Mvc_CRUD.Controllers
                 return Logout();
             var Username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
             var frnd = await _context.Friends.Where(x => x.UserId == UserId)
-                                             .Select(x => x.FriendId)
                                              .ToListAsync();
             var res = new List<Chat>();
             foreach (var k in frnd)
             {
-                var frndInfo = _context.ChatUsers.Where(x => x.UserId == k)
+                var frndInfo = _context.ChatUsers.Where(x => x.UserId == k.FriendId)
                                                   .Select(x => x.UserName);
                 string friendName = frndInfo.FirstOrDefault();
                 var msg = await _context.Chats.Where(x => x.UserName == Username && x.ToUser == friendName || x.UserName == friendName && x.ToUser == Username)
@@ -197,12 +213,14 @@ namespace Mvc_CRUD.Controllers
                                           .ToListAsync();
                 if (msg.Count == 0)
                 {
+                    var dateRequest = _context.Friends.Where(x => x.UserName == Username && x.FriendName == friendName)
+                                                      .Select(x => x.CreatedOn).FirstOrDefault();
                     var emptyMsg = new Chat()
                     {
                         UserName = Username,
                         ToUser = friendName,
-                        Message = $"You are now Friends with {char.ToUpper(friendName[0]) + friendName.Substring(1)} Send a Message to Start a Chat",
-                        SentOn = DateTime.UtcNow.AddMonths(-2),
+                        Message = $"You are now Friends with {char.ToUpper(friendName[0]) + friendName.Substring(1)} Send a Message to Start a Chat.",
+                        SentOn = dateRequest,
                     };
                     res.Add(emptyMsg);
                 }
@@ -219,8 +237,70 @@ namespace Mvc_CRUD.Controllers
                     .ToList();
                 return Json(res);
             }
-                 
+
             return View(res);
+        }
+
+        public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
+        {
+            var user = User;
+            var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+            var allUsers = await _context.ChatUsers.Where(x => x.UserId != currentUserId || x.UserName != Username).ToListAsync();
+            var paginatedRes = await _pagination.Paginate(allUsers, pgFilter);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                Response.ContentType = "application/json";
+                return Json(new
+                {
+                    data = paginatedRes.Data,
+                    totalRecords = paginatedRes.TotalRecords,
+                    totalPages = paginatedRes.TotalPages,
+                    CurrentPage = pgFilter.PageNumber,
+                    pageSize = pgFilter.PageSize
+                });
+            }
+            return View(paginatedRes);
+        }
+
+        public async Task<IActionResult> addFriends(string userId, string frndName)
+        {
+            var user = User;
+            var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+            var frnd = new Friends()
+            {
+                UserId = currentUserId,
+                FriendId = userId,
+                Status = "online",
+                FriendName = frndName,
+                UserName = Username
+            };
+            await _context.Friends.AddAsync(frnd);
+
+            var frnd2 = new Friends()
+            {
+                UserId = userId,
+                FriendId = currentUserId,
+                Status = "online",
+                FriendName = Username,
+                UserName = frndName
+            };
+
+            await _context.Friends.AddAsync(frnd2);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Added friend successfully", id = userId });
+        }
+
+        public async Task<IActionResult> SendDbMessage(Chat model, string username, string friend, string message)
+        {
+            model.UserName = username;
+            model.ToUser = friend;
+            model.Message = message;
+            var res = await _context.Chats.AddAsync(model);
+            await _context.SaveChangesAsync();
+            return Json("Success");
         }
 
         public IActionResult Logout()

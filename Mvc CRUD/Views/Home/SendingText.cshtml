@@ -8,106 +8,144 @@
 @{
     var user = User;
     var username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+    string displayTime = "";
     foreach (var k in Model)
     {
-        if(k.ToUser == username)
+        if (k.ToUser == username)
         {
             k.ToUser = k.UserName;
         }
     }
+    
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
 <link rel="stylesheet" href="~/css/site.css" />
 
 <div class="chat-app container-fluid h-100 d-flex p-0">
-    <div class="row flex-fill w-100 shadow-sm">
+<div class="row flex-fill w-100 shadow-sm">
 
-        <!-- Left panel: chat list -->
-        <div class="col-12 col-md-4 col-lg-3 border-end p-0">
-            <div class="p-3 d-flex justify-content-between align-items-center border-bottom">
-                <h5 class="mb-0">Chats</h5>
-                <a class="btn btn-sm btn-outline-primary" href="#">New</a>
-            </div>
-            <div id="contacts" class="overflow-auto p-2">
-                <div class="list-group list-group-flush">
-                @foreach (var friend in Model.OrderByDescending(x => x.SentOn).GroupBy(x => x.ToUser).Distinct())
-                {
-                    var first = friend.First();                     
-                    <a href="#"
-                        class="list-group-item list-group-item-action d-flex gap-3 py-3 chat-contact"
-                        data-userid="@first.ToUser"
-                        data-username="@first.ToUser">
-                            <div class="avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
-                                 style="width:44px; height:44px; min-width:44px; min-height:44px;">
-                                @first.ToUser.Substring(0, 1).ToUpper()
-                            </div>
+    <div class="col-12 col-md-4 col-lg-3 border-end p-0">
+        <div class="p-3 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0">Chats</h5>
+            <a class="btn btn-sm btn-outline-primary" href="#">New</a>
+        </div>
+        <div id="contacts" class="overflow-auto p-2" style="height: 30rem">
+            <div class="list-group list-group-flush">
+            @foreach (var friend in Model.OrderByDescending(x => x.SentOn).GroupBy(x => x.ToUser).Distinct())
+            {
+                    var first = friend.First();
+                    var dateData = TimeZoneInfo.ConvertTimeFromUtc(first.SentOn, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
+                    var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
+                    var timeDifference = currentDate - dateData;
 
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0 text-truncate" style="max-width: 70%;">
-                                        @(char.ToUpper(@first.ToUser[0]) + @first.ToUser.Substring(1))
-                                    </h6>
-                                    <small class="text-muted flex-shrink-0" style="white-space: nowrap; margin-left: 8px;">
-                                        @first.SentOn.ToShortTimeString()
-                                    </small>
-                                </div>
-                                <p class="mb-0 text-truncate text-muted small" data-friend="@first.ToUser">@first.Message</p>
-                            </div>
+                    if (timeDifference.TotalDays >= 30)
+                    {
+                        displayTime = "1 month ago";
+                    }
+                    else if (timeDifference.TotalDays >= 60)
+                    {
+                        displayTime = "2 month ago";
+                    }
+                    else if (timeDifference.TotalDays >= 1)
+                    {
+                        displayTime = $"{(int)timeDifference.TotalDays}d ago";
+                    }
+                    else if (timeDifference.TotalHours >= 1)
+                    {
+                        displayTime = $"{(int)timeDifference.TotalHours}h ago";
+                    }
+                    else if (timeDifference.TotalMinutes >= 1)
+                    {
+                        displayTime = $"{(int)timeDifference.TotalMinutes}m ago";
+                    }
+                    else
+                    {
+                        displayTime = "just now";
+                    }
+                <a href="#"
+                    class="list-group-item list-group-item-action d-flex gap-3 py-3 chat-contact"
+                    data-userid="@first.ToUser"
+                    data-username="@first.ToUser">
+                    <div class="avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width:44px; height:44px; min-width:44px; min-height:44px;">
+                        @first.ToUser.Substring(0, 1).ToUpper()
+                    </div>
 
-                   </a>
-                }
-                </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-truncate" style="max-width: 70%;">
+                            @(char.ToUpper(@first.ToUser[0]) + @first.ToUser.Substring(1))
+                        </h6>     
+                        <small class="text-muted flex-shrink-0 chatTime" style="white-space: nowrap; margin-left: 8px;">
+                            @displayTime
+                        </small>
+                    </div>
+                    <p class="mb-0 text-truncate text-muted small latestText" data-friend="@first.ToUser">
+                            @{
+                                var messages = "";
+                                if (@first.UserName == username)
+                                {
+                                    if (@first.Message == $"You are now Friends with {char.ToUpper(@first.ToUser[0]) + @first.ToUser.Substring(1)} Send a Message to Start a Chat.")
+                                        { messages = @first.Message; }
+                                        else { messages = "You :" + " " + @first.Message; }
+                                } else { messages = @first.Message; }
+                             }
+                            @messages
+                        </p>
+                    </div>
+
+                </a>
+            }
             </div>
         </div>
-
-        <!-- Right panel: chat messages -->
-        <div class="col p-0 d-flex flex-column">
-            <div id="chatHeader" class="p-3 border-bottom d-flex align-items-center">
-                <div class="me-2 avatar-lg rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:44px;height:44px;">?</div>
-                <div class="flex-grow-1">
-                    <strong id="chatUserName">Select a contact</strong>
-                    <div class="small text-muted" id="chatStatus">To Start a Chat or View Conversation</div>
-                </div>
-            </div>
-
-            <div id="messagesContainer" class="flex-grow-1 overflow-auto p-3 bg-light">
-                <div class="text-center text-muted mt-5">No conversation selected.</div>
-            </div>
-
-            <div class="p-3 border-top">
-                <form id="chatForm" class="d-flex gap-2" onsubmit="return false;">
-                    <input id="messageInput" class="form-control" placeholder="Type a message..." maxlength="2000" autocomplete="off" disabled />
-                    <button id="sendBtn" class="btn btn-primary" type="button" disabled>Send</button>
-                </form>
-            </div>
-        </div>
-
     </div>
+
+    <div class="col p-0 d-flex flex-column" style="height:30rem; position: relative;">
+        <div id="chatHeader" class="p-3 border-bottom d-flex align-items-center">
+            <div class="me-2 avatar-lg rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:44px;height:44px;">?</div>
+            <div class="flex-grow-1">
+                <strong id="chatUserName">Select a contact</strong>
+                <div class="small text-muted" id="chatStatus">To Start a Chat or View Conversation</div>
+            </div>
+        </div>
+
+        <div id="messagesContainer" class="flex-grow-1 overflow-auto p-3 bg-light">
+            <div class="text-center text-muted mt-5">No conversation selected.</div>
+        </div>
+
+        <div class="p-3 border-top" style="position: relative; top: 5%;">
+            <form id="chatForm" class="d-flex gap-2" onsubmit="return false;">
+                <input id="messageInput" class="form-control" placeholder="Type a message..." maxlength="2000" autocomplete="off" disabled />
+                <button id="sendBtn" class="btn btn-primary" type="button" disabled>Send</button>
+            </form>
+        </div>
+    </div>
+
+</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
 <script>
-   // const connection = new signalR.HubConnectionBuilder().withUrl('/chathub').withAutomaticReconnect().build();
+    const connection = new signalR.HubConnectionBuilder().withUrl('/signalRHub').withAutomaticReconnect().build();
     const messagesContainer = document.getElementById('messagesContainer');
     const input = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
     let currentUser = null;
     const cUser = '@username';
 
-    var modelInfo = @Html.Raw(JsonConvert.SerializeObject(Model))
-    console.log(modelInfo)
-        modelInfo.forEach(item => {
-        if (item.UserName === cUser || item.ToUser === cUser) {
-            const friend = item.UserName === cUser ? item.ToUser : item.UserName;
-            document.querySelectorAll('.latestText').forEach(el => {
-          if (el.dataset.friend === friend) {
-          el.textContent = item.Message;
-            }
-          });
-        }
+    // var modelInfo = @Html.Raw(JsonConvert.SerializeObject(Model))
+    //     modelInfo.forEach(item => {
+    //     if (item.UserName === cUser || item.ToUser === cUser) {
+    //         const friend = item.UserName === cUser ? item.ToUser : item.UserName;
+    //         document.querySelectorAll('.latestText').forEach(el => {
+    //       if (el.dataset.friend === friend) {
+    //       el.textContent = item.Message;
+    //         }
+    //       });
+    //     }
         
-    });
+    // });
 
 
     function renderMessages(messages) {
@@ -121,7 +159,17 @@
         const isMine = sender.trim().toLowerCase() === cUser.trim().toLowerCase();
         const div = document.createElement('div');
         div.className = 'd-flex mb-3 ' + (isMine ? 'justify-content-end' : 'justify-content-start');
-        div.innerHTML = `
+        const isFriendNotification = msg.message.includes("You are now Friends with") && msg.message.includes("Send a Message");
+         if (isFriendNotification) {
+             div.className = 'd-flex justify-content-center my-3';
+             div.innerHTML = `
+                 <div class="friend-alert-message text-center px-4 py-2">
+                     ${msg.message}
+                 </div>`;
+         }
+         else
+         {
+          div.innerHTML = `
           <div class="d-flex align-items-end" style="max-width:75%;">
             ${
               !isMine
@@ -133,10 +181,10 @@
                    </div>`
                 : ''
             }
-            <div style="max-width:100%;">
+             <div style="max-width:100%;">
               <div class="card shadow-sm ${isMine ? 'bg-primary text-white' : 'bg-white'}"
                    style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
-                <div class="card-body p-2 small">${msg.message}</div>
+                 <div class="card-body p-2 small">${msg.message}</div>
               </div>
               <div class="small text-muted mt-1">
                 ${new Date(msg.sentOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -144,23 +192,57 @@
             </div>
           </div>
         `;
-
-
-
+        }
         messagesContainer.appendChild(div);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // connection.on('ReceiveMessage', (msg) => {
-    //     if (msg.userName === currentUser || msg.toUser === currentUser)
-    //         appendMessage(msg);
-    // });
+    connection.on("MessageConfirmation", (toUser, message) => {
+          const currentDate = new Date();
+          const info = {userName:`${cUser}`, message:`${message}`, sentOn:currentDate};
+          appendMessage(info);
+          updateContactPreview(toUser, message);
+    });
 
-    // connection.start().catch(err => console.error(err.toString()));
+    connection.on("ReceiveMessage", (fromUser, message) => {
+         const currentDate = new Date();
+         const info = {userName:`${fromUser}`, message:`${message}`, sentOn:currentDate};
+         let activeFriend = document.getElementById('chatUserName').textContent;
+         if(fromUser == activeFriend)
+         appendMessage(info);
+         updateContactPreview(fromUser, message);
+    });
+
+    function updateContactPreview(friendName, message) {
+        const contactMsg = document.querySelector(`.latestText[data-friend="${friendName}"]`);
+        if (contactMsg) {
+            contactMsg.textContent = message;
+            const time = contactMsg.closest('.chat-contact')?.querySelector('.chatTime');
+            if (time) time.textContent = 'just now';
+            const contactItem = contactMsg.closest('.chat-contact');
+            const list = document.querySelector('#contacts .list-group');
+            if (list && contactItem) list.prepend(contactItem);
+        }
+    }
+
+    connection.start().catch(err => console.error(err.toString()));
 
     sendBtn.addEventListener('click', async () => {
-        const text = input.value.trim();
-        if (!text || !currentUser) return;
-        await connection.invoke('SendPrivateMessage', currentUser, text);
+        const message = input.value.trim();
+        const user = cUser;
+        let toUser = document.getElementById('chatUserName').textContent;
+        try {
+                const res = await fetch(`/Home/SendDbMessage?username=${encodeURIComponent(cUser)}&friend=${encodeURIComponent(toUser)}&message=${encodeURIComponent(message)}`);
+               if(res.ok)
+             {
+                  if (!message || !user) return;
+                  await connection.invoke('SendPrivateMessage', toUser, message);
+             }
+            
+         } catch (err) {
+             console.error(err);
+             messagesContainer.innerHTML = '<div class="text-center text-muted mt-5">Failed to send messages.</div>';
+         }
         input.value = '';
     });
 
@@ -171,7 +253,6 @@
         }
     });
 
-    // Handle contact click
     document.querySelectorAll('.chat-contact').forEach(c => c.addEventListener('click', async (e) => {
         e.preventDefault();
         currentUser = c.dataset.userid;
@@ -182,13 +263,12 @@
         input.disabled = false;
         sendBtn.disabled = false;
 
-        // Fetch that user's messages (MVC endpoint)
         try {
             const res = await fetch(`/Home/SendingText?toFriend=${encodeURIComponent(userName)}`);
             const messages = await res.json();
             renderMessages(messages);
         } catch (err) {
-            console.error(err);
+            console.error(err.message);
             messagesContainer.innerHTML = '<div class="text-center text-muted mt-5">Failed to load messages.</div>';
         }
     }));
@@ -214,4 +294,16 @@
     .bg-primary {
         background-color: #1877f2 !important;
     }
+
+    .friend-alert-message {
+        background-color: #e0f7fa;
+        border: 1px solid #81d4fa;
+        color: #01579b;
+        font-weight: 500;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        max-width: 80%;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
 </style>
