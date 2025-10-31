@@ -201,7 +201,7 @@
           const currentDate = new Date();
           const info = {userName:`${cUser}`, message:`${message}`, sentOn:currentDate};
           appendMessage(info);
-          updateContactPreview(toUser, message);
+          updateContactPreview(toUser, `You : ${message}`);
     });
 
     connection.on("ReceiveMessage", (fromUser, message) => {
