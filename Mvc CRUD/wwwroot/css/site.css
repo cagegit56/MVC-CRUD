@@ -33,21 +33,71 @@ body {
     max-width: 180px; /* adjust to fit your layout */
 }
 
-.friend-alert-message {
-    background-color: #e7f4ff;
-    border: 1px solid #b3d7f2;
-    color: #0a3d62;
-    font-weight: 500;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    max-width: 80%;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+.avatar-lg, .avatar {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+#messagesContainer::-webkit-scrollbar {
+    width: 10px;
+}
 
+#messagesContainer::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
 
+.bg-primary {
+    background-color: #1877f2 !important;
+}
 
+.friend-alert-message {
+    background-color: #e0f7fa;
+    border: 1px solid #81d4fa;
+    color: #01579b;
+    font-weight: 500;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    max-width: 80%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
 
+td.message-cell {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+@media (min-width: 769px) {
+    #contactsPane {
+        display: block !important;
+    }
+
+    #chatPane {
+        display: flex !important;
+    }
+
+    #backToContacts {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #contactsPane {
+        display: block;
+    }
+
+    #chatPane {
+        display: none;
+    }
+
+    #backToContacts {
+        display: inline-block;
+    }
+}
 
 
 
