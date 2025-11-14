@@ -1,11 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "+xhw7NC99f4=",
+  "dgSpecHash": "NB3J/Sicg+Y=",
   "success": true,
   "projectFilePath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\cage\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\cage\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\cage\\.nuget\\packages\\mediatr\\13.1.0\\mediatr.13.1.0.nupkg.sha512",
+    "C:\\Users\\cage\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
+    "C:\\Users\\cage\\.nuget\\packages\\mediatr.extensions.microsoft.dependencyinjection\\11.1.0\\mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512",
     "C:\\Users\\cage\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.0\\microsoft.aspnetcore.authentication.abstractions.2.3.0.nupkg.sha512",
     "C:\\Users\\cage\\.nuget\\packages\\microsoft.aspnetcore.authentication.openidconnect\\7.0.20\\microsoft.aspnetcore.authentication.openidconnect.7.0.20.nupkg.sha512",
     "C:\\Users\\cage\\.nuget\\packages\\microsoft.aspnetcore.authorization\\2.3.0\\microsoft.aspnetcore.authorization.2.3.0.nupkg.sha512",
@@ -70,5 +73,18 @@
     "C:\\Users\\cage\\.nuget\\packages\\system.text.json\\7.0.0\\system.text.json.7.0.0.nupkg.sha512",
     "C:\\Users\\cage\\.nuget\\packages\\system.threading.channels\\8.0.0\\system.threading.channels.8.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1608",
+      "level": "Warning",
+      "message": "Detected package version outside of dependency constraint: MediatR.Extensions.Microsoft.DependencyInjection 11.1.0 requires MediatR (>= 11.0.0 && < 12.0.0) but version MediatR 13.1.0 was resolved.",
+      "projectPath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "libraryId": "MediatR",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    }
+  ]
 }

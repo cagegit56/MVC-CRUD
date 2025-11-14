@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Common;
+using Mvc_CRUD.CQRS.Commands;
+using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using Mvc_CRUD.Services;
@@ -22,15 +25,17 @@ namespace Mvc_CRUD.Controllers
         private readonly IGetAllService _getService;
         private readonly IPaginationService _pagination;
         private IMemoryCache _cache;
+        private readonly IMediator _mediator;
 
         public HomeController(ILogger<HomeController> logger, DataDbContext context,
-            IGetAllService getService, IMemoryCache cache, IPaginationService pagination)
+            IGetAllService getService, IMemoryCache cache, IPaginationService pagination, IMediator mediator)
         {
             _logger = logger;
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _getService = getService ?? throw new ArgumentNullException(nameof(getService));
             _pagination = pagination ?? throw new ArgumentNullException(nameof(pagination));
             _cache = cache;
+            _mediator = mediator;
         }
 
         
@@ -41,15 +46,15 @@ namespace Mvc_CRUD.Controllers
             try
             {
                 string cacheKey = "cacheAll";
-                if (!_cache.TryGetValue(cacheKey, out List<Chat>? res))
+                if (!_cache.TryGetValue(cacheKey, out PaginateResponse<List<Chat>>? res))
                 {
-                    res = await _context.Chats.AsNoTracking().ToListAsync();
+                    res =  await _mediator.Send(new GetAllQuery(pgFilter));
                     await AddUser();
                     _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
                 }
 
 
-                IEnumerable<Chat>? queryData = res;
+                var queryData = res?.Data.AsEnumerable();
                 if (!string.IsNullOrEmpty(filter))
                 {
                     filter = filter.ToLower();
@@ -243,10 +248,10 @@ namespace Mvc_CRUD.Controllers
 
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
-            var user = User;
-            var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-            var allUsers = await _context.ChatUsers.Where(x => x.UserId != currentUserId || x.UserName != Username).ToListAsync();
+            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var friends = await _context.Friends.Where(x => x.UserId == currentUserId || x.FriendId == currentUserId).Select(x => x.UserId).ToListAsync();
+            var blockedUser = await _context.BlockedUser.Where(x => x.UserId == currentUserId).Select(x => x.BlockUserId).ToListAsync();
+            var allUsers = await _context.ChatUsers.Where(x => x.UserId != currentUserId && !friends.Contains(x.UserId) && !blockedUser.Contains(x.UserId)).ToListAsync();
             var paginatedRes = await _pagination.Paginate(allUsers, pgFilter);
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -263,34 +268,58 @@ namespace Mvc_CRUD.Controllers
             return View(paginatedRes);
         }
 
+        [HttpPost]
         public async Task<IActionResult> addFriends(string userId, string frndName)
         {
-            var user = User;
-            var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-            var frnd = new Friends()
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                UserId = currentUserId,
-                FriendId = userId,
-                Status = "online",
-                FriendName = frndName,
-                UserName = Username
-            };
-            await _context.Friends.AddAsync(frnd);
+                var user = User;
+                var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+                var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(frndName))
+                    return Json(new { success = false, message = "Friend's Id or Friend's Name is empty." });
+                bool exists = await _context.Friends.AnyAsync(x =>
+                    (x.UserId == currentUserId && x.FriendId == userId) ||
+                    (x.UserId == userId && x.FriendId == currentUserId)
+                );
+                if (exists)
+                    return Json(new { success = false, message = "Friendship already exists." });
+                var frnd = new Friends()
+                {
+                    UserId = userId,
+                    FriendId = currentUserId,
+                    Status = "online",
+                    FriendName = Username,
+                    UserName = frndName
+                };
+                var frnd2 = new Friends()
+                {
+                    UserId = currentUserId,
+                    FriendId = userId,
+                    Status = "online",
+                    FriendName = frndName,
+                    UserName = Username
+                };
+                await _context.Friends.AddRangeAsync(frnd, frnd2);
+                await _context.SaveChangesAsync();
 
-            var frnd2 = new Friends()
+                var accepted = await _context.FriendRequests.Where(x => x.UserId == userId && x.ToUserId == currentUserId).FirstOrDefaultAsync();
+                if (accepted != null)
+                {
+                    accepted.Status = "Accepted";
+                    _context.FriendRequests.Update(accepted);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return Json(new { success = true, message = "Friend Request Accepted" });
+
+            }catch(Exception ex)
             {
-                UserId = userId,
-                FriendId = currentUserId,
-                Status = "online",
-                FriendName = Username,
-                UserName = frndName
-            };
-
-            await _context.Friends.AddAsync(frnd2);
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Added friend successfully", id = userId });
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
 
         public async Task<IActionResult> SendDbMessage(Chat model, string username, string friend, string message)
@@ -301,6 +330,86 @@ namespace Mvc_CRUD.Controllers
             var res = await _context.Chats.AddAsync(model);
             await _context.SaveChangesAsync();
             return Json("Success");
+        }
+
+        public async Task<IActionResult> request(string toUserId, string toUserName, string email)
+        {
+            try
+            {
+                var currentUser = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+                var model = new FriendRequest()
+                {
+                    UserId = currentUser,
+                    UserName = User?.FindFirst(ClaimTypes.Name)?.Value ?? User.FindFirst("preferred_username").Value,
+                    ToUserId = toUserId,
+                    ToUserName = toUserName,
+                    ToUserEmail = email
+                };
+                var exists = await _context.FriendRequests.Where(x => x.UserId == currentUser && x.ToUserId == toUserId ||
+                              x.UserId == toUserId && x.ToUserId == currentUser).FirstOrDefaultAsync();
+                if (exists != null)
+                _context.FriendRequests.Remove(exists);
+                await _context.FriendRequests.AddAsync(model);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Friend Request Successfully Sent" });
+            }
+            catch(Exception ex)
+            {
+                return Json($"Failed to send a friend request due to : {ex.Message}");
+            }
+          
+        }
+        public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
+        {
+            var currentUser = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var res = await _context.FriendRequests.Where(x => x.ToUserId == currentUser && x.Status == "Pending" && x.isDeleted != true).ToListAsync();
+            var paginatedRes = await _pagination.Paginate(res, filter);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                Response.ContentType = "application/json";
+                return Json(new
+                {
+                    data = paginatedRes.Data,
+                    totalRecords = paginatedRes.TotalRecords,
+                    totalPages = paginatedRes.TotalPages,
+                    CurrentPage = filter.PageNumber,
+                    pageSize = filter.PageSize
+                });
+            }
+            return View(paginatedRes);
+        }
+
+        public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
+        {
+            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var res = await _mediator.Send(new GetAllSentRequestQuery(filter, currentUserId));
+            return Json(res);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> RejectRequest(string friendUserId)
+        {
+            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var res = await _mediator.Send(new RejectRequestCommand(currentUserId, friendUserId));
+            if (res != "Successfully Cancelled")
+                return Json(new { success = false, message = res });
+                return Json(new { success = true, message = res });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BlockUser(string blockUserId, string blockUserName)
+        {
+            BlockedUsers model = new BlockedUsers();
+            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
+            var Username = User?.FindFirst(ClaimTypes.Name)?.Value ?? User.FindFirst("preferred_username").Value;
+            model.UserId = currentUserId;
+            model.BlockUserId = blockUserId;
+            model.BlockUserName = blockUserName;
+            model.UserName = Username;
+            var res = await _mediator.Send(new BlockUserCommand(model));
+            if (res != "Successfully Saved")
+                return Json(new { success = false, message = res });
+                return Json(new { success = true, message = res });
         }
 
         public IActionResult Logout()
