@@ -67,6 +67,7 @@ C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.bu
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.json.cache
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.development.json
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.endpoints.json
+C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.upToDateCheck.txt
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.Up2Date
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.dll
 C:\Users\cage\source\repos\Mvc CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.dll

@@ -4,5 +4,5 @@ using Mvc_CRUD.Pagination;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-    public record GetAllQuery(PaginationFilter pgFilter) : IRequest<PaginateResponse<List<Chat>>>;
+    public record GetAllQuery(PaginationFilter pgFilter, string SearchFilter) : IRequest<PaginateResponse<List<Chat>>>;
 

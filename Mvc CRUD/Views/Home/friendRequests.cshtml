@@ -28,6 +28,14 @@
             ViewData["Title"] = "Friend Requests";
         }
 
+        @* <div class="position-fixed top-0 start-50 translate-middle-x p-3 bottom-0 end-0 p-3" style="z-index: 1055;">
+            <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-body text-center" id="toast-body">
+                </div>
+            </div>
+        </div> *@
+
+
         <div class="container mt-5">
             <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist" style="font-weight:500">
                 <li class="nav-item" role="presentation">
@@ -197,7 +205,8 @@
 
         async function sendFriendRequest(userid,friendName,id,email)
         {
-            const btn = document.getElementById("removeBtn-" + id);
+            const btn = document.getElementById("sendBtn-" + id);
+            const removebtn = document.getElementById("removeBtn-" + id);
             btn.disabled = true;
             btn.textContent = "Processing...";
             try
@@ -206,7 +215,8 @@
                 if(res.ok)
                 {
                     alert("Friend Request SuccessFully Sent.")
-                    btn.textContent = "Request Sent";                      
+                    btn.textContent = "Request Sent"; 
+                    removebtn.disabled = true;
                 }else
                 {
                     btn.disabled = false;
@@ -224,6 +234,7 @@
 
         async function removeUser(friendId,friendName,id)
         {
+            const sendbtn = document.getElementById("sendBtn-" + id);
             const btn = document.getElementById("removeBtn-" + id);
             btn.disabled = true;
             btn.textContent = "Removing...";
@@ -235,6 +246,7 @@
                 {
                     alert("User Removed")
                     btn.textContent = "Removed";
+                    sendbtn.disabled = true;
                 }else
                 {
                     btn.disabled = false;
@@ -259,7 +271,8 @@
                     headers: { "X-Requested-With": "XMLHttpRequest" }
                 });
                 if (!response.ok) throw new Error('Failed to fetch data');
-
+                // const msg = "Welcome Home";
+                // showAlert(msg);
                 const result = await response.json();
                 renderFriendRequests(result.data);
                 setupPagination(result.totalPages);
@@ -303,7 +316,7 @@
                                   <i class="fa-solid fa-user-plus me-1"></i>Accept Request
                              </button>
 
-                             <button id ="rejectBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="cancelSentRequest('${friend.userId}', ${friend.id})">
+                             <button id ="rejectRequestBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="cancelSentRequest('${friend.userId}', ${friend.id})">
                                   <i class="fa-solid fa-user-minus me-1"></i>Reject Request
                              </button>
                         </div>
@@ -406,9 +419,17 @@
 
         async function cancelSentRequest(friendId,id)
         {
-            const btn = document.getElementById("rejectBtn-" + id);
+            const sentbtn = document.getElementById("rejectBtn-" + id);
+            const requestbtn = document.getElementById("rejectRequestBtn-" + id);
+            const btn = sentbtn || requestbtn;
+            if(!btn) 
+            {
+                console.log(`buttton id is : ${btn}`, id);
+                return;
+            }
             btn.disabled = true;
             btn.textContent = "Processing...";
+
             try
             {
                 const res = await fetch(`/Home/RejectRequest?friendUserId=${friendId}`, { method: "PUT", headers: { "Content-Type": "application/json" }  });
@@ -434,6 +455,17 @@
         }
 
         /*  ********************************************************************* */
+
+        // function showToast(message) {
+        //     const toastEl = document.getElementById('liveToast');
+        //     const toastBody = document.getElementById('toast-body');
+        //     toastBody.textContent = message;
+
+        //     const toast = new bootstrap.Toast(toastEl, {delay: 4000});
+        //     toast.show();
+        // }
+
+        // showToast("This is a test alert!");
 
 
         function setupPagination(totalPages) {

@@ -1,4 +1,6 @@
-﻿namespace Mvc_CRUD.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Mvc_CRUD.Models;
 
     public class Chat
     {
@@ -7,5 +9,6 @@
        public string ToUser { get; set; }   
        public string Message { get; set; }
        public DateTime SentOn { get; set; } = DateTime.UtcNow;
+       
     }
 

@@ -135,20 +135,6 @@
     let currentUser = null;
     const cUser = '@username';
 
-    // var modelInfo = @Html.Raw(JsonConvert.SerializeObject(Model))
-    //     modelInfo.forEach(item => {
-    //     if (item.UserName === cUser || item.ToUser === cUser) {
-    //         const friend = item.UserName === cUser ? item.ToUser : item.UserName;
-    //         document.querySelectorAll('.latestText').forEach(el => {
-    //       if (el.dataset.friend === friend) {
-    //       el.textContent = item.Message;
-    //         }
-    //       });
-    //     }
-        
-    // });
-
-
     function renderMessages(messages) {
         messagesContainer.innerHTML = '';
         messages.forEach(msg => appendMessage(msg));
@@ -287,7 +273,7 @@
          toggleSendButton();
 
         try {
-            const res = await fetch(`/Home/SendingText?toFriend=${encodeURIComponent(userName)}`);
+            const res = await fetch(`/Home/Chats?toFriend=${encodeURIComponent(userName)}`);
             const messages = await res.json();
             renderMessages(messages);
         } catch (err) {
