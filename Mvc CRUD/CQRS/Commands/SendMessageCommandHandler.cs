@@ -21,7 +21,7 @@ namespace Mvc_CRUD.CQRS.Commands;
             }
             catch (Exception ex) 
             {
-                return $"{ex.Message}";
+                throw new Exception($"{ex.Message}");
             }
            
         }

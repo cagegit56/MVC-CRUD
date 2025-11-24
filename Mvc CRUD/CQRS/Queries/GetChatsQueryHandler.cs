@@ -57,6 +57,7 @@ namespace Mvc_CRUD.CQRS.Queries;
                 }
 
                 return res;
+
             }catch(Exception ex)
             {
                 throw new NotFoundException($"Failed Due to {ex.Message}");

@@ -7,15 +7,18 @@
 }
 
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>@ViewData["Title"]</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<link href="~/css/site.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 </head>
 
 <body class="bg-light">
@@ -27,14 +30,6 @@
         @{
             ViewData["Title"] = "Friend Requests";
         }
-
-        @* <div class="position-fixed top-0 start-50 translate-middle-x p-3 bottom-0 end-0 p-3" style="z-index: 1055;">
-            <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-body text-center" id="toast-body">
-                </div>
-            </div>
-        </div> *@
-
 
         <div class="container mt-5">
             <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist" style="font-weight:500">
@@ -104,6 +99,13 @@
         let pageSize = 5;
         let selectedTab = "";
 
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": false,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000"
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('pageSize').addEventListener('change', handlePageSizeChange);   
             const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
@@ -163,6 +165,7 @@
         }
 
         function renderFriends(friends) {
+            toastr.success("Welcome To ChatUp");
             const container = document.getElementById('friendsContainer');
             container.innerHTML = '';
 
@@ -214,20 +217,20 @@
                 const res = await fetch(`/Home/request?toUserId=${encodeURIComponent(userid)}&toUserName=${encodeURIComponent(friendName)}&email=${encodeURIComponent(email)}`);
                 if(res.ok)
                 {
-                    alert("Friend Request SuccessFully Sent.")
+                    toastr.success("Friend Request SuccessFully Sent.")
                     btn.textContent = "Request Sent"; 
                     removebtn.disabled = true;
                 }else
                 {
                     btn.disabled = false;
                     btn.textContent = "Add Friend";
-                    alert(`Failed to send a friend request due to : ${res.message}`)
+                    toastr.error(`Failed to send a friend request due to : ${res.message}`);
                 }
             }catch(error)
             {
                 btn.disabled = false;
                 btn.textContent = "Add Friend";
-                alert(`Failed to send a friend request due to :${res.message} ${error}`)
+                toastr.error(`Failed to send a friend request due to :${res.message} ${error}`);
             }
         }
 
@@ -244,20 +247,20 @@
                                    { method: "POST", headers: { "Content-Type": "application/json" }  });
                 if(res.ok)
                 {
-                    alert("User Removed")
+                    toastr.success("User Removed")
                     btn.textContent = "Removed";
                     sendbtn.disabled = true;
                 }else
                 {
                     btn.disabled = false;
                     btn.textContent = "Add Friend";
-                    alert(`Failed to remove user due to : ${res.message}`)
+                    toastr.error(`Failed to remove user due to : ${res.message}`)
                 }
             }catch(error)
             {
                 btn.disabled = false;
                 btn.textContent = "Add Friend";
-                alert(`Failed to remove user due to :${res.message}, ${error}`)
+                toastr.error(`Failed to remove user due to :${res.message}, ${error}`)
             }
         }
 
@@ -271,8 +274,7 @@
                     headers: { "X-Requested-With": "XMLHttpRequest" }
                 });
                 if (!response.ok) throw new Error('Failed to fetch data');
-                // const msg = "Welcome Home";
-                // showAlert(msg);
+
                 const result = await response.json();
                 renderFriendRequests(result.data);
                 setupPagination(result.totalPages);
@@ -336,18 +338,18 @@
                 const result = await res.json();
                 if(result.success)
                 {
-                    alert("Friend Request Accepted.")
+                     toastr.success("Friend Request Accepted.");
                     const row = document.getElementById("row-" + id);
                     if (row)
                     row.remove();
                 }else{
-                    alert(`Failed to accept friend request due to : ${result.message}`)
+                    toastr.error(`Failed to accept friend request due to : ${result.message}`);
                     btn.disabled = false;
                     btn.textContent = "Accept Request";
                 }
             }catch(error)
             {
-                alert(`Failed to accept friend Request due to : ${error}`)
+                toastr.error(`Failed to accept friend Request due to : ${error}`);
                 btn.disabled = false;
                 btn.textContent = "Accept Request";
             }
@@ -424,7 +426,6 @@
             const btn = sentbtn || requestbtn;
             if(!btn) 
             {
-                console.log(`buttton id is : ${btn}`, id);
                 return;
             }
             btn.disabled = true;
@@ -436,36 +437,25 @@
                 const result = await res.json();
                 if(result.success)
                 {
-                    alert(result.message)
+                    toastr.success(result.message)
                     const row = document.getElementById("row-" + id);
                     if(row)
                     row.remove();
                 }else{
-                    alert(`Failed to cancel friend Request due to :${result.message}`)
+                    toastr.error(`Failed to cancel friend Request due to :${result.message}`);
                      btn.disabled = false;
                      btn.textContent = "Cancel Request";
                 }
 
             }catch(error)
             {
-                alert(`Failed to cancel friend Request due to :${result.message}, ${error}`)
+                toastr.error(`Failed to cancel friend Request due to :${result.message}, ${error}`);
                 btn.disabled = false;
                 btn.textContent = "Cancel Request";
             }
         }
 
         /*  ********************************************************************* */
-
-        // function showToast(message) {
-        //     const toastEl = document.getElementById('liveToast');
-        //     const toastBody = document.getElementById('toast-body');
-        //     toastBody.textContent = message;
-
-        //     const toast = new bootstrap.Toast(toastEl, {delay: 4000});
-        //     toast.show();
-        // }
-
-        // showToast("This is a test alert!");
 
 
         function setupPagination(totalPages) {

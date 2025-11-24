@@ -96,9 +96,9 @@ namespace Mvc_CRUD.Services;
             Expression converted = Expression.Convert(propertyAccess, typeof(object));
             var sortLambda = Expression.Lambda<Func<T, object>>(converted, param);
 
-            return sortDirection?.ToLower() == "desc"
-                ? query.OrderByDescending(sortLambda)
-                : query.OrderBy(sortLambda);
+            return sortDirection?.ToLower() == "asc"
+                ? query.OrderBy(sortLambda)
+                : query.OrderByDescending(sortLambda);
         }
 
         private static IEnumerable<T> ApplySorting<T>(IEnumerable<T> query, string? sortBy, string? sortDirection)
@@ -114,8 +114,8 @@ namespace Mvc_CRUD.Services;
             bool descending = !string.IsNullOrWhiteSpace(sortDirection) && sortDirection.ToLower() == "desc";
 
             return descending
-                ? query.OrderByDescending(x => sortProperty.GetValue(x, null))
-                : query.OrderBy(x => sortProperty.GetValue(x, null));
+                ? query.OrderBy(x => sortProperty.GetValue(x, null))
+                : query.OrderByDescending(x => sortProperty.GetValue(x, null));
         }
 
 

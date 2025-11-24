@@ -31,8 +31,8 @@ namespace Mvc_CRUD.Controllers
         private string _currentUserId;
         private string _currentUserName;
 
-        public HomeController(ILogger<HomeController> logger, DataDbContext context,
-            IGetAllService getService, IMemoryCache cache, IPaginationService pagination, IMediator mediator, IHttpContextAccessor httpContext)
+        public HomeController(ILogger<HomeController> logger, DataDbContext context, IGetAllService getService,
+            IMemoryCache cache, IPaginationService pagination, IMediator mediator, IHttpContextAccessor httpContext)
         {
             _logger = logger;
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -66,6 +66,100 @@ namespace Mvc_CRUD.Controllers
             await AddUser();
             return View(res);
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Chats(string toFriend)
+        {
+            var res = await _mediator.Send(new GetChatsQuery(_currentUserId, _currentUserName, toFriend));
+            if (!string.IsNullOrEmpty(toFriend))
+                return Json(res);
+                return View(res);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> SendDbMessage(string username, string friend, string message)
+        {
+            var model = new Chat();
+            model.UserName = username;
+            model.ToUser = friend;
+            model.Message = message;
+            var res = await _mediator.Send(new SendMessageCommand(model));
+            return Json("Success");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
+        {
+            var res = await _mediator.Send(new GetAllSentRequestQuery(filter, _currentUserId));
+            return Json(res);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new FriendRequestQuery(pgFilter, _currentUserId));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                Response.ContentType = "application/json";
+                return Json(new
+                {
+                    data = res.Data,
+                    totalRecords = res.TotalRecords,
+                    totalPages = res.TotalPages,
+                    CurrentPage = pgFilter.PageNumber,
+                    pageSize = pgFilter.PageSize
+                });
+            }
+            return View(res);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
+        {
+            var res = await _mediator.Send(new ReceivedFriendRequestQuery(filter, _currentUserId));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                Response.ContentType = "application/json";
+                return Json(new
+                {
+                    data = res.Data,
+                    totalRecords = res.TotalRecords,
+                    totalPages = res.TotalPages,
+                    CurrentPage = filter.PageNumber,
+                    pageSize = filter.PageSize
+                });
+            }
+            return View(res);
+        }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> RejectRequest(string friendUserId)
+        {
+            var res = await _mediator.Send(new RejectRequestCommand(_currentUserId, friendUserId));
+            if (res != "Successfully Cancelled")
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = res });
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> BlockUser(string blockUserId, string blockUserName)
+        {
+            BlockedUsers model = new BlockedUsers();
+            model.UserId = _currentUserId;
+            model.BlockUserId = blockUserId;
+            model.BlockUserName = blockUserName;
+            model.UserName = _currentUserName;
+            var res = await _mediator.Send(new BlockUserCommand(model));
+            if (res != "Successfully Saved")
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = res });
+        }
+
 
         [HttpGet]
         [Authorize]
@@ -124,25 +218,16 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public IActionResult UserProfile()
         {
-            var user = User;
-
-            var username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-            var email = user.FindFirst(ClaimTypes.Email)?.Value;
-            var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
-            var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value
-                     ?? User.FindFirst("given_name")?.Value;
-
-            var lastName = User.FindFirst(ClaimTypes.Surname)?.Value
-                           ?? User.FindFirst("family_name")?.Value;
-
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
+            var lastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
             ViewBag.FirstName = firstName;
             ViewBag.LastName = lastName;
-            ViewBag.UserId = userId;
-            ViewBag.Username = username;
+            ViewBag.UserId = _currentUserId;
+            ViewBag.Username = _currentUserName;
             ViewBag.Email = email;
             ViewBag.Roles = string.Join(", ", roles);
-
             return View();
         }
 
@@ -177,37 +262,6 @@ namespace Mvc_CRUD.Controllers
 
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> Chats(string toFriend)
-        {
-            var res = await _mediator.Send(new GetChatsQuery(_currentUserId, _currentUserName, toFriend));
-            if (!string.IsNullOrEmpty(toFriend))
-                return Json(res);
-                return View(res);
-        }
-
-        [Authorize]
-        public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
-        {
-            var friends = await _context.Friends.Where(x => x.UserId == _currentUserId || x.FriendId == _currentUserId).Select(x => x.UserId).ToListAsync();
-            var blockedUser = await _context.BlockedUser.Where(x => x.UserId == _currentUserId).Select(x => x.BlockUserId).ToListAsync();
-            var allUsers = await _context.ChatUsers.Where(x => x.UserId != _currentUserId && !friends.Contains(x.UserId) && !blockedUser.Contains(x.UserId)).ToListAsync();
-            var paginatedRes = await _pagination.Paginate(allUsers, pgFilter);
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                Response.ContentType = "application/json";
-                return Json(new
-                {
-                    data = paginatedRes.Data,
-                    totalRecords = paginatedRes.TotalRecords,
-                    totalPages = paginatedRes.TotalPages,
-                    CurrentPage = pgFilter.PageNumber,
-                    pageSize = pgFilter.PageSize
-                });
-            }
-            return View(paginatedRes);
-        }
 
         [HttpPost]
         [Authorize]
@@ -264,16 +318,6 @@ namespace Mvc_CRUD.Controllers
             }
         }
 
-        [Authorize]
-        public async Task<IActionResult> SendDbMessage(Chat model, string username, string friend, string message)
-        {
-            model.UserName = username;
-            model.ToUser = friend;
-            model.Message = message;
-            var res = await _context.Chats.AddAsync(model);
-            await _context.SaveChangesAsync();
-            return Json("Success");
-        }
 
         [Authorize]
         public async Task<IActionResult> request(string toUserId, string toUserName, string email)
@@ -303,64 +347,7 @@ namespace Mvc_CRUD.Controllers
             }
           
         }
-
-        [Authorize]
-        public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
-        {
-            var currentUser = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var res = await _context.FriendRequests.Where(x => x.ToUserId == currentUser && x.Status == "Pending" && x.isDeleted != true).ToListAsync();
-            var paginatedRes = await _pagination.Paginate(res, filter);
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                Response.ContentType = "application/json";
-                return Json(new
-                {
-                    data = paginatedRes.Data,
-                    totalRecords = paginatedRes.TotalRecords,
-                    totalPages = paginatedRes.TotalPages,
-                    CurrentPage = filter.PageNumber,
-                    pageSize = filter.PageSize
-                });
-            }
-            return View(paginatedRes);
-        }
-
-        [Authorize]
-        public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
-        {
-            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var res = await _mediator.Send(new GetAllSentRequestQuery(filter, currentUserId));
-            return Json(res);
-        }
-
-        [Authorize]
-        [HttpPut]
-        public async Task<IActionResult> RejectRequest(string friendUserId)
-        {
-            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var res = await _mediator.Send(new RejectRequestCommand(currentUserId, friendUserId));
-            if (res != "Successfully Cancelled")
-                return Json(new { success = false, message = res });
-                return Json(new { success = true, message = res });
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> BlockUser(string blockUserId, string blockUserName)
-        {
-            BlockedUsers model = new BlockedUsers();
-            var currentUserId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-            var Username = User?.FindFirst(ClaimTypes.Name)?.Value ?? User.FindFirst("preferred_username").Value;
-            model.UserId = currentUserId;
-            model.BlockUserId = blockUserId;
-            model.BlockUserName = blockUserName;
-            model.UserName = Username;
-            var res = await _mediator.Send(new BlockUserCommand(model));
-            if (res != "Successfully Saved")
-                return Json(new { success = false, message = res });
-                return Json(new { success = true, message = res });
-        }
-
+        
         public IActionResult Logout()
         {
             return SignOut(

@@ -9,6 +9,6 @@
        public string FriendName { get; set; }
        public string Status { get; set; }
        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
-        public virtual Chat_Users? AllUsers { get; set; }
+       public virtual Chat_Users? AllUsers { get; set; }
     }
 

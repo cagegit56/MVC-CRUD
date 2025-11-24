@@ -34,7 +34,6 @@ internal sealed class GetAllQueryHandler : IRequestHandler<GetAllQuery, Paginate
                 _cache.Set(cacheKey, res, TimeSpan.FromMinutes(10));
             }
 
-
             var queryData = res.AsEnumerable();
             if (!string.IsNullOrEmpty(request.SearchFilter))
             {
@@ -44,7 +43,6 @@ internal sealed class GetAllQueryHandler : IRequestHandler<GetAllQuery, Paginate
             }
 
             var paginatedRes = await _pagination.Paginate(queryData.ToList(), request.pgFilter);
-
             return paginatedRes;
         }
         catch (Exception ex)
