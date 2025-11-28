@@ -12,12 +12,12 @@ namespace Mvc_CRUD.CQRS.Commands;
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-       public async Task<string> Handle(RejectRequestCommand request, CancellationToken cancellationToken)
+       public async Task<string> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
         {
         try
         {
-            var exists = await _context.FriendRequests.Where(x => x.UserId == request.userId && x.ToUserId == request.toUserId ||
-                            x.UserId == request.toUserId && x.ToUserId == request.userId).FirstOrDefaultAsync();
+            var exists = await _context.FriendRequests.Where(x => x.UserId == command.userId && x.ToUserId == command.toUserId ||
+                            x.UserId == command.toUserId && x.ToUserId == command.userId).FirstOrDefaultAsync();
             if (exists != null)
             {
                 exists.isDeleted = true;

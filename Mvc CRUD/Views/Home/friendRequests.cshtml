@@ -103,7 +103,7 @@
             "closeButton": true,
             "progressBar": false,
             "positionClass": "toast-top-right",
-            "timeOut": "3000"
+            "timeOut": "5000"
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -165,7 +165,6 @@
         }
 
         function renderFriends(friends) {
-            toastr.success("Welcome To ChatUp");
             const container = document.getElementById('friendsContainer');
             container.innerHTML = '';
 
@@ -334,7 +333,7 @@
             btn.textContent = "Processing...";            
             try
             {
-                const res = await fetch(`/Home/addFriends?userId=${userid}&frndName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
+                const res = await fetch(`/Home/AcceptRequest?userId=${userid}&frndName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
                 const result = await res.json();
                 if(result.success)
                 {

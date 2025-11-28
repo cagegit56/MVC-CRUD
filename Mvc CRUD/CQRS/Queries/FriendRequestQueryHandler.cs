@@ -20,9 +20,16 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
     {
         try
         {
-            var friends = await _context.Friends.Where(x => x.UserId == request.UserId || x.FriendId == request.UserId).Select(x => x.UserId).ToListAsync();
-            var blockedUser1 = await _context.BlockedUser.Where(x => x.UserId == request.UserId).Select(x => x.BlockUserId).ToListAsync();
-            var potentialFriends = await _context.ChatUsers.Where(x => x.UserId != request.UserId && !friends.Contains(x.UserId) && !blockedUser1.Contains(x.UserId)).ToListAsync();
+            var potentialFriends = await _context.ChatUsers.Where(x => x.UserId != request.UserId)
+                                    .Where(x => !_context.Friends
+                                        .Any(y => (y.UserId == request.UserId && y.FriendId == x.UserId) ||
+                                                  (y.FriendId == request.UserId && y.UserId == x.UserId)))
+                                    .Where(x => !_context.BlockedUser
+                                        .Any(v => v.UserId == request.UserId && v.BlockUserId == x.UserId))
+                                    .Where(x => !_context.FriendRequests
+                                        .Any(z => z.Status == "Pending" && (z.UserId == request.UserId && z.ToUserId == x.UserId) || 
+                                                   (z.UserId == x.UserId && z.ToUserId == request.UserId)))
+                                    .ToListAsync();
             var paginatedRes = await _pagination.Paginate(potentialFriends, request.pgFilter);
             return paginatedRes;
         }

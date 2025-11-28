@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Common;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
+using System.Linq;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
@@ -20,47 +21,45 @@ namespace Mvc_CRUD.CQRS.Queries;
         {
             try
             {
-                var friendInfo = await _context.Friends.Include(x => x.AllUsers).Where(x => x.UserId == response.UserId).ToListAsync();
-                var friendName = friendInfo.Select(x => x.AllUsers?.UserName).ToList();
-                var msg = await _context.Chats.Where(x => (x.UserName == response.UserName && friendName.Contains(x.ToUser)) || (friendName.Contains(x.UserName) && x.ToUser == response.UserName))
-                                                .OrderByDescending(x => x.SentOn)
-                                                .ToListAsync();
-                var newFrnd = friendName.Where(f => !msg.Any(m => (m.UserName == response.UserName && m.ToUser == f) || (m.UserName == f && m.ToUser == response.UserName)))
-                                        .Select(f => f)
-                                        .ToList();
+                var chats = await _context.Chats.Where(x => _context.Friends
+                                .Any(f => f.UserId == response.UserId &&
+                                ( (x.UserName == response.UserName && x.ToUser == f.FriendName) ||
+                                (x.ToUser == response.UserName && x.UserName == f.FriendName)) )).ToListAsync();
+                var chatFrnd = chats.Select(x => x.UserName == response.UserName ? x.ToUser : x.UserName).ToList();
+                var noChat = await _context.Friends.Where(x => x.UserId == response.UserId &&
+                                  !chatFrnd.Contains(x.FriendName)).ToListAsync();
                 var res = new List<Chat>();
-                var newMessage = friendInfo.Where(x => x.UserName == response.UserName && newFrnd.Contains(x.FriendName)).ToList();
-                if (newMessage.Count() != 0)
-                {
-                    foreach (var user in newMessage)
+                    if (noChat.Count() != 0)
                     {
-                        var emptyMsg = new Chat()
+                        foreach (var user in noChat)
                         {
-                            UserName = response.UserName,
-                            ToUser = user.FriendName,
-                            Message = $"You are now Friends with {char.ToUpper(user.FriendName[0]) + user.FriendName.Substring(1)} Send a Message to Start a Chat.",
-                            SentOn = user.CreatedOn,
-                        };
-                        res.Add(emptyMsg);
+                            var emptyMsg = new Chat()
+                            {
+                                UserName = response.UserName,
+                                ToUser = user.FriendName,
+                                Message = $"You are now Friends with {char.ToUpper(user.FriendName[0]) + user.FriendName.Substring(1)} Send a Message to Start a Chat.",
+                                SentOn = user.CreatedOn,
+                            };
+                            res.Add(emptyMsg);
+                        }
+
+                    }
+                    res.AddRange(chats);
+
+                    if (!string.IsNullOrEmpty(response.ToFriend))
+                    {
+                        res = res.Where(x => (x.UserName.Equals(response.UserName, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase))
+                        || (x.UserName.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(response.UserName, StringComparison.OrdinalIgnoreCase)))
+                            .OrderBy(x => x.SentOn)
+                            .ToList();
+                        return res;
                     }
 
-                }
-                res.AddRange(msg);
-
-                if (!string.IsNullOrEmpty(response.ToFriend))
-                {
-                    res = res.Where(x => (x.UserName.Equals(response.UserName, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase))
-                    || (x.UserName.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase) && x.ToUser.Equals(response.UserName, StringComparison.OrdinalIgnoreCase)))
-                        .OrderBy(x => x.SentOn)
-                        .ToList();
                     return res;
-                }
-
-                return res;
 
             }catch(Exception ex)
             {
-                throw new NotFoundException($"Failed Due to {ex.Message}");
+                throw new Exception($"Failed Due to {ex.Message}");
             }
         }
        

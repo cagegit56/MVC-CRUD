@@ -10,11 +10,11 @@ internal sealed class BlockUserCommandHandler : IRequestHandler<BlockUserCommand
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
-    public async Task<string> Handle(BlockUserCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(BlockUserCommand command, CancellationToken cancellationToken)
     {
         try
         {
-            var res = await _context.BlockedUser.AddAsync(request.model);
+            var res = await _context.BlockedUser.AddAsync(command.model);
             await _context.SaveChangesAsync(cancellationToken);
             return "Successfully Saved";
         }

@@ -19,9 +19,17 @@ internal sealed class GetAllByIdQueryHandler : IRequestHandler<GetAllByIdQuery, 
     }
     public async Task<Chat> Handle(GetAllByIdQuery request, CancellationToken cancellationToken)
     {
-        var res =  await _context.Chats.FirstOrDefaultAsync(x => x.Id == request.Id) ??
-            throw new NotFoundException("No Record found");
-        return res;
+        try
+        {
+            if (request.Id == 0 || request?.Id == null)
+                throw new Exception("Id is null/empty");
+            var res = await _context.Chats.FirstOrDefaultAsync(x => x.Id == request.Id);
+            return res;
+        }
+        catch (Exception ex) 
+        {
+            throw new Exception($"Failed to get data due to : {ex.Message}");
+        }
 
     }
 }

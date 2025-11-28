@@ -89,6 +89,22 @@ namespace Mvc_CRUD.Controllers
         }
 
         [Authorize]
+        public async Task<IActionResult> request(string toUserId, string toUserName, string email)
+        {
+            var model = new FriendRequest();
+            model.UserId = _currentUserId;
+            model.UserName = _currentUserName;
+            model.ToUserId = toUserId;
+            model.ToUserName = toUserName;
+            model.ToUserEmail = email;
+            var res = await _mediator.Send(new SendFriendRequestCommand(model));
+            if (res != "SuccessFully Sent")
+                return Json(new { success = true, message = $"Failed to send a friend request due to : {res}" });
+
+            return Json(new { success = true, message = "Friend Request Successfully Sent" });
+        }
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
         {
@@ -135,12 +151,27 @@ namespace Mvc_CRUD.Controllers
             return View(res);
         }
 
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AcceptRequest(string userId, string frndName)
+        {
+            var model = new Friends();
+            model.UserId = _currentUserId;
+            model.UserName = _currentUserName;
+            model.FriendId = userId;
+            model.FriendName = frndName;
+            var res = await _mediator.Send(new AddFriendCommand(model));
+            if (res != "Friend Request Accepted.")
+                return Json(new { success = false, message = $"Failed to add friend due to : {res}" });
+            return Json(new { success = true, message = res });
+        }
+
         [Authorize]
         [HttpPut]
         public async Task<IActionResult> RejectRequest(string friendUserId)
         {
             var res = await _mediator.Send(new RejectRequestCommand(_currentUserId, friendUserId));
-            if (res != "Successfully Cancelled")
+            if (res != "Request Cancelled Succesfully.")
                 return Json(new { success = false, message = res });
             return Json(new { success = true, message = res });
         }
@@ -260,92 +291,6 @@ namespace Mvc_CRUD.Controllers
                 return BadRequest($"Unable to save User's Info : {ex.Message}");
             }
 
-        }
-
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> addFriends(string userId, string frndName)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var user = User;
-                var currentUserId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-                var Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-                if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(frndName))
-                    return Json(new { success = false, message = "Friend's Id or Friend's Name is empty." });
-                bool exists = await _context.Friends.AnyAsync(x =>
-                    (x.UserId == currentUserId && x.FriendId == userId) ||
-                    (x.UserId == userId && x.FriendId == currentUserId)
-                );
-                if (exists)
-                    return Json(new { success = false, message = "Friendship already exists." });
-                var frnd = new Friends()
-                {
-                    UserId = userId,
-                    FriendId = currentUserId,
-                    Status = "online",
-                    FriendName = Username,
-                    UserName = frndName
-                };
-                var frnd2 = new Friends()
-                {
-                    UserId = currentUserId,
-                    FriendId = userId,
-                    Status = "online",
-                    FriendName = frndName,
-                    UserName = Username
-                };
-                await _context.Friends.AddRangeAsync(frnd, frnd2);
-                await _context.SaveChangesAsync();
-
-                var accepted = await _context.FriendRequests.Where(x => x.UserId == userId && x.ToUserId == currentUserId).FirstOrDefaultAsync();
-                if (accepted != null)
-                {
-                    accepted.Status = "Accepted";
-                    _context.FriendRequests.Update(accepted);
-                    await _context.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
-                return Json(new { success = true, message = "Friend Request Accepted" });
-
-            }catch(Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
-            }
-        }
-
-
-        [Authorize]
-        public async Task<IActionResult> request(string toUserId, string toUserName, string email)
-        {
-            try
-            {
-                var currentUser = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub").Value;
-                var model = new FriendRequest()
-                {
-                    UserId = currentUser,
-                    UserName = User?.FindFirst(ClaimTypes.Name)?.Value ?? User.FindFirst("preferred_username").Value,
-                    ToUserId = toUserId,
-                    ToUserName = toUserName,
-                    ToUserEmail = email
-                };
-                var exists = await _context.FriendRequests.Where(x => x.UserId == currentUser && x.ToUserId == toUserId ||
-                              x.UserId == toUserId && x.ToUserId == currentUser).FirstOrDefaultAsync();
-                if (exists != null)
-                _context.FriendRequests.Remove(exists);
-                await _context.FriendRequests.AddAsync(model);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Friend Request Successfully Sent" });
-            }
-            catch(Exception ex)
-            {
-                return Json($"Failed to send a friend request due to : {ex.Message}");
-            }
-          
         }
         
         public IActionResult Logout()

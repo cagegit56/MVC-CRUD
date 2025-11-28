@@ -11,17 +11,17 @@ namespace Mvc_CRUD.CQRS.Commands;
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public async Task<string> Handle(SendMessageCommand request, CancellationToken cancellationToken)
+        public async Task<string> Handle(SendMessageCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var res = await _context.Chats.AddAsync(request.model);
+                var res = await _context.Chats.AddAsync(command.model);
                 await _context.SaveChangesAsync();
                 return "Successfully Saved";
             }
             catch (Exception ex) 
             {
-                throw new Exception($"{ex.Message}");
+                return $"Failed to send message due to : {ex.Message}";
             }
            
         }

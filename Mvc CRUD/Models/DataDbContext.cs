@@ -15,13 +15,27 @@ public class DataDbContext : DbContext
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            //base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Friends>()
-                .HasOne(c => c.AllUsers)
-                .WithMany()
-                .HasForeignKey(c => c.FriendId)
-                .HasPrincipalKey(u => u.UserId);
+            //modelBuilder.Entity<Friends>()
+            //    .HasOne(c => c.AllUsers)
+            //    .WithMany()
+            //    .HasForeignKey(c => c.FriendId)
+            //    .HasPrincipalKey(u => u.UserId);
+
+            //modelBuilder.Entity<Friends>()
+            //    .HasMany(c => c.FriendRequests)
+            //    .WithOne()
+            //    .HasForeignKey(c => c.UserId)
+            //    .HasPrincipalKey(u => u.UserId)
+            //    .IsRequired(false);
+
+            //modelBuilder.Entity<Friends>()
+            //    .HasOne(c => c.BlockedUser)
+            //    .WithMany()
+            //    .HasForeignKey(c => c.UserId)
+            //    .HasPrincipalKey(u => u.UserId)
+            //    .IsRequired(false);
 
         }
         

@@ -17,9 +17,17 @@ namespace Mvc_CRUD.CQRS.Queries;
         }
         public async Task<PaginateResponse<List<FriendRequest>>> Handle(GetAllSentRequestQuery request, CancellationToken cancellationToken)
         {
-            var res = await _context.FriendRequests.Where(x => x.UserId == request.userId && x.Status != "Accepted" && x.isDeleted != true).ToListAsync();
-            var paginatedRes = await _pagination.Paginate(res, request.pgFilter);
-            return paginatedRes;
+            try
+            {
+                var res = await _context.FriendRequests.Where(x => x.UserId == request.userId && x.Status != "Accepted" && x.isDeleted != true).ToListAsync();
+                var paginatedRes = await _pagination.Paginate(res, request.pgFilter);
+                return paginatedRes;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get data due to : {ex.Message}");
+            }
+
         }
     }
 

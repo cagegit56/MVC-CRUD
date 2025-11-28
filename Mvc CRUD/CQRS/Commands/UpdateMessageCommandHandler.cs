@@ -11,17 +11,17 @@ internal sealed class UpdateMessageCommandHandler : IRequestHandler<UpdateMessag
     {
         _context = context ?? throw new ArgumentNullException(nameof(context)); 
     }
-    public async Task<string> Handle(UpdateMessageCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handle(UpdateMessageCommand command, CancellationToken cancellationToken)
     {
         try
         {
-            var res = _context.Chats.Update(request.model);
+            var res = _context.Chats.Update(command.model);
             await _context.SaveChangesAsync();
             return "Updated Successfully";
         }
         catch (Exception ex) 
         {
-            return $"{ex.Message}";
+            return $"Failed to update due to : {ex.Message}";
         }
        
     }
