@@ -9,13 +9,17 @@ using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Common;
 using Mvc_CRUD.CQRS.Commands;
 using Mvc_CRUD.CQRS.Queries;
+using Mvc_CRUD.Dto;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using Mvc_CRUD.Services;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using static System.Formats.Asn1.AsnWriter;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Mvc_CRUD.Controllers
 {
@@ -50,6 +54,18 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
+            var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
+            var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+            ViewBag.Username = CurrentUser.UserName;
+            ViewBag.Lastname = CurrentUser.LastName;
+            await AddUser();
+            return View(res);            
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> AdminPortal([FromQuery] PaginationFilter pgFilter, string filter)
+        {
             var res = await _mediator.Send(new GetAllQuery(pgFilter, filter));
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -63,7 +79,6 @@ namespace Mvc_CRUD.Controllers
                     pageSize = pgFilter.PageSize
                 });
             }
-            await AddUser();
             return View(res);
         }
 
@@ -116,7 +131,7 @@ namespace Mvc_CRUD.Controllers
         [HttpGet]
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new FriendRequestQuery(pgFilter, _currentUserId));
+            var res = await _mediator.Send(new FriendRequestQuery(pgFilter, _currentUserId, _currentUserName));
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 Response.ContentType = "application/json";
@@ -247,8 +262,9 @@ namespace Mvc_CRUD.Controllers
         }
 
         [Authorize]
-        public IActionResult UserProfile()
+        public async Task<IActionResult> UserProfile()
         {
+            var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
             var firstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
@@ -259,38 +275,327 @@ namespace Mvc_CRUD.Controllers
             ViewBag.Username = _currentUserName;
             ViewBag.Email = email;
             ViewBag.Roles = string.Join(", ", roles);
-            return View();
+            return View(res);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> UpdateUserProfile()
+        {
+            var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+            return View(res);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserProfile(UserProfileDTO userInfo)
+        {
+            try
+            {
+                var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+                if (res == null)
+                {
+                    TempData["Message"] = "User not found";
+                    return RedirectToAction("UpdateUserProfile");
+                }               
+
+                if (string.IsNullOrWhiteSpace(userInfo.bio))
+                    userInfo.bio = res.Bio;
+                if (string.IsNullOrWhiteSpace(userInfo.location))
+                    userInfo.location = res.Location;
+                if (string.IsNullOrWhiteSpace(userInfo.SchoolName))
+                    userInfo.SchoolName = res.HighSchoolName;
+                if (string.IsNullOrWhiteSpace(userInfo.subject))
+                    userInfo.subject = res.Subject;
+                if (string.IsNullOrWhiteSpace(userInfo.schoolPeriod))
+                    userInfo.schoolPeriod = res.SchoolPeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.collegeName))
+                    userInfo.collegeName = res.CollegeName;
+                if (string.IsNullOrWhiteSpace(userInfo.course))
+                    userInfo.course = res.Course;
+                if (string.IsNullOrWhiteSpace(userInfo.collegePeriod))
+                    userInfo.collegePeriod = res.CollegePeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.relationship))
+                    userInfo.relationship = res.RelationShipStatus;
+                if (string.IsNullOrWhiteSpace(userInfo.jobTitle))
+                    userInfo.jobTitle = res.JobTitle;
+                if (string.IsNullOrWhiteSpace(userInfo.industry))
+                    userInfo.industry = res.Industry;
+                if (string.IsNullOrWhiteSpace(userInfo.jobPeriod))
+                    userInfo.jobPeriod = res.JobPeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.fromLocation))
+                    userInfo.fromLocation = res.Bio;
+                if (string.IsNullOrWhiteSpace(userInfo.bio))
+                    userInfo.bio = res.FromLocation;
+                if (string.IsNullOrWhiteSpace(userInfo.web))
+                    userInfo.web = res.Website;
+
+                res.Bio = userInfo.bio;
+                res.Location = userInfo.location;
+                res.HighSchoolName = userInfo.SchoolName;
+                res.Subject = userInfo.subject;
+                res.SchoolPeriod = userInfo.schoolPeriod;
+                res.CollegeName = userInfo.collegeName;
+                res.Course = userInfo.course;
+                res.CollegePeriod = userInfo.collegePeriod;
+                res.RelationShipStatus = userInfo.relationship;
+                res.JobTitle = userInfo.jobTitle;
+                res.Industry = userInfo.industry;
+                res.FromLocation = userInfo.fromLocation;
+                res.Website = userInfo.web;
+                res.JobPeriod = userInfo.jobPeriod;
+
+                _context.Profile.Update(res);
+                await _context.SaveChangesAsync();
+                TempData["Message"] = "SuccessFully Updated";
+                return RedirectToAction("UpdateUserProfile");
+            }
+            catch (Exception Ex)
+            {
+                TempData["Message"] = $"Failed to update user info due to : {Ex.Message} ";
+                return RedirectToAction("UpdateUserProfile");
+            }
+
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateUserProfile(IFormFile profileImage)
+        {
+            if (profileImage.Length > 0 && profileImage != null)
+            {
+                var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+                if (res != null)
+                {
+                    string folder = Path.Combine("wwwroot/images/ProfilePictures");
+                    Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+
+                    res.UserProfilePicUrl = "/images/ProfilePictures/" + fileName;
+                    _context.Profile.Update(res);
+                    await _context.SaveChangesAsync();
+                }
+                return Json(new { success = true, message = "Successful" });
+            }
+            else
+            {
+                return Json(new { success = false, message = $"Failed due to " });
+            }         
+
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateCoverPicture(IFormFile coverImage)
+        {
+            if (coverImage.Length > 0 && coverImage != null)
+            {
+                var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+                if (res != null)
+                {
+                    string folder = Path.Combine("wwwroot/images/CoverPictures");
+                    Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(coverImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await coverImage.CopyToAsync(stream);
+                    }
+
+                    res.UserCoverPicUrl = "/images/CoverPictures/" + fileName;
+                    _context.Profile.Update(res);
+                    await _context.SaveChangesAsync();
+                }
+                return Json(new { success = true, message = "Successful" });
+            }
+            else
+            {
+                return Json(new { success = false, message = $"Failed due to " });
+            }
+
+        }
+
 
         [Authorize]
         public async Task<IActionResult> AddUser()
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var model = new Chat_Users();
-                var user = User;
-                model.UserId = _currentUserId;
-                bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == model.UserId);
-                if (existingUser)
-                    return BadRequest("User Already Exists...");
+                bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == _currentUserId);
+                var Surname = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
+                if (!existingUser)
+                {
+                    var model = new Chat_Users
+                    {
+                        UserName = _currentUserName,
+                        FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value!,
+                        LastName = Surname,
+                        Email = User.FindFirst(ClaimTypes.Email)?.Value!,
+                        //Roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
+                    };                    
+                    await _context.ChatUsers.AddAsync(model);
+                }               
 
-                model.UserName = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-                model.FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value;
-                model.LastName = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
-                model.Email = user.FindFirst(ClaimTypes.Email)?.Value;
-                var roles = user.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
-
-                await _context.ChatUsers.AddAsync(model);
-                await _context.SaveChangesAsync();
-                Console.WriteLine("Data saved to users table");
+                var existingProfile = await _context.Profile.AsNoTracking().AnyAsync(x => x.UserId == _currentUserId);
+                if (!existingProfile)
+                {
+                    var profileModel = new UserProfile()
+                    {
+                        UserId = _currentUserId,
+                        UserName = _currentUserName,
+                        LastName = Surname!
+                    };
+                    await _context.Profile.AddAsync(profileModel);
+                }
+               
+               if(!existingUser || !existingProfile)
+                {
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                    
                 return Ok("Saved Successfully");
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"Unable to save User's Info : {ex.Message}");
+                await transaction.RollbackAsync();
                 return BadRequest($"Unable to save User's Info : {ex.Message}");
             }
+        }
 
+        public async Task<IActionResult> Posts()
+        {
+            var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
+            var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+            ViewBag.Username = CurrentUser.UserName;
+            ViewBag.Lastname = CurrentUser.LastName;
+
+            return View(res);
+        }
+        [HttpGet]
+        public async Task<IActionResult> UserPosts()
+        {
+            var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
+                                         .OrderByDescending(x => x.CreatedOn).ToListAsync();
+            return Json(res);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
+        {
+            try
+            {
+                var model = new Posts();
+                var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+                model.UserId = CurrentUser.UserId;
+                model.UserName = CurrentUser.UserName!;
+                model.LastName = CurrentUser.LastName!;
+                model.UserImageUrl = CurrentUser.ProfilePicPath;
+                model.PostScope = Scope;
+                model.Content = content;
+                model.PostBgColour = selectedColor;
+                if (postImage != null && postImage.Length > 0)
+                {
+                    string folder = Path.Combine("wwwroot/images/PostPictures");
+                    Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+                    ViewBag.PostPic = fileName;
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await postImage.CopyToAsync(stream);
+                    }
+
+                    model.ImageContentUrl = "/images/PostPictures/" + fileName;
+                }
+
+                _context.Post.Add(model);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "successful" });
+            }
+            catch (Exception Ex)
+            {
+                return Json(new { success = false, message = $"Unsuccessful due to : {Ex.Message}" });
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> ChangeProfilePic(IFormFile profileImage)
+        {
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (profileImage != null && profileImage.Length > 0)
+                {
+                    var rec = await _context.ChatUsers.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+             
+                    string folder = Path.Combine("wwwroot/images/ProfilePictures");
+                    Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+
+                    rec!.ProfilePicPath = "/images/ProfilePictures/" + fileName;
+                    _context.ChatUsers.Update(rec);
+
+                    var postPic = await _context.Post.Where(x => x.UserId == _currentUserId).ToListAsync();
+                    var model = new List<Posts>();
+                    foreach (var post in postPic)
+                    {
+                        post.UserImageUrl = $"/images/ProfilePictures/{fileName}";
+                        model.Add(post);
+                    }
+                    _context.Post.UpdateRange(model); 
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }              
+
+                return Json(new { success = true, message = "successful" });
+
+            }catch(Exception Ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = $"Failed due to : {Ex.Message}" });
+            }
+         
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Gallery(IFormFile photo)
+        {
+            if (photo != null && photo.Length > 0)
+            {
+                string folder = Path.Combine("wwwroot/images/Gallery");
+                Directory.CreateDirectory(folder);
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(photo.FileName);
+                string filePath = Path.Combine(folder, fileName);
+                ViewBag.PostPic = fileName;
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(stream);
+                }
+
+                //model.ImageContentUrl = "/images/Gallery/" + fileName;
+            }
+
+            //_context.Post.Add(model);
+            //await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "successful" });
         }
         
         public IActionResult Logout()

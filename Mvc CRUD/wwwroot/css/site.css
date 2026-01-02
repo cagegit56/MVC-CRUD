@@ -120,5 +120,155 @@ td.message-cell {
     object-fit: cover;
 }
 
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+                                         /*  ***********Posts css********************* */
+
+/* Smooth transitions */
+.post-card,
+.avatar,
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading animation */
+.spinner {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .post-header,
+    .post-content,
+    .post-actions {
+        padding: 1rem;
+    }
+
+    .create-post-box {
+        padding: 1rem;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+.circle-btn {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-bgcard {
+    height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    margin-bottom: 1rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-bgtext {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 100%;
+    word-break: break-word;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+
+                                         /*  *****************Userprofile CSS*************** */
+.camera-icon {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 36px;
+    height: 36px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 6px rgba(0,0,0,0.25);
+    cursor: pointer;
+    z-index: 5;
+}
+
+    .camera-icon i {
+        font-size: 18px;
+    }
+
+
+    /* ********************** Update UserInfo */
+
+@media (max-width: 768px) {
+    .update-profile-img {
+        width: 110px !important;
+        height: 110px !important;
+    }
+    .cover-pic-phone-width {
+        width : 313px !important;
+    }
+    .profile-pic-phone-width {
+        width: 110px !important;
+        height: 110px !important;
+    }
+}
+
+
+
+
+
+
+
 
 

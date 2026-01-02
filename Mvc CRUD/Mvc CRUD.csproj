@@ -24,4 +24,12 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\CoverPictures\" />
+    <Folder Include="wwwroot\images\Gallery\" />
+    <Folder Include="wwwroot\images\Photos\" />
+    <Folder Include="wwwroot\images\PostPictures\" />
+    <Folder Include="wwwroot\images\ProfilePictures\" />
+  </ItemGroup>
+
 </Project>

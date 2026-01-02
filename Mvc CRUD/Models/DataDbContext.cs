@@ -10,12 +10,21 @@ public class DataDbContext : DbContext
     public virtual DbSet<Friends> Friends { get; set; }
     public virtual DbSet<FriendRequest> FriendRequests { get; set; }
     public virtual DbSet<BlockedUsers> BlockedUser { get; set; }
+    public virtual DbSet<UserProfile> Profile { get; set; }
+    public virtual DbSet<Posts> Post { get; set; }
+    public virtual DbSet<Comments> Comment { get; set; }
         public DataDbContext(DbContextOptions<DataDbContext> options) : base(options)
         {
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);
+
+               modelBuilder.Entity<Comments>()
+                .HasOne<Posts>()
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId);
+
 
             //modelBuilder.Entity<Friends>()
             //    .HasOne(c => c.AllUsers)

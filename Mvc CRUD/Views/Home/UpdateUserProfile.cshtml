@@ -1,0 +1,349 @@
+﻿@model Mvc_CRUD.Models.UserProfile;
+
+@{
+    ViewData["Title"] = "Profile";
+    var initial = !string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX";
+}
+
+<link href="~/images" />
+<link href="~/css/site.css" rel="stylesheet"/>
+
+<div class="container py-4">
+        <div class="position-relative">
+            <div class="dropdown">
+            <a data-bs-toggle="dropdown" aria-expanded="false">
+                @if(Model.UserProfilePicUrl != null || Model.UserProfilePicUrl?.Length > 0)
+                    {
+                        <img src="@Model.UserCoverPicUrl" id="bgImage" class="img-fluid w-100" style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">
+                    }
+                    else
+                    {
+                        <div class="border border-4 border-white bg-secondary cover-pic-phone-width text-capitalize text-white fw-bolder h1"
+                             style="width: 69rem; height: 400px; cursor : pointer; justify-content : center; text-align : center; align-content : center;">
+                            @initial <br /> <br />
+                            <small class="text-white h4">Add a Background picture</small>
+                        </div>                      
+                    }
+                     </a>
+                <button class="btn btn-primary position-absolute end-0 dropdown-toggle" data-bs-toggle="dropdown" style="bottom: 15px; right: 15px; z-index : 1;">
+                    <i class="bi bi-camera"></i> Edit Cover Photo
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Picture</a></li>
+                        <li><label class="dropdown-item" style="cursor : pointer">Change Cover Picture
+                            <input type="file" id="bgInput" accept="image/*" class="d-none"></label>   </li>
+                    </ul>
+            </div>
+
+
+            <div class="position-absolute"
+                 style="bottom: -70px; left: 30px; z-index : 1;">
+                <div class="dropdown">
+                    <a data-bs-toggle="dropdown" aria-expanded="false">
+                        @if (Model.UserProfilePicUrl != null && Model.UserProfilePicUrl.Length > 0)
+                        {
+                            <img src="@Model.UserProfilePicUrl" id="profileImg" class="rounded-circle border border-4 border-white"
+                                 style="width: 150px; height: 150px; object-fit: cover; cursor : pointer" />
+                        }
+                        else
+                        {
+                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                                 style='width:150px; height:150px; min-width:50px; min-height:50px;'>
+                                @initial 
+                            </div>
+                        }
+                      
+                        <div class="camera-icon">
+                            <i class="bi bi-camera-fill"></i>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a></li>
+                        <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
+                            <input type="file" id="picInput" accept="image/*" class="d-none"></label>   </li>
+                    </ul>
+                </div>
+
+            </div>
+
+          
+        </div>
+
+            <div class="mt-5 d-flex justify-content-between flex-wrap align-items-center">
+            <div style="padding-left: 11rem">
+                <h2 class="fw-bold mb-0">@(char.ToUpper(@Model.UserName[0]) + @Model.UserName.Substring(1)) @(char.ToUpper(@Model.LastName[0]) + @Model.LastName.Substring(1))</h2>
+                <small class="text-muted">1,245 Friends</small>
+            </div>
+            </div>
+
+        <hr />
+
+        @* ******************UserInfo Tab******************************** *@
+
+        <ul class="nav nav-tabs mt-3" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#About">About</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#Education">Education</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#Career">Career</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#Location">Location</button>
+            </li>
+        </ul>
+
+        <form asp-controller="Home" asp-action="UpdateUserProfile" method="post">
+        <div class="tab-content mt-4">           
+                <div class="tab-pane fade show active" id="About">
+                <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">                   
+                    <div class="card-body gap-2">
+                        <h5 class="fw-bold">About</h5>
+                        <div class="d-flex justify-content-between align-items-center">                            
+                            <p class="mt-3 mb-1"><strong>Bio:</strong> 
+                                <span class="collapse show ToggleBio">@Model.Bio</span>  </p>
+                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleBio">Edit</a>
+                        </div> 
+                        <textarea class="collapse ToggleBio form-control" name="bio" rows="3">@Model.Bio</textarea>
+                        <p class="mt-3 mb-1"><strong>RelationShip Status:</strong>
+                            <span class="collapse show ToggleBio">@Model.RelationShipStatus</span>
+                        </p>
+                        <input id="combobox" type="text" class="form-control collapse ToggleBio" list="comboboxOptions" name="relationship" value="@Model.RelationShipStatus">
+                                    <datalist id="comboboxOptions">
+                                        <option value="In a RelationShip">In a RelationShip</option>
+                                        <option value="Single">Single</option>
+                                        <option value="Divorced">Divorced</option>
+                                        <option value="Married">Married</option>
+                                        <option value="Complicated">Complicated</option>
+                                    </datalist>
+                        <p class="mt-3 mb-1"><strong>Location:</strong>
+                            <span class="collapse show ToggleBio">@Model.Location</span>
+                        </p>
+                        <input type="text" class="collapse ToggleBio form-control" name="location" value="@Model.Location" />
+                        <div class="d-flex align-items-center mt-3 gap-1">
+                             <a class="btn btn-secondary mt-3 mb-1 collapse ToggleBio" data-bs-toggle="collapse" data-bs-target=".ToggleBio">Cancel</a>
+                             <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleBio">Save Changes</button>
+                             <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                                    <i class="bi bi-arrow-right fs-1"></i>
+                             <small>Continue</small>    </a> 
+                        </div>                                               
+                    </div>
+                </div>
+                </div>
+
+                <div class="tab-pane fade" id="Education">
+                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Education</h5>
+                        <div class="d-flex justify-content-between">
+                            <p class="mt-3 mb-1"><strong>University/College:</strong>
+                                <span class="collapse show ToggleEdu">@Model.CollegeName</span>  </p>                           
+                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleEdu">Edit</a>
+                        </div>
+                        <input type="text" class="collapse ToggleEdu form-control" name="collegeName" value="@Model.CollegeName" />
+                        <p class="mt-3 mb-1"><strong>Course:</strong>
+                            <span class="collapse show ToggleEdu">@Model.Course</span>  </p>
+                        <input type="text" class="collapse ToggleEdu form-control" name="course" value="@Model.Course" />
+                            <p class="mt-3 mb-1"><strong>Period:</strong>
+                                <span class="collapse show ToggleEdu">@Model.CollegePeriod</span>  </p>
+                        <input type="text" class="collapse ToggleEdu form-control" name="collegePeriod" value="@Model.CollegePeriod"  placeholder="Example-(2025-2025)"/>
+                        <p class="mt-3 mb-1"><strong>High School Name:</strong>
+                            <span class="collapse show ToggleEdu">@Model.HighSchoolName</span>  </p>
+                        <input type="text" class="collapse ToggleEdu form-control" name="SchoolName" value="@Model.HighSchoolName" />
+                        <p class="mt-3 mb-1"><strong>Subject:</strong>
+                            <span class="collapse show ToggleEdu">@Model.Subject</span>  </p>
+                        <input type="text" class="collapse ToggleEdu form-control" name="subject" value="@Model.Subject" />
+                            <p class="mt-3 mb-1"><strong>Period:</strong>
+                                <span class="collapse show ToggleEdu">@Model.SchoolPeriod</span>  </p>
+                        <input type="text" class="collapse ToggleEdu form-control" name="schoolPeriod" value="@Model.SchoolPeriod" placeholder="Example-(2025-2025)" />
+                        <div class="d-flex align-items-center mt-3 gap-1">
+                              <a class="btn btn-secondary mt-3 mb-1 collapse ToggleEdu" data-bs-toggle="collapse" data-bs-target=".ToggleEdu">Cancel</a>
+                             <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleEdu">Save Changes</button>
+                             <a id="CareerTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                                    <i class="bi bi-arrow-right fs-1"></i>
+                             <small>Continue</small>    </a> 
+                        </div> 
+                    </div>
+                </div>
+                </div>
+
+                 <div class="tab-pane fade" id="Career">
+                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Career</h5>
+                        <div class="d-flex justify-content-between">
+                        <p class="mt-3 mb-1"><strong>Job Title:</strong>
+                             <span class="collapse show TapCar">@Model.JobTitle</span>   </p>                                
+                        <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".TapCar">Edit</a>
+                        </div>
+                        <input type="text" class="collapse TapCar form-control" name="jobTitle" value="@Model.JobTitle"  />
+                        <p class="mt-3 mb-1"><strong>Industry:</strong> 
+                            <span class="collapse show TapCar">@Model.Industry</span>  </p>
+                            <input type="text" class="collapse TapCar form-control" name="industry" value="@Model.Industry"  />
+                        <p class="mt-3 mb-1"><strong>Period:</strong> 
+                            <span class="collapse show TapCar">@Model.JobPeriod</span>   </p>
+                            <input type="text" class="collapse TapCar form-control" name="jobPeriod" value="@Model.JobPeriod" placeholder="Example-(2025-2025)" />
+                    <div class="d-flex align-items-center mt-3 gap-1">
+                        <a class="btn btn-secondary mt-3 mb-1 collapse TapCar" data-bs-toggle="collapse" data-bs-target=".TapCar">Cancel</a>
+                         <button type="submit" class="btn btn-primary mt-3 mb-1 collapse TapCar">Save Changes</button>
+                        <a id="LocationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                            <i class="bi bi-arrow-right fs-1"></i>
+                            <small>Continue</small>
+                        </a>
+                    </div>    
+                    </div>
+                </div>
+                </div>
+
+                 <div class="tab-pane fade" id="Location">
+                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Location</h5>
+                        <div class="d-flex justify-content-between">
+                        <p class="mt-3 mb-1"><strong>Originally From:</strong>
+                            <span class="collapse show ToggleLoc">@Model.FromLocation</span>  </p>
+                        <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleLoc">Edit</a>
+                        </div>  
+                        <input type="text" class="collapse ToggleLoc form-control" name="fromLocation" value="@Model.FromLocation"  />
+                        <p class="mt-3 mb-1"><strong>Website:</strong>
+                                <span class="collapse show ToggleLoc">@Model.Website</span>  </p>
+                        <input type="text" class="collapse ToggleLoc form-control" name="web" value="@Model.Website"  />
+                        <a class="btn btn-secondary mt-3 mb-1 collapse ToggleLoc" data-bs-toggle="collapse" data-bs-target=".ToggleLoc">Cancel</a>
+                        <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleLoc">Save Changes</button>
+                    </div>
+                </div>
+                </div>
+
+               
+        </div>
+        </form>
+
+    </div>
+
+
+    @* *******************View Profile Picture Pop-up*********************************** *@
+
+    <div class="modal fade" id="viewProfilePic" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="@Model.UserProfilePicUrl" class="post-image img-fluid " alt="Post image"
+                         style="height : 450px; width : 500px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* *******************View Cover Picture Pop-up*********************************** *@
+
+    <div class="modal fade" id="viewCoverPic" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="@Model.UserCoverPicUrl" class="post-image img-fluid " alt="Post image"
+                         style="height : 450px; width : 850px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    
+    var tempInfo = '@TempData["Message"]';
+    if(tempInfo != null && tempInfo.length > 0)
+    toastr.success(tempInfo);
+
+    document.getElementById('EducationTab').addEventListener('click', function (e) {
+        e.preventDefault();
+        const tabTrigger = document.querySelector(
+            'button[data-bs-target="#Education"]'
+        );
+        const tab = new bootstrap.Tab(tabTrigger);
+        tab.show();
+    });
+
+          document.getElementById('CareerTab').addEventListener('click', function (e) {
+        e.preventDefault();
+        const tabTrigger = document.querySelector(
+            'button[data-bs-target="#Career"]'
+        );
+        const tab = new bootstrap.Tab(tabTrigger);
+        tab.show();
+    });
+
+      document.getElementById('LocationTab').addEventListener('click', function (e) {
+        e.preventDefault();
+        const tabTrigger = document.querySelector(
+            'button[data-bs-target="#Location"]'
+        );
+        const tab = new bootstrap.Tab(tabTrigger);
+        tab.show();
+    });
+    
+    document.getElementById("picInput").addEventListener("change", async function (event) {
+        const file = event.target.files[0];
+        if (file) {
+             const formImg = new FormData();
+             formImg.append("profileImage", file);
+             document.getElementById("profileImg").src = URL.createObjectURL(file);
+             const res = await fetch('/Home/UpdateUserProfile', {method : "PUT", body : formImg});
+             const result = await res.json();
+            if(result.success)
+            {
+                document.getElementById("profileImg").src = URL.createObjectURL(file);
+                toastr.success("SuccessFully changed your profile pic");
+            }else
+            {
+                toastr.error(`Failed to change profile picture due to : ${result.message}`);
+            }
+        }
+    });
+
+
+        document.getElementById("bgInput").addEventListener("change", async function (event) {
+        const file = event.target.files[0];
+        if (file) {
+             const formImg = new FormData();
+             formImg.append("coverImage", file);
+             const res = await fetch('/Home/UpdateCoverPicture', {method : "PUT", body : formImg});
+             const result = await res.json();
+            if(result.success)
+            {
+                document.getElementById("bgImage").src = URL.createObjectURL(file);
+                toastr.success("SuccessFully changed your profile pic");
+            }else
+            {
+                toastr.error(`Failed to change profile picture due to : ${result.message}`);
+            }
+        
+        }
+    });
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

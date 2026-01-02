@@ -1,0 +1,355 @@
+﻿@model List<Mvc_CRUD.Models.Posts>
+
+@{
+    ViewData["Title"] = "ChatUp-Home";
+    var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
+}
+<!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatUp-Home</title>
+    <link href="~/css/site.css" rel="stylesheet" />
+    </head>
+    <body>
+    <div class="container mt-4 col-10">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="create-post-box">
+                    <div class="d-flex align-items-center gap-1 mb-3">
+                        @* <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
+                         class="avatar me-3" alt="Profile"> *@
+                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                             style='width:50px; height:50px; min-width:50px; min-height:50px;'>
+                            @initial
+                        </div>
+
+                        <button class="form-control text-start bg-light border-0 rounded-pill py-2"
+                                data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <span class="text-muted">What's on your mind, @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))?</span>
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="bi bi-camera-video text-danger"></i> Live
+                        </button>
+                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="bi bi-images text-success"></i> Photo
+                        </button>
+                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="bi bi-emoji-smile text-warning"></i> Feeling
+                        </button>
+                    </div>
+                </div>
+                <br />
+
+                <!-- Posts Feed -->
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var post in Model)
+                    {
+                        <div class="post-card bg-white mb-4">
+                            <!-- Post Header -->
+                            <div class="post-header">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <img src="@post.UserImageUrl" class="rounded-circle" alt="@post.UserName"
+                                             style="width:70px; height:70px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1))</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link text-muted" type="button"
+                                                data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
+                            <div class="post-content">
+                                @if (!string.IsNullOrEmpty(post.PostBgColour))
+                                {
+                                    <div class="post-bgcard"
+                                         style="background-color:@post.PostBgColour;">
+                                        <div class="post-bgtext">@post.Content</div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="mb-3">@post.Content</p>
+                                }
+
+                                @if (!string.IsNullOrEmpty(post.ImageContentUrl))
+                                {
+                                    <img src="@post.ImageContentUrl" class="post-image img-fluid" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
+                                }
+
+                                <!-- Post Stats -->
+                                <div class="d-flex justify-content-between text-muted mb-2">
+                                    <div>
+                                        <span class="me-3">
+                                            <i class="bi bi-heart-fill text-danger me-1"></i>
+                                            <span>@post.likes</span>
+                                        </span>
+                                        <span>
+                                            <i class="bi bi-chat me-1"></i>
+                                            <span>@post.Comments.Count</span> comments
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span>@post.Shares shares</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Post Actions -->
+                            <div class="post-actions">
+                                <div class="d-flex justify-content-around">
+                                    <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
+                                        <i class="bi @(post.Isliked ? "bi-heart-fill" : "bi-heart") me-1"></i>
+                                        <span class="like-count">@post.likes</span>
+                                    </button>
+                                    <button class="btn btn-link text-decoration-none text-muted"
+                                            data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
+                                        <i class="bi bi-chat me-1"></i>Comment
+                                    </button>
+                                    <button class="btn btn-link text-decoration-none text-muted">
+                                        <i class="bi bi-share me-1"></i>Share
+                                    </button>
+                                </div>
+
+                                <!-- Comments Section -->
+                                <div class="collapse mt-3" id="comments-@post.Id">
+                                    <div class="comment-box">
+                                        <!-- Existing Comments -->
+                                        @foreach (var comment in post.Comments)
+                                        {
+                                            <div class="d-flex mb-2">
+                                                <img src="@comment.UserImageUrl" class="rounded-circle me-2"
+                                                     width="32" height="32" alt="@comment.UserName">
+                                                <div class="bg-light rounded p-2 flex-grow-1">
+                                                    <small class="fw-bold">@comment.UserName</small>
+                                                    <p class="mb-1 small">@comment.UserImageUrl</p>
+                                                    <div class="d-flex">
+                                                        <small class="text-muted me-3">@comment.SentOn</small>
+                                                        <button class="btn btn-link p-0 text-muted small">Like</button>
+                                                        <button class="btn btn-link p-0 text-muted small ms-2">Reply</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Add Comment -->
+                                        <div class="d-flex mt-3">
+                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
+                                                 class="rounded-circle me-2" width="32" height="32" alt="Profile">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control form-control-sm rounded-pill"
+                                                       placeholder="Write a comment...">
+                                                <button class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                    <i class="bi bi-send"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <div class="display-1 text-muted mb-3">
+                            <i class="bi bi-chat-square-text"></i>
+                        </div>
+                        <h3 class="mb-3">No posts yet</h3>
+                        <p class="text-muted mb-4">Be the first to share something with your community!</p>
+                        <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="bi bi-plus-circle me-2"></i>Create First Post
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div class="modal fade" id="createPostModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-height : 10rem;">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header gradient-bg text-white">
+                    <h5 class="modal-title">Create Post</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-controller="Home" asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            @* <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
+                             class="avatar me-3" alt="Profile"> *@
+                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                 style='width:40px; height:40px; min-width:40px; min-height:40px;'>
+                                @initial
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">
+                                    @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))
+                                    @(char.ToUpper(@ViewBag.Lastname[0]) + @ViewBag.Lastname.Substring(1))
+                                </h6>
+                                <select class="form-select form-select-sm w-auto mt-1" name="Scope">
+                                    <option selected value="Public"><i class="bi bi-globe"></i> Public</option>
+                                    <option value="Friends"><i class="bi bi-people"></i> Friends</option>
+                                    <option value="Myself"><i class="bi bi-lock"></i> Only me</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <textarea  id="textAreaBackground" class="form-control border-0 text-center" rows="5"
+                                      placeholder="What's on your mind?" name="content"
+                                      style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
+
+                            <button type="button" id="mainButton" class="btn btn-primary">Colour</button>
+                            <div id="colourButton" class="d-none d-flex gap-1">
+                                <input type="hidden" id="selectedColor" name="selectedColor" />
+                                <button type="button" class="btn btn-danger rounded-circle circle-btn" onclick="changeColor('red')"></button>
+                                <button type="button" class="btn btn-success rounded-circle circle-btn" onclick="changeColor('green')"></button>
+                                <button type="button" class="btn btn-primary rounded-circle circle-btn" onclick="changeColor('blue')"></button>
+                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('white')" style="background-color : whitesmoke"></button>
+                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('aqua')" style="background-color : aqua"></button>
+                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('black')" style="background-color : black"></button>
+                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('gold')" style="background-color : gold"></button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="imagePreviewContainer" style="display: none; max-height : 220px;">
+                            <div class="border rounded p-2 position-relative" style="overflow-y: auto; max-height : 200px;">
+                                <input type="hidden" name="pic" id="imagePic">
+                                <img id="imagePreview" class="image img-fluid" style="width : 100%; object-fit: contain;" alt="image">
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                                        onclick="clearImage()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3 mb-3">
+                            <h6 class="mb-3">Add to your post</h6>
+                            <div class="d-flex justify-content-around">
+                                <label id="labelImageInput" class="btn btn-outline-secondary rounded-pill" title="Photo/Video">
+                                    <i class="bi bi-image text-success"></i>
+                                    <span class="ms-1">Photo</span>
+                                    <input type="file" id="imageInput" name="postImage" accept="image/*" class="d-none">
+                                </label>
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Tag Friends">
+                                    <i class="bi bi-person-badge text-primary"></i>
+                                    <span class="ms-1">Tag People</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Feeling">
+                                    <i class="bi bi-emoji-smile text-warning"></i>
+                                    <span class="ms-1">Feeling</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Location">
+                                    <i class="bi bi-geo-alt text-danger"></i>
+                                    <span class="ms-1">Location</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary action-btn px-4">
+                            <i class="bi bi-send me-2"></i>Post
+                        </button>
+                    </div>
+                    <div class="modal-footer">
+                        <br />
+                        <br />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </body>
+    </html>
+
+ <script>
+
+    document.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        fetch(this.action, {
+            method: "POST",
+            body: new FormData(this)
+        })
+        .then(res => res.json())
+        .then(data => {
+            toastr.success("SuccessFully Posted")
+
+            if (data.success) {
+                this.reset();
+            }
+        })
+        .catch(() => toastr.success(`Failed to add a post due to : ${data.message}`));
+    });
+
+
+    document.getElementById("mainButton").addEventListener("click", function () {
+        const group = document.getElementById("colourButton");
+        group.classList.toggle("d-none");
+        this.style.display = "none";
+        const noImageInput = document.getElementById("labelImageInput");
+        noImageInput.style.display = 'none';
+    });
+
+    function changeColor(color) {
+        textarea = document.getElementById("textAreaBackground");
+        textarea.style.backgroundColor = color;
+        textarea.style.color = 'white';
+        if(color === 'white')
+        textarea.style.color = 'grey';
+        document.getElementById("selectedColor").value = color;
+    }
+
+    document.getElementById("imageInput").addEventListener("change", function () {
+        const input = this;
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                document.getElementById('imagePic').value = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+        const buttonColours = document.getElementById("mainButton");
+        buttonColours.style.display = 'none';
+        document.getElementById('imagePreview').value = this;
+    });
+
+
+    function clearImage() {
+        document.querySelector('input[name="image"]').value = '';
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+
+        const buttonColours = document.getElementById("mainButton");
+        buttonColours.style.display = 'block'
+    }
+</script>
+
