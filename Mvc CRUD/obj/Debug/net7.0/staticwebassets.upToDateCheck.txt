@@ -9,10 +9,13 @@ wwwroot\images\default-profile.jfif
 wwwroot\images\PostPictures\296d07c8-b88e-47e1-b5c5-05be6a9faf64.jfif
 wwwroot\images\PostPictures\afe50538-b5ee-47e7-be9f-0f612ba0f3b4.png
 wwwroot\images\PostPictures\f962e1c5-9be3-411e-b243-d7445dde2ffb.jfif
+wwwroot\images\ProfilePictures\228f24ec-467a-4d78-bd70-d7a262061dfc.jpg
+wwwroot\images\ProfilePictures\3c072272-a42e-44d6-afdd-4cf9a8051a90.jpg
 wwwroot\images\ProfilePictures\4c1d022d-34a9-4ec9-bab0-bf9fa4e6abba.png
 wwwroot\images\ProfilePictures\a396f3c8-1733-4339-8e0e-9d7c47655605.jfif
 wwwroot\images\ProfilePictures\a8aa34b5-525c-45fa-8eb4-5d9d3e02e8c7.png
 wwwroot\images\ProfilePictures\b44d214e-aab1-4797-8be1-e0fe8b20a0fb.jpg
+wwwroot\images\ProfilePictures\bb5a0b62-436f-4b38-af33-6f680f6de546.png
 wwwroot\images\ProfilePictures\da63895c-1959-46f6-a689-ad08ed19d0d5.jpg
 wwwroot\images\ProfilePictures\dbc29128-77c1-4f34-9dbe-0efe14242ee1.png
 wwwroot\images\ProfilePictures\e343a522-07af-412a-b2e6-5064d7e91d96.png

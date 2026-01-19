@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -31,12 +32,13 @@ namespace Mvc_CRUD.Controllers
         private readonly IPaginationService _pagination;
         private IMemoryCache _cache;
         private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContext;
         private string _currentUserId;
         private string _currentUserName;
 
         public HomeController(ILogger<HomeController> logger, DataDbContext context, IGetAllService getService,
-            IMemoryCache cache, IPaginationService pagination, IMediator mediator, IHttpContextAccessor httpContext)
+            IMemoryCache cache, IPaginationService pagination, IMediator mediator, IMapper mapper, IHttpContextAccessor httpContext)
         {
             _logger = logger;
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -45,6 +47,7 @@ namespace Mvc_CRUD.Controllers
             _httpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             _cache = cache;
             _mediator = mediator;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _currentUserId = _httpContext.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? _httpContext.HttpContext.User.FindFirst("sub").Value;
             _currentUserName = _httpContext.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value ?? _httpContext.HttpContext.User.FindFirst("preferred_username").Value;
         }
@@ -54,11 +57,13 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
-            var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+            await AddUser();
+            var res = await _context.Post.Include(x => x.Comments.OrderByDescending(c => c.SentOn))
+                .ThenInclude(x => x.Reply.OrderByDescending(x => x.SentOn)).OrderByDescending(x => x.CreatedOn).ToListAsync();
+            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
             ViewBag.Username = CurrentUser.UserName;
             ViewBag.Lastname = CurrentUser.LastName;
-            await AddUser();
+            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;            
             return View(res);            
         }
 
@@ -286,7 +291,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateUserProfile(UserProfileDTO userInfo)
+        public async Task<IActionResult> UpdateUserProfile(UserProfile userInfo)
         {
             try
             {
@@ -297,51 +302,49 @@ namespace Mvc_CRUD.Controllers
                     return RedirectToAction("UpdateUserProfile");
                 }               
 
-                if (string.IsNullOrWhiteSpace(userInfo.bio))
-                    userInfo.bio = res.Bio;
-                if (string.IsNullOrWhiteSpace(userInfo.location))
-                    userInfo.location = res.Location;
-                if (string.IsNullOrWhiteSpace(userInfo.SchoolName))
-                    userInfo.SchoolName = res.HighSchoolName;
-                if (string.IsNullOrWhiteSpace(userInfo.subject))
-                    userInfo.subject = res.Subject;
-                if (string.IsNullOrWhiteSpace(userInfo.schoolPeriod))
-                    userInfo.schoolPeriod = res.SchoolPeriod;
-                if (string.IsNullOrWhiteSpace(userInfo.collegeName))
-                    userInfo.collegeName = res.CollegeName;
-                if (string.IsNullOrWhiteSpace(userInfo.course))
-                    userInfo.course = res.Course;
-                if (string.IsNullOrWhiteSpace(userInfo.collegePeriod))
-                    userInfo.collegePeriod = res.CollegePeriod;
-                if (string.IsNullOrWhiteSpace(userInfo.relationship))
-                    userInfo.relationship = res.RelationShipStatus;
-                if (string.IsNullOrWhiteSpace(userInfo.jobTitle))
-                    userInfo.jobTitle = res.JobTitle;
-                if (string.IsNullOrWhiteSpace(userInfo.industry))
-                    userInfo.industry = res.Industry;
-                if (string.IsNullOrWhiteSpace(userInfo.jobPeriod))
-                    userInfo.jobPeriod = res.JobPeriod;
-                if (string.IsNullOrWhiteSpace(userInfo.fromLocation))
-                    userInfo.fromLocation = res.Bio;
-                if (string.IsNullOrWhiteSpace(userInfo.bio))
-                    userInfo.bio = res.FromLocation;
-                if (string.IsNullOrWhiteSpace(userInfo.web))
-                    userInfo.web = res.Website;
+                if (string.IsNullOrWhiteSpace(userInfo.Bio))
+                    userInfo.Bio = res.Bio;
+                if (string.IsNullOrWhiteSpace(userInfo.Location))
+                    userInfo.Location = res.Location;
+                if (string.IsNullOrWhiteSpace(userInfo.HighSchoolName))
+                    userInfo.HighSchoolName = res.HighSchoolName;
+                if (string.IsNullOrWhiteSpace(userInfo.Subject))
+                    userInfo.Subject = res.Subject;
+                if (string.IsNullOrWhiteSpace(userInfo.SchoolPeriod))
+                    userInfo.SchoolPeriod = res.SchoolPeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.CollegeName))
+                    userInfo.CollegeName = res.CollegeName;
+                if (string.IsNullOrWhiteSpace(userInfo.Course))
+                    userInfo.Course = res.Course;
+                if (string.IsNullOrWhiteSpace(userInfo.CollegePeriod))
+                    userInfo.CollegePeriod = res.CollegePeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.RelationShipStatus))
+                    userInfo.RelationShipStatus = res.RelationShipStatus;
+                if (string.IsNullOrWhiteSpace(userInfo.JobTitle))
+                    userInfo.JobTitle = res.JobTitle;
+                if (string.IsNullOrWhiteSpace(userInfo.Industry))
+                    userInfo.Industry = res.Industry;
+                if (string.IsNullOrWhiteSpace(userInfo.JobPeriod))
+                    userInfo.JobPeriod = res.JobPeriod;
+                if (string.IsNullOrWhiteSpace(userInfo.FromLocation))
+                    userInfo.FromLocation = res.Bio;
+                if (string.IsNullOrWhiteSpace(userInfo.Website))
+                    userInfo.Website = res.Website;
 
-                res.Bio = userInfo.bio;
-                res.Location = userInfo.location;
-                res.HighSchoolName = userInfo.SchoolName;
-                res.Subject = userInfo.subject;
-                res.SchoolPeriod = userInfo.schoolPeriod;
-                res.CollegeName = userInfo.collegeName;
-                res.Course = userInfo.course;
-                res.CollegePeriod = userInfo.collegePeriod;
-                res.RelationShipStatus = userInfo.relationship;
-                res.JobTitle = userInfo.jobTitle;
-                res.Industry = userInfo.industry;
-                res.FromLocation = userInfo.fromLocation;
-                res.Website = userInfo.web;
-                res.JobPeriod = userInfo.jobPeriod;
+                res.Bio = userInfo.Bio;
+                res.Location = userInfo.Location;
+                res.HighSchoolName = userInfo.HighSchoolName;
+                res.Subject = userInfo.Subject;
+                res.SchoolPeriod = userInfo.SchoolPeriod;
+                res.CollegeName = userInfo.CollegeName;
+                res.Course = userInfo.Course;
+                res.CollegePeriod = userInfo.CollegePeriod;
+                res.RelationShipStatus = userInfo.RelationShipStatus;
+                res.JobTitle = userInfo.JobTitle;
+                res.Industry = userInfo.Industry;
+                res.FromLocation = userInfo.FromLocation;
+                res.Website = userInfo.Website;
+                res.JobPeriod = userInfo.JobPeriod;
 
                 _context.Profile.Update(res);
                 await _context.SaveChangesAsync();
@@ -472,17 +475,38 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> Posts()
         {
             var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
-            var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
             ViewBag.Username = CurrentUser.UserName;
             ViewBag.Lastname = CurrentUser.LastName;
-
+            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
             return View(res);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendComment(Comments model)
+        {
+            model.UserId = _currentUserId;
+            model.UserName = _currentUserName;
+            await _context.Comment.AddAsync(model);
+            await _context.SaveChangesAsync();
+            TempData["Message"] = "SuccessFully Sent";
+            return Json(new { success = true, message = "Sent Successfully" });
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendReplyComment(CommentsReply model)
+        {
+            await _context.ReplyComments.AddAsync(model);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Sent Successfully" });
+        }
+
         [HttpGet]
         public async Task<IActionResult> UserPosts()
         {
             var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
-                                         .OrderByDescending(x => x.CreatedOn).ToListAsync();
+                                         .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
             return Json(res);
         }
 
@@ -571,6 +595,21 @@ namespace Mvc_CRUD.Controllers
                 return Json(new { success = false, message = $"Failed due to : {Ex.Message}" });
             }
          
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetComments(int postId)
+        {
+            var res = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();            
+            return Json(res);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetComments2(int postId)
+        {
+            var query = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
+            var res = _mapper.Map<List<CommentsDto>>(query);
+            return Json(res);
         }
 
         [HttpPost]

@@ -3,278 +3,652 @@
 @{
     ViewData["Title"] = "ChatUp-Home";
     var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
+    var time = "";
 }
- <link href="~/css/site.css" rel="stylesheet" />
- <div class="container mt-4 col-10">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="create-post-box">
-                    <div class="d-flex align-items-center gap-1 mb-3">
-                        @* <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
-                         class="avatar me-3" alt="Profile"> *@
+
+<link href="~/css/site.css" rel="stylesheet" />
+<div class="container mt-4 col-10">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="create-post-box">
+                <div class="d-flex align-items-center gap-1 mb-3">
+                    @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
+                    {
+                        <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
+                             style="width:50px; height:50px; object-fit: cover; cursor : pointer" />
+                    }
+                    else
+                    {
                         <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                             style='width:50px; height:50px; min-width:50px; min-height:50px;'>
+                             style='width:50px; height:50px;'>
                             @initial
                         </div>
-
-                        <button class="form-control text-start bg-light border-0 rounded-pill py-2"
-                                data-bs-toggle="modal" data-bs-target="#createPostModal">
-                            <span class="text-muted">What's on your mind, @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))?</span>
-                        </button>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
-                            <i class="bi bi-camera-video text-danger"></i> Live
-                        </button>
-                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
-                            <i class="bi bi-images text-success"></i> Photo
-                        </button>
-                        <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
-                            <i class="bi bi-emoji-smile text-warning"></i> Feeling
-                        </button>
-                    </div>
+                    }
+                    <button class="form-control text-start bg-light border-0 rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <span class="text-muted">What's on your mind, @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))?</span>
+                    </button>
                 </div>
-                <br />
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-camera-video text-danger"></i> Live
+                    </button>
+                    <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-images text-success"></i> Photo
+                    </button>
+                    <button class="btn btn-light fw-bold" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-emoji-smile text-warning"></i> Feeling
+                    </button>
+                </div>
+            </div>
+            <br />
 
-                <!-- Posts Feed -->
-                @if (Model != null && Model.Any())
+            @if (Model != null && Model.Any())
+            {
+                foreach (var post in Model)
                 {
-                    foreach (var post in Model)
-                    {
-                        <div class="post-card bg-white mb-4">
-                            <!-- Post Header -->
-                            <div class="post-header">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-1">
-                                        <img src="@post.UserImageUrl" class="rounded-circle" alt="@post.UserName"
-                                             style="width:70px; height:70px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold">@(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1))</h6>
-                                            <small class="text-muted">
-                                                <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
-                                            </small>
-                                        </div>
+                    <div class="post-card bg-white mb-4">
+                        <div class="post-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center gap-1">
+                                    <img src="@post.UserImageUrl" class="rounded-circle" alt="user image" width="45" height="45"
+                                         style="object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">@(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
+                                        </small>
                                     </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-muted" type="button"
-                                                data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                        </ul>
-                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-muted" type="button"
+                                            data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                    </ul>
                                 </div>
                             </div>
+                        </div>
+                        <div class="post-content">
+                            @if (!string.IsNullOrEmpty(post.PostBgColour))
+                            {
+                                <div class="post-bgcard"
+                                     style="background-color:@post.PostBgColour;">
+                                    <div class="post-bgtext">@post.Content</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="mb-3">@post.Content</p>
+                            }
 
-                            <!-- Post Content -->
-                            <div class="post-content">
-                                @if (!string.IsNullOrEmpty(post.PostBgColour))
-                                {
-                                    <div class="post-bgcard"
-                                         style="background-color:@post.PostBgColour;">
-                                        <div class="post-bgtext">@post.Content</div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <p class="mb-3">@post.Content</p>
-                                }
-
-                                @if (!string.IsNullOrEmpty(post.ImageContentUrl))
-                                {
-                                    <img src="@post.ImageContentUrl" class="post-image img-fluid" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
-                                }
-
-                                <!-- Post Stats -->
-                                <div class="d-flex justify-content-between text-muted mb-2">
-                                    <div>
-                                        <span class="me-3">
-                                            <i class="bi bi-heart-fill text-danger me-1"></i>
-                                            <span>@post.likes</span>
-                                        </span>
-                                        <span>
-                                            <i class="bi bi-chat me-1"></i>
-                                            <span>@post.Comments.Count</span> comments
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span>@post.Shares shares</span>
-                                    </div>
+                            @if (!string.IsNullOrEmpty(post.ImageContentUrl))
+                            {
+                                <img src="@post.ImageContentUrl" class="post-image img-fluid" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
+                            }
+                            <div class="d-flex justify-content-between text-muted mb-2">
+                                <div>
+                                    <span class="me-3">
+                                        <i class="bi bi-heart-fill text-danger me-1"></i>
+                                        <span>@post.likes</span>
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-chat me-1"></i>
+                                        @if(@post.Comments != null && @post.Comments.Any())
+                                        {  <span>@post.Comments.Count</span> } comments
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>@post.Shares shares</span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="post-actions">
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
+                                    <i class="bi @(post.Isliked ? "bi-heart-fill" : "bi-heart") me-1"></i>
+                                    <span class="like-count">@post.likes</span>
+                                </button>
+                                <button class="btn btn-link text-decoration-none text-muted" id="commentsBtn-@post.Id">
+                                    <i class="bi bi-chat me-1"></i>Comment
+                                </button>
+                                <button class="btn btn-link text-decoration-none text-muted">
+                                    <i class="bi bi-share me-1"></i>Share
+                                </button>
+                            </div>
 
-                            <!-- Post Actions -->
-                            <div class="post-actions">
-                                <div class="d-flex justify-content-around">
-                                    <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
-                                        <i class="bi @(post.Isliked ? "bi-heart-fill" : "bi-heart") me-1"></i>
-                                        <span class="like-count">@post.likes</span>
-                                    </button>
-                                    <button class="btn btn-link text-decoration-none text-muted"
-                                            data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
-                                        <i class="bi bi-chat me-1"></i>Comment
-                                    </button>
-                                    <button class="btn btn-link text-decoration-none text-muted">
-                                        <i class="bi bi-share me-1"></i>Share
-                                    </button>
-                                </div>
-
-                                <!-- Comments Section -->
-                                <div class="collapse mt-3" id="comments-@post.Id">
+                            @* ************************Comments ******************** *@
+                            @if(@post.Comments != null)
+                            {                            
+                            <div class="overflow-auto" style="max-height : 430px">
+                                <div class="reply-group-@post.Id collapse mt-3">
+                                    <div id="displayer-@post.Id"></div>
                                     <div class="comment-box">
-                                        <!-- Existing Comments -->
                                         @foreach (var comment in post.Comments)
                                         {
+                                            var dateData = TimeZoneInfo.ConvertTimeFromUtc(@comment.SentOn, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
+                                            var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
+                                            var timeDifference = currentDate - dateData;
+                                        
+                                            if (timeDifference.TotalSeconds < 60)
+                                            {
+                                                time = "just now";
+                                            }
+                                            else if (timeDifference.TotalMinutes < 60)
+                                            {
+                                                time = $"{(int)timeDifference.TotalMinutes}m ago";
+                                            }
+                                            else if (timeDifference.TotalHours < 24)
+                                            {
+                                                time = $"{(int)timeDifference.TotalHours}h ago";
+                                            }
+                                            else if (timeDifference.TotalDays < 30)
+                                            {
+                                                time = $"{(int)timeDifference.TotalDays}d ago";
+                                            }
+                                            else if (timeDifference.TotalDays >= 30 && timeDifference.TotalDays <= 60)
+                                            {
+                                                time = "1 month ago";
+                                            }
+                                            else
+                                            {
+                                                time = $"{@comment.SentOn.ToString("dd MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture)}";
+                                            }
+
                                             <div class="d-flex mb-2">
-                                                <img src="@comment.UserImageUrl" class="rounded-circle me-2"
-                                                     width="32" height="32" alt="@comment.UserName">
-                                                <div class="bg-light rounded p-2 flex-grow-1">
-                                                    <small class="fw-bold">@comment.UserName</small>
-                                                    <p class="mb-1 small">@comment.UserImageUrl</p>
-                                                    <div class="d-flex">
-                                                        <small class="text-muted me-3">@comment.SentOn</small>
-                                                        <button class="btn btn-link p-0 text-muted small">Like</button>
-                                                        <button class="btn btn-link p-0 text-muted small ms-2">Reply</button>
+                                                @if (string.IsNullOrEmpty(comment.UserImageUrl) || string.IsNullOrWhiteSpace(comment.UserImageUrl))
+                                                {
+                                                    <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
+                                                        @comment.UserName.Substring(0, 1).ToUpper()
                                                     </div>
-                                                </div>
+                                                }
+                                                else
+                                                {
+                                                    <img src="@comment.UserImageUrl" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                                }
+                                                <ul class="list-unstyled overflow-hidden">
+                                                    <li>
+                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                            <small class="fw-bold">@(char.ToUpper(@comment.UserName[0]) + @comment.UserName.Substring(1)) @(char.ToUpper(@comment.LastName[0]) + @comment.LastName.Substring(1))</small>
+                                                            <p class="mb-1 small">@comment.Message</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="d-flex justify-content-between align-items-center ms-3 mt-1 flex-wrap">
+                                                            <small class="text-muted me-3">@time</small>
+                                                            <div class="d-flex gap-2">
+                                                            <button class="btn p-0 text-muted small">Like</button>
+                                                            <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-@comment.Id">
+                                                                Reply
+                                                            </button>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    @if(comment.Reply != null && comment.Reply.Any())
+                                                    {
+                                                        <li>
+                                                           <div class="view-data-btn" id="ViewReplies-@comment.Id">View @comment.Reply.Count() Replies</div>
+                                                        </li>
+                                                        <li>                                                            
+                                                            @foreach (var replies in comment.Reply)
+                                                            {
+                                                                <div class="collapse" id="RepliesView-@replies.CommentId">
+                                                                <div class="bg-light rounded p-2 flex-grow-2 gap-2">
+                                                                    <div class="d-flex mb-2">
+                                                                    @if(replies.UserImageUrl != null)
+                                                                    {
+                                                                        <img src="@replies.UserImageUrl" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 25px; height: 25px;">
+                                                                            @replies.UserName.Substring(0, 1).ToUpper()
+                                                                        </div>
+                                                                    } 
+                                                                    <small class="fw-bold">@(char.ToUpper(@replies.UserName[0]) + @replies.UserName.Substring(1)) @(char.ToUpper(@replies.LastName[0]) + @replies.LastName.Substring(1))</small>
+                                                                    </div>
+                                                                    <p class="mb-1 small">@replies.Message</p>                                                                   
+                                                                </div>
+                                                                <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+                                                                       <small class="text-muted me-3">@time</small>
+                                                                       <div class="d-flex gap-2">
+                                                                       <button class="btn p-0 text-muted small">Like</button>
+                                                                       <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-@comment.Id">Reply</button>
+                                                                    </div>
+                                                                </div>
+                                                                </div>
+
+                                                            }                                                            
+                                                        </li>
+                                                    } 
+                                                </ul>
                                             </div>
+
+                                            <div class="collapse" id="replyCommentsId-@comment.Id">
+                                                <form asp-controller="Home" id="repliesForm" asp-action="SendReplyComment" method="post" enctype="multipart/form-data">
+                                                    <div class="d-flex mt-3">
+                                                        <input type="hidden" name="CommentId" value="@comment.Id" />
+                                                        <input type="hidden" name="UserName" value="@ViewBag.Username" />
+                                                        <input type="hidden" name="LastName" value="@ViewBag.Lastname" />
+                                                        <input type="hidden" name="CommentUserName" value="@comment.UserName" />
+                                                        <input type="hidden" name="CommentLastName" value="@comment.LastName" />
+                                                        <input type="hidden" name="CommentMessage" value="@comment.Message" />
+                                                        <div class="input-group reply-toggle-group" data-comment-id="@comment.Id">
+                                                            <input type="text" name="Message" id="replyCommentInput-@comment.Id" class="form-control form-control-sm rounded-pill"
+                                                                   placeholder="Reply to a comment..." maxlength="100" autocomplete="off">
+                                                            <button type="submit" id="replyCommentButton-@comment.Id" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                <i class="bi bi-send"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+
                                         }
 
-                                        <!-- Add Comment -->
-                                        <div class="d-flex mt-3">
-                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
-                                                 class="rounded-circle me-2" width="32" height="32" alt="Profile">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control form-control-sm rounded-pill"
-                                                       placeholder="Write a comment...">
-                                                <button class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                    <i class="bi bi-send"></i>
-                                                </button>
+                                        @* ******************Comments form*************************** *@
+                                        <form asp-controller="Home" id="commentForm-@post.Id" asp-action="SendComment" method="post" enctype="multipart/form-data">
+                                            <div class="d-flex mt-3">
+                                                <input type="hidden" name="PostId" value="@post.Id" />
+                                                <input type="hidden" name="UserImageUrl" value="@ViewBag.UserProfilePic" />
+                                                <input type="hidden" name="LastName" value="@ViewBag.Lastname" />
+                                                @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
+                                                {
+                                                    <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2" width="32" height="32" alt="Profile">
+                                                }
+                                                else
+                                                {
+                                                    <div class="avatar rounded-circle me-2 bg-primary text-white" style='width:30px; height:30px;'>
+                                                        @initial
+                                                    </div>
+                                                }
+                                                <div class="input-group toggle-group" data-post-id="@post.Id">
+                                                    <input type="text" name="Message" id="commentInput-@post.Id" class="form-control form-control-sm rounded-pill"
+                                                           placeholder="Write a comment..." autocomplete="off">
+                                                    <button type="submit" id="commentButton-@post.Id" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                        <i class="bi bi-send"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </form>
                                     </div>
                                 </div>
+
                             </div>
+                            }
+
+
                         </div>
-                    }
-                }
-                else
-                {
-                    <div class="text-center py-5">
-                        <div class="display-1 text-muted mb-3">
-                            <i class="bi bi-chat-square-text"></i>
-                        </div>
-                        <h3 class="mb-3">No posts yet</h3>
-                        <p class="text-muted mb-4">Be the first to share something with your community!</p>
-                        <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
-                            <i class="bi bi-plus-circle me-2"></i>Create First Post
-                        </button>
                     </div>
                 }
-            </div>
-        </div>
-    </div>
-
-    <!-- Create Post Modal -->
-    <div class="modal fade" id="createPostModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" style="max-height : 10rem;">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header gradient-bg text-white">
-                    <h5 class="modal-title">Create Post</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="display-1 text-muted mb-3">
+                        <i class="bi bi-chat-square-text"></i>
+                    </div>
+                    <h3 class="mb-3">No posts yet</h3>
+                    <p class="text-muted mb-4">Be the first to share something with your community!</p>
+                    <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <i class="bi bi-plus-circle me-2"></i>Create First Post
+                    </button>
                 </div>
-                <form asp-controller="Home" asp-action="CreatePost" method="post" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            @* <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff"
-                             class="avatar me-3" alt="Profile"> *@
-                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                                 style='width:40px; height:40px; min-width:40px; min-height:40px;'>
-                                @initial
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">
-                                    @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))
-                                    @(char.ToUpper(@ViewBag.Lastname[0]) + @ViewBag.Lastname.Substring(1))
-                                </h6>
-                                <select class="form-select form-select-sm w-auto mt-1" name="Scope">
-                                    <option selected value="Public"><i class="bi bi-globe"></i> Public</option>
-                                    <option value="Friends"><i class="bi bi-people"></i> Friends</option>
-                                    <option value="Myself"><i class="bi bi-lock"></i> Only me</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <textarea id="textAreaBackground" class="form-control border-0 text-center" rows="5"
-                                      placeholder="What's on your mind?" name="content"
-                                      style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
-
-                            <button type="button" id="mainButton" class="btn btn-primary">Colour</button>
-                            <div id="colourButton" class="d-none d-flex gap-1">
-                                <input type="hidden" id="selectedColor" name="selectedColor" />
-                                <button type="button" class="btn btn-danger rounded-circle circle-btn" onclick="changeColor('red')"></button>
-                                <button type="button" class="btn btn-success rounded-circle circle-btn" onclick="changeColor('green')"></button>
-                                <button type="button" class="btn btn-primary rounded-circle circle-btn" onclick="changeColor('blue')"></button>
-                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('white')" style="background-color : whitesmoke"></button>
-                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('aqua')" style="background-color : aqua"></button>
-                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('black')" style="background-color : black"></button>
-                                <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('gold')" style="background-color : gold"></button>
-                            </div>
-                        </div>
-
-                        <div class="mb-3" id="imagePreviewContainer" style="display: none; max-height : 220px;">
-                            <div class="border rounded p-2 position-relative" style="overflow-y: auto; max-height : 200px;">
-                                <input type="hidden" name="pic" id="imagePic">
-                                <img id="imagePreview" class="image img-fluid" style="width : 100%; object-fit: contain;" alt="image">
-                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                                        onclick="clearImage()">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="border rounded p-3 mb-3">
-                            <h6 class="mb-3">Add to your post</h6>
-                            <div class="d-flex justify-content-around">
-                                <label id="labelImageInput" class="btn btn-outline-secondary rounded-pill" title="Photo/Video">
-                                    <i class="bi bi-image text-success"></i>
-                                    <span class="ms-1">Photo</span>
-                                    <input type="file" id="imageInput" name="postImage" accept="image/*" class="d-none">
-                                </label>
-                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Tag Friends">
-                                    <i class="bi bi-person-badge text-primary"></i>
-                                    <span class="ms-1">Tag People</span>
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Feeling">
-                                    <i class="bi bi-emoji-smile text-warning"></i>
-                                    <span class="ms-1">Feeling</span>
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary rounded-pill" title="Location">
-                                    <i class="bi bi-geo-alt text-danger"></i>
-                                    <span class="ms-1">Location</span>
-                                </button>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary action-btn px-4">
-                            <i class="bi bi-send me-2"></i>Post
-                        </button>
-                    </div>
-                    <div class="modal-footer">
-                        <br />
-                        <br />
-                    </div>
-                </form>
-            </div>
+            }
         </div>
     </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-height : 10rem;">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header gradient-bg text-white">
+                <h5 class="modal-title">Create Post</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="Home" asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                             style='width:40px; height:40px; min-width:40px; min-height:40px;'>
+                            @initial
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">
+                                @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))
+                                @(char.ToUpper(@ViewBag.Lastname[0]) + @ViewBag.Lastname.Substring(1))
+                            </h6>
+                            <select class="form-select form-select-sm w-auto mt-1" name="Scope">
+                                <option selected value="Public"><i class="bi bi-globe"></i> Public</option>
+                                <option value="Friends"><i class="bi bi-people"></i> Friends</option>
+                                <option value="Myself"><i class="bi bi-lock"></i> Only me</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <textarea id="textAreaBackground" class="form-control border-0 text-center" rows="5"
+                                  placeholder="What's on your mind?" name="content"
+                                  style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
+
+                        <button type="button" id="mainButton" class="btn btn-primary">Colour</button>
+                        <div id="colourButton" class="d-none d-flex gap-1">
+                            <input type="hidden" id="selectedColor" name="selectedColor" />
+                            <button type="button" class="btn btn-danger rounded-circle circle-btn" onclick="changeColor('red')"></button>
+                            <button type="button" class="btn btn-success rounded-circle circle-btn" onclick="changeColor('green')"></button>
+                            <button type="button" class="btn btn-primary rounded-circle circle-btn" onclick="changeColor('blue')"></button>
+                            <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('white')" style="background-color : whitesmoke"></button>
+                            <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('aqua')" style="background-color : aqua"></button>
+                            <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('black')" style="background-color : black"></button>
+                            <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('gold')" style="background-color : gold"></button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="imagePreviewContainer" style="display: none; max-height : 220px;">
+                        <div class="border rounded p-2 position-relative" style="overflow-y: auto; max-height : 200px;">
+                            <input type="hidden" name="pic" id="imagePic">
+                            <img id="imagePreview" class="image img-fluid" style="width : 100%; object-fit: contain;" alt="image">
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                                    onclick="clearImage()">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="mb-3">Add to your post</h6>
+                        <div class="d-flex justify-content-around">
+                            <label id="labelImageInput" class="btn btn-outline-secondary rounded-pill" title="Photo/Video">
+                                <i class="bi bi-image text-success"></i>
+                                <span class="ms-1">Photo</span>
+                                <input type="file" id="imageInput" name="postImage" accept="image/*" class="d-none">
+                            </label>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill" title="Tag Friends">
+                                <i class="bi bi-person-badge text-primary"></i>
+                                <span class="ms-1">Tag People</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill" title="Feeling">
+                                <i class="bi bi-emoji-smile text-warning"></i>
+                                <span class="ms-1">Feeling</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill" title="Location">
+                                <i class="bi bi-geo-alt text-danger"></i>
+                                <span class="ms-1">Location</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary action-btn px-4">
+                        <i class="bi bi-send me-2"></i>Post
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <br />
+                    <br />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const commentForms = document.querySelectorAll('form[id^="commentForm-"]');
+        commentForms.forEach(form => {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const postId = formData.get("PostId");
+                pId = postId;
+
+                fetch(form.action, {
+                    method: "POST",
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const userName = "@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(ViewBag.Username ?? ""))";
+                    const lastName = "@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(ViewBag.Lastname ?? ""))";
+                    const userImageUrl = formData.get("UserImageUrl");
+                    const message = formData.get("Message");
+
+                    let imageContent = '';
+                    const initial = userName.charAt(0).toUpperCase();
+                    const pUsername = userName.charAt(0).toUpperCase() + userName.slice(1) + ' ' +
+                                      lastName.charAt(0).toUpperCase() + lastName.slice(1);
+                    if(userImageUrl && userImageUrl.trim() !== "") {
+                        imageContent = `<img src="${userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
+                    } else {
+                        imageContent = `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
+                                            ${initial}
+                                        </div>`;
+                    }
+                    const container = document.querySelector(`#commentsId-${postId} .comment-box`);
+                    container.insertAdjacentHTML("afterbegin", `
+                        <div class="d-flex mb-2">
+                            ${imageContent}
+                            <ul class="list-unstyled">
+                                <li>
+                                    <div class="bg-light rounded p-2 flex-grow-1">
+                                        <small class="fw-bold">${pUsername}</small>
+                                        <p class="mb-1 small">${message}</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="d-flex align-items-center ms-3 mt-1">
+                                        <small class="text-muted me-3">just now</small>
+                                        <button class="btn btn-link p-0 text-muted small">Like</button>
+                                        <button class="btn btn-link p-0 text-muted small ms-2">Reply</button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>`);
+                    toastr.success("Comment Sent");
+
+                    if (data.success) {
+                        form.reset();
+                    }
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    toastr.error(`Failed to add comment: ${err.message}`);
+                });
+            });
+        });
+
+     // Show/Hide the comments elements when reply button is clicked
+    document.querySelectorAll('[id^="replyCommentsBtn-"]').forEach(button => {
+        const buttonId = button.id;
+        const pId = buttonId.replace('replyCommentsBtn-', '');
+        const collapseElement = document.querySelector(`#replyCommentsId-${pId}`);
+
+        if (collapseElement) {
+            const collapseInstance = new bootstrap.Collapse(collapseElement, {
+                toggle: false
+            });
+
+            button.addEventListener('click', function() {
+                collapseInstance.toggle();
+            });
+        }
+    });
+
+    // Chek if Comment input box is empty or not, then toggle the send button to show/hide
+    document.querySelectorAll(".reply-toggle-group").forEach(group => {
+        const comId = group.dataset.commentId;
+        const input = group.querySelector(`#replyCommentInput-${comId}`);
+        const button = group.querySelector(`#replyCommentButton-${comId}`);
+
+        input.addEventListener("input", () => {
+            button.classList.toggle("d-none", input.value.trim() === "");
+        });
+    });
+
+    //Show/Hide the replies when view replies clicked
+    document.querySelectorAll('[id^="ViewReplies-"]').forEach(button => {
+        const buttonId = button.id;
+        const pId = buttonId.replace('ViewReplies-', '');
+
+        const collapseElements = document.querySelectorAll(`#RepliesView-${pId}`);
+
+        if (collapseElements.length > 0) {
+
+            const collapseInstances = [...collapseElements].map(el =>
+                new bootstrap.Collapse(el, { toggle: false })
+            );
+
+            button.addEventListener('click', function () {
+                collapseInstances.forEach(c => c.toggle());
+            });
+        }
+    });
+
+     async function toggleDisplay(togglerButton, togglerView){
+        document.querySelectorAll(`[id^='${togglerButton}-']`).forEach(button => {
+        const buttonId = button.id;
+        const pId = buttonId.replace('ViewReplies-', '');
+
+        const collapseElements = document.querySelectorAll(`#${togglerView}-${pId}`);
+
+        if (collapseElements.length > 0) {
+
+            const collapseInstances = [...collapseElements].map(el =>
+                new bootstrap.Collapse(el, { toggle: false })
+            );
+
+            button.addEventListener('click', function () {
+                collapseInstances.forEach(c => c.toggle());
+            });
+        }
+    });
+    }
+
+
+    // Show/Hide the comments when the comment icon/button is clicked
+    document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
+        const buttonId = button.id;
+        const pId = buttonId.replace('commentsBtn-', '');
+        const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);        
+
+        if (collapseElements.length > 0) {
+            const collapseInstances = [...collapseElements].map(el =>
+                new bootstrap.Collapse(el, { toggle: false })
+            );
+            button.addEventListener('click', async function () {
+                const display = document.getElementById(`displayer-${pId}`);
+                var toggleStatus = display.classList.contains("show");
+                if(!toggleStatus){                    
+                        var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
+                        var result = await res.json();
+                        console.log(result);
+                        display.classList.add("show");                   
+                    let timeFormat = "";                 
+
+                    if(!result || result.length !== 0){
+                         const html = result.map(comment => { 
+                               const utcDate = new Date(comment.sentOn);
+                               const nowSA = new Date(new Date().toLocaleString("en-US", {
+                                   timeZone: "Africa/Johannesburg"
+                               }));
+                               const sentOnSA = new Date(utcDate.toLocaleString("en-US", {
+                                   timeZone: "Africa/Johannesburg"
+                               }));
+                               const diffMs = nowSA - sentOnSA;
+                               const diffSeconds = Math.floor(diffMs / 1000);
+                               const diffMinutes = Math.floor(diffSeconds / 60);
+                               const diffHours = Math.floor(diffMinutes / 60);
+                               const diffDays = Math.floor(diffHours / 24);
+                               const diffWeeks = Math.floor(diffDays / 7);
+                               const diffMonths = Math.floor(diffDays / 30);
+                               const diffYears = Math.floor(diffDays / 365);
+
+                               if (diffSeconds < 60) {
+                                   timeFormat = "just now";
+                               }
+                               else if (diffMinutes < 60) {
+                                   timeFormat = `${diffMinutes}m`;
+                               }
+                               else if (diffHours < 24) {
+                                   timeFormat = `${diffHours}h`;
+                               }
+                               else if (diffDays < 7) {
+                                   timeFormat = `${diffDays}d`;
+                               }
+                                else if (diffWeeks < 4) {
+                                   timeFormat = `${diffWeeks}w`;
+                               }
+                               else if (diffMonths < 12) {
+                                   timeFormat = `${diffMonths}mo`;
+                               }
+                               else if (diffYears < 2) {
+                                   timeFormat = `${diffYears}y`;
+                               }
+                               else {
+                                   timeFormat = sentOnSA.toLocaleDateString();
+                               }
+
+                         return  `<div>Username : ${comment.userName} <br> Message : ${comment.message} <br> Time : ${timeFormat} </div>`}).join("");
+                               display.innerHTML = html;
+                    }
+                    else {
+                        display.innerHTML = `<div class="text-center py-2">
+                                <div class="display-1 text-muted mb-2">
+                                    <i class="bi bi-chat-square-text"></i>
+                                </div>
+                                <h3 class="mb-2">No posts yet</h3>
+                                <p class="text-muted mb-2">Be the first to share something with your community!</p>
+                                </div>`;
+                    }
+                }else{
+                        display.classList.remove("show");
+                    }
+                collapseInstances.forEach(c => c.toggle());
+            });
+        }
+    });
+
+
+
+    //  document.querySelectorAll('[id^="commentsBtn-"]').forEach(button => {
+    //     const buttonId = button.id;
+    //     const pId = buttonId.replace('commentsBtn-', '');
+
+    //     const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);
+
+    //     if (collapseElements.length > 0) {
+
+    //         const collapseInstances = [...collapseElements].map(el =>
+    //             new bootstrap.Collapse(el, { toggle: false })
+    //         );
+
+    //         button.addEventListener('click', function () {
+    //             collapseInstances.forEach(c => c.toggle());
+    //         });
+    //     }
+    // });
+
+
+
+    // Chek if Comment input box is empty or not, then toggle the send button to show/hide
+    document.querySelectorAll(".toggle-group").forEach(group => {
+        const postId = group.dataset.postId;
+        const input = group.querySelector(`#commentInput-${postId}`);
+        const button = group.querySelector(`#commentButton-${postId}`);
+
+        input.addEventListener("input", () => {
+            button.classList.toggle("d-none", input.value.trim() === "");
+        });
+    });
+
+
+    });
+
+    // Sends form data to an api then gets response, then serves the response to the user
     document.querySelector("form").addEventListener("submit", function (e) {
         e.preventDefault();
 
@@ -340,5 +714,7 @@
         const buttonColours = document.getElementById("mainButton");
         buttonColours.style.display = 'block'
     }
+
+
 </script>
 

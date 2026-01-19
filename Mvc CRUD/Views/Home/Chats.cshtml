@@ -39,30 +39,36 @@
                     var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
                     var timeDifference = currentDate - dateData;
 
-                    if (timeDifference.TotalDays >= 30)
-                    {
-                        displayTime = "1 month ago";
-                    }
-                    else if (timeDifference.TotalDays >= 60)
-                    {
-                        displayTime = "2 month ago";
-                    }
-                    else if (timeDifference.TotalDays >= 1)
-                    {
-                        displayTime = $"{(int)timeDifference.TotalDays}d ago";
-                    }
-                    else if (timeDifference.TotalHours >= 1)
-                    {
-                        displayTime = $"{(int)timeDifference.TotalHours}h ago";
-                    }
-                    else if (timeDifference.TotalMinutes >= 1)
-                    {
-                        displayTime = $"{(int)timeDifference.TotalMinutes}m ago";
-                    }
-                    else
-                    {
-                        displayTime = "just now";
-                    }
+                        if (timeDifference.TotalSeconds < 60)
+                        {
+                            displayTime = "now";
+                        }
+                        else if (timeDifference.TotalMinutes < 60)
+                        {
+                            displayTime = $"{(int)timeDifference.TotalMinutes}m";
+                        }
+                        else if (timeDifference.TotalHours < 24)
+                        {
+                            displayTime = $"{(int)timeDifference.TotalHours}h";
+                        }
+                        else if (timeDifference.TotalDays < 5)
+                        {
+                            displayTime = $"{(int)timeDifference.TotalDays}d";
+                        }
+                        else if (timeDifference.TotalDays < 364)
+                        {
+                            int weeks = (int)(timeDifference.TotalDays / 7);
+                            displayTime = $"{(int)weeks}w";
+                        }
+                        else if (timeDifference.TotalDays < 365)
+                        {
+                            int years = (int)(timeDifference.TotalDays / 7);
+                            displayTime = $"{(int)years}y";
+                        }
+                        else
+                        {
+                            displayTime = $"{first.SentOn.ToString("dd MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture)}";
+                        }
                 <a href="#"
                     class="list-group-item list-group-item-action d-flex gap-3 py-3 chat-contact"
                     data-userid="@first.ToUser"
@@ -72,15 +78,11 @@
                         @first.ToUser.Substring(0, 1).ToUpper()
                     </div>
 
-                    <div class="flex-grow-1 overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1 overflow-hidden">                    
                         <h6 class="mb-0 text-truncate" style="max-width: 70%;">
                             @(char.ToUpper(@first.ToUser[0]) + @first.ToUser.Substring(1))
-                        </h6>     
-                        <small class="text-muted flex-shrink-0 chatTime" style="white-space: nowrap; margin-left: 8px;">
-                            @displayTime
-                        </small>
-                    </div>
+                        </h6> 
+                    <div class="d-flex justify-content-between align-items-center">
                     <p class="mb-0 text-truncate text-muted small latestText" data-friend="@first.ToUser">
                             @{
                                 var messages = "";
@@ -93,6 +95,10 @@
                              }
                             @messages
                         </p>
+                        <small class="text-muted flex-shrink-0 chatTime" style="white-space: nowrap; margin-left: 8px;">
+                            @displayTime
+                        </small>
+                        </div>
                     </div>
 
                 </a>

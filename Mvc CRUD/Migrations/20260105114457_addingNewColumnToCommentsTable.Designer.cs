@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mvc_CRUD.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mvc_CRUD.Migrations
 {
     [DbContext(typeof(DataDbContext))]
-    partial class DataDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105114457_addingNewColumnToCommentsTable")]
+    partial class addingNewColumnToCommentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,58 +163,6 @@ namespace Mvc_CRUD.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("Comment");
-                });
-
-            modelBuilder.Entity("Mvc_CRUD.Models.CommentsReply", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommentId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("CommentImageContentUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentLastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentMessage")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommentUserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageContentUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("SentOn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
-
-                    b.ToTable("ReplyComments");
                 });
 
             modelBuilder.Entity("Mvc_CRUD.Models.FriendRequest", b =>
@@ -426,22 +377,6 @@ namespace Mvc_CRUD.Migrations
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Mvc_CRUD.Models.CommentsReply", b =>
-                {
-                    b.HasOne("Mvc_CRUD.Models.Comments", "Comment")
-                        .WithMany("Reply")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
-                });
-
-            modelBuilder.Entity("Mvc_CRUD.Models.Comments", b =>
-                {
-                    b.Navigation("Reply");
                 });
 
             modelBuilder.Entity("Mvc_CRUD.Models.Posts", b =>

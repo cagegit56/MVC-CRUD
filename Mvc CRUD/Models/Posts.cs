@@ -15,6 +15,6 @@
         public string PostScope { get; set; }
         public string? PostBgColour { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
-        public  List<Comments> Comments { get; set; } = new List<Comments>();
+        public  ICollection<Comments>? Comments { get; set; }
     }
 

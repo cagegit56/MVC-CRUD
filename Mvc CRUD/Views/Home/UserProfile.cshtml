@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "UserProfile";
     var initial = !string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX";
-    var posts = new List<Posts>();
 }
 
 <div class="container py-4">

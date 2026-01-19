@@ -13,6 +13,7 @@ public class DataDbContext : DbContext
     public virtual DbSet<UserProfile> Profile { get; set; }
     public virtual DbSet<Posts> Post { get; set; }
     public virtual DbSet<Comments> Comment { get; set; }
+    public virtual DbSet<CommentsReply> ReplyComments { get; set; }
         public DataDbContext(DbContextOptions<DataDbContext> options) : base(options)
         {
         }
@@ -24,6 +25,18 @@ public class DataDbContext : DbContext
                 .HasOne<Posts>()
                 .WithMany(p => p.Comments)
                 .HasForeignKey(c => c.PostId);
+
+
+               modelBuilder.Entity<CommentsReply>()
+                .HasOne(r => r.Comment)
+                .WithMany(c => c.Reply)
+                .HasForeignKey(r => r.CommentId);
+            
+
+              //modelBuilder.Entity<CommentsReply>()
+              //  .HasOne<Comments>()
+              //  .WithMany(p => p.Reply)
+              //  .HasForeignKey(c => c.CommentId);
 
 
             //modelBuilder.Entity<Friends>()

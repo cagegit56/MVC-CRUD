@@ -225,6 +225,24 @@ td.message-cell {
     text-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
 
+.view-data-btn {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: gray;
+}
+
+.view-data-btn::before,
+.view-data-btn::after {
+    content: "";
+    flex: 1;
+    border-top: 2px solid lightgray;
+    margin: 0 12px;
+}
+
+
+
 
                                          /*  *****************Userprofile CSS*************** */
 .camera-icon {

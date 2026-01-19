@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Mvc_CRUD.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Mvc_CRUD.Migrations
 {
     [DbContext(typeof(DataDbContext))]
-    partial class DataDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260108100904_addNewCommentsReplyTable")]
+    partial class addNewCommentsReplyTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,6 +144,9 @@ namespace Mvc_CRUD.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ReplyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
 
@@ -158,6 +164,8 @@ namespace Mvc_CRUD.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PostId");
+
+                    b.HasIndex("ReplyId");
 
                     b.ToTable("Comment");
                 });
@@ -200,16 +208,11 @@ namespace Mvc_CRUD.Migrations
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserImageUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
 
                     b.ToTable("ReplyComments");
                 });
@@ -426,21 +429,11 @@ namespace Mvc_CRUD.Migrations
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("Mvc_CRUD.Models.CommentsReply", b =>
-                {
-                    b.HasOne("Mvc_CRUD.Models.Comments", "Comment")
-                        .WithMany("Reply")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Mvc_CRUD.Models.CommentsReply", "Reply")
+                        .WithMany()
+                        .HasForeignKey("ReplyId");
 
-                    b.Navigation("Comment");
-                });
-
-            modelBuilder.Entity("Mvc_CRUD.Models.Comments", b =>
-                {
                     b.Navigation("Reply");
                 });
 
