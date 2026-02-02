@@ -3,10 +3,11 @@
 @{
     ViewData["Title"] = "ChatUp-Home";
     var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
-    var time = "";
 }
 
 <link href="~/css/site.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <div class="container mt-4 col-10">
     <div class="row">
         <div class="col-lg-8 mx-auto">
@@ -95,15 +96,22 @@
                                     <span class="me-3">
                                         <i class="bi bi-heart-fill text-danger me-1"></i>
                                         <span>@post.likes</span>
-                                    </span>
-                                    <span>
-                                        <i class="bi bi-chat me-1"></i>
-                                        @if(@post.Comments != null && @post.Comments.Any())
-                                        {  <span>@post.Comments.Count</span> } comments
-                                    </span>
+                                    </span>                                  
                                 </div>
                                 <div>
-                                    <span>@post.Shares shares</span>
+                                    <span>
+                                        @if (@post.TotalComments != null && @post.TotalComments != 0)
+                                        {
+                                            <span>@post.TotalComments</span>
+                                        }
+                                        <i class="bi bi-chat me-1"></i>                                   
+                                    </span>
+                                    <span>
+                                        @if (@post.Comments != null && @post.Comments.Any())
+                                        {
+                                            <span>@post.Shares</span>
+                                        }
+                                        <i class="fa-solid fa-share"></i></span>
                                 </div>
                             </div>
                         </div>
@@ -122,165 +130,10 @@
                             </div>
 
                             @* ************************Comments ******************** *@
-                            @if(@post.Comments != null)
-                            {                            
-                            <div class="overflow-auto" style="max-height : 430px">
                                 <div class="reply-group-@post.Id collapse mt-3">
-                                    <div id="displayer-@post.Id"></div>
-                                    <div class="comment-box">
-                                        @foreach (var comment in post.Comments)
-                                        {
-                                            var dateData = TimeZoneInfo.ConvertTimeFromUtc(@comment.SentOn, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
-                                            var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("South Africa Standard Time"));
-                                            var timeDifference = currentDate - dateData;
-                                        
-                                            if (timeDifference.TotalSeconds < 60)
-                                            {
-                                                time = "just now";
-                                            }
-                                            else if (timeDifference.TotalMinutes < 60)
-                                            {
-                                                time = $"{(int)timeDifference.TotalMinutes}m ago";
-                                            }
-                                            else if (timeDifference.TotalHours < 24)
-                                            {
-                                                time = $"{(int)timeDifference.TotalHours}h ago";
-                                            }
-                                            else if (timeDifference.TotalDays < 30)
-                                            {
-                                                time = $"{(int)timeDifference.TotalDays}d ago";
-                                            }
-                                            else if (timeDifference.TotalDays >= 30 && timeDifference.TotalDays <= 60)
-                                            {
-                                                time = "1 month ago";
-                                            }
-                                            else
-                                            {
-                                                time = $"{@comment.SentOn.ToString("dd MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture)}";
-                                            }
-
-                                            <div class="d-flex mb-2">
-                                                @if (string.IsNullOrEmpty(comment.UserImageUrl) || string.IsNullOrWhiteSpace(comment.UserImageUrl))
-                                                {
-                                                    <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
-                                                        @comment.UserName.Substring(0, 1).ToUpper()
-                                                    </div>
-                                                }
-                                                else
-                                                {
-                                                    <img src="@comment.UserImageUrl" class="rounded-circle me-2" style="width: 32px; height: 32px;">
-                                                }
-                                                <ul class="list-unstyled overflow-hidden">
-                                                    <li>
-                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                            <small class="fw-bold">@(char.ToUpper(@comment.UserName[0]) + @comment.UserName.Substring(1)) @(char.ToUpper(@comment.LastName[0]) + @comment.LastName.Substring(1))</small>
-                                                            <p class="mb-1 small">@comment.Message</p>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="d-flex justify-content-between align-items-center ms-3 mt-1 flex-wrap">
-                                                            <small class="text-muted me-3">@time</small>
-                                                            <div class="d-flex gap-2">
-                                                            <button class="btn p-0 text-muted small">Like</button>
-                                                            <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-@comment.Id">
-                                                                Reply
-                                                            </button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    @if(comment.Reply != null && comment.Reply.Any())
-                                                    {
-                                                        <li>
-                                                           <div class="view-data-btn" id="ViewReplies-@comment.Id">View @comment.Reply.Count() Replies</div>
-                                                        </li>
-                                                        <li>                                                            
-                                                            @foreach (var replies in comment.Reply)
-                                                            {
-                                                                <div class="collapse" id="RepliesView-@replies.CommentId">
-                                                                <div class="bg-light rounded p-2 flex-grow-2 gap-2">
-                                                                    <div class="d-flex mb-2">
-                                                                    @if(replies.UserImageUrl != null)
-                                                                    {
-                                                                        <img src="@replies.UserImageUrl" class="rounded-circle me-2" style="width: 32px; height: 32px;">
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 25px; height: 25px;">
-                                                                            @replies.UserName.Substring(0, 1).ToUpper()
-                                                                        </div>
-                                                                    } 
-                                                                    <small class="fw-bold">@(char.ToUpper(@replies.UserName[0]) + @replies.UserName.Substring(1)) @(char.ToUpper(@replies.LastName[0]) + @replies.LastName.Substring(1))</small>
-                                                                    </div>
-                                                                    <p class="mb-1 small">@replies.Message</p>                                                                   
-                                                                </div>
-                                                                <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
-                                                                       <small class="text-muted me-3">@time</small>
-                                                                       <div class="d-flex gap-2">
-                                                                       <button class="btn p-0 text-muted small">Like</button>
-                                                                       <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-@comment.Id">Reply</button>
-                                                                    </div>
-                                                                </div>
-                                                                </div>
-
-                                                            }                                                            
-                                                        </li>
-                                                    } 
-                                                </ul>
-                                            </div>
-
-                                            <div class="collapse" id="replyCommentsId-@comment.Id">
-                                                <form asp-controller="Home" id="repliesForm" asp-action="SendReplyComment" method="post" enctype="multipart/form-data">
-                                                    <div class="d-flex mt-3">
-                                                        <input type="hidden" name="CommentId" value="@comment.Id" />
-                                                        <input type="hidden" name="UserName" value="@ViewBag.Username" />
-                                                        <input type="hidden" name="LastName" value="@ViewBag.Lastname" />
-                                                        <input type="hidden" name="CommentUserName" value="@comment.UserName" />
-                                                        <input type="hidden" name="CommentLastName" value="@comment.LastName" />
-                                                        <input type="hidden" name="CommentMessage" value="@comment.Message" />
-                                                        <div class="input-group reply-toggle-group" data-comment-id="@comment.Id">
-                                                            <input type="text" name="Message" id="replyCommentInput-@comment.Id" class="form-control form-control-sm rounded-pill"
-                                                                   placeholder="Reply to a comment..." maxlength="100" autocomplete="off">
-                                                            <button type="submit" id="replyCommentButton-@comment.Id" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                                <i class="bi bi-send"></i>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-
-                                        }
-
-                                        @* ******************Comments form*************************** *@
-                                        <form asp-controller="Home" id="commentForm-@post.Id" asp-action="SendComment" method="post" enctype="multipart/form-data">
-                                            <div class="d-flex mt-3">
-                                                <input type="hidden" name="PostId" value="@post.Id" />
-                                                <input type="hidden" name="UserImageUrl" value="@ViewBag.UserProfilePic" />
-                                                <input type="hidden" name="LastName" value="@ViewBag.Lastname" />
-                                                @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
-                                                {
-                                                    <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2" width="32" height="32" alt="Profile">
-                                                }
-                                                else
-                                                {
-                                                    <div class="avatar rounded-circle me-2 bg-primary text-white" style='width:30px; height:30px;'>
-                                                        @initial
-                                                    </div>
-                                                }
-                                                <div class="input-group toggle-group" data-post-id="@post.Id">
-                                                    <input type="text" name="Message" id="commentInput-@post.Id" class="form-control form-control-sm rounded-pill"
-                                                           placeholder="Write a comment..." autocomplete="off">
-                                                    <button type="submit" id="commentButton-@post.Id" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                        <i class="bi bi-send"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                        <div class="overflow-auto mb-2" id="displayer-@post.Id" style="max-height : 350px"></div>
+                                        <div  id="btnForComments-@post.Id"></div>                                  
                                 </div>
-
-                            </div>
-                            }
-
 
                         </div>
                     </div>
@@ -397,6 +250,10 @@
 </div>
 
 <script>
+    const loggedInUserName = '@ViewBag.Username';
+    const loggedInLastName = '@ViewBag.Lastname';
+    const loggedInUserProfile = '@ViewBag.UserProfilePic';
+
     document.addEventListener("DOMContentLoaded", function () {
         const commentForms = document.querySelectorAll('form[id^="commentForm-"]');
         commentForms.forEach(form => {
@@ -434,7 +291,7 @@
                             ${imageContent}
                             <ul class="list-unstyled">
                                 <li>
-                                    <div class="bg-light rounded p-2 flex-grow-1">
+                                    <div class="bg-light rounded p-3 flex-grow-1">
                                         <small class="fw-bold">${pUsername}</small>
                                         <p class="mb-1 small">${message}</p>
                                     </div>
@@ -478,7 +335,7 @@
         }
     });
 
-    // Chek if Comment input box is empty or not, then toggle the send button to show/hide
+    // Chek if Comment input box for peplies is empty or not, then toggle the send button to show/hide
     document.querySelectorAll(".reply-toggle-group").forEach(group => {
         const comId = group.dataset.commentId;
         const input = group.querySelector(`#replyCommentInput-${comId}`);
@@ -490,23 +347,66 @@
     });
 
     //Show/Hide the replies when view replies clicked
-    document.querySelectorAll('[id^="ViewReplies-"]').forEach(button => {
-        const buttonId = button.id;
-        const pId = buttonId.replace('ViewReplies-', '');
+    document.addEventListener('click', function (e) {
+      const button = e.target.closest('[id^="replyBtn-"]');
+      if (!button) return;
+      const pId = button.id.replace('replyBtn-', '');
+      const collapseElement = document.querySelector(`#replyView-${pId}`);
 
-        const collapseElements = document.querySelectorAll(`#RepliesView-${pId}`);
+      if (collapseElement) {
+        const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, {
+          toggle: false
+        });
 
-        if (collapseElements.length > 0) {
-
-            const collapseInstances = [...collapseElements].map(el =>
-                new bootstrap.Collapse(el, { toggle: false })
-            );
-
-            button.addEventListener('click', function () {
-                collapseInstances.forEach(c => c.toggle());
-            });
-        }
+        collapseInstance.toggle();
+      }
     });
+
+    //Show/Hide the send comment input/button when reply text/button is clicked
+    document.addEventListener('click', function (e) {
+      const button = e.target.closest('[id^="replyCommentsBtn-"]');
+      if (!button) return;
+      const pId = button.id.replace('replyCommentsBtn-', '');
+      const collapseElement = document.querySelector(`#replySendReply-${pId}`);
+
+      if (collapseElement) {
+        const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, {
+          toggle: false
+        });
+
+        collapseInstance.toggle();
+      }
+    });
+
+    // Show/Hide send button when input is empty or not
+    document.addEventListener('click', function (e) {
+         const input = e.target.closest('[id^="replyCommentInput-"]');
+         if (!input) return;
+         const cId = input.id.replace('replyCommentInput-', '');
+         const button = document.querySelector(`#replyCommentButton-${cId}`);
+
+         input.addEventListener("input", () => {
+             button.classList.toggle("d-none", input.value.trim() === "");
+         });
+    });
+
+
+     //Show/Hide the send comment input/button when reply text/button from replies is clicked
+    document.addEventListener('click', function (e) {
+      const button = e.target.closest('[id^="replyOfReplyBtn-"]');
+      if (!button) return;
+      const pId = button.id.replace('replyOfReplyBtn-', '');
+      const collapseElement = document.querySelector(`#replyOfReplyView-${pId}`);
+
+      if (collapseElement) {
+        const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, {
+          toggle: false
+        });
+
+        collapseInstance.toggle();
+      }
+    });
+
 
      async function toggleDisplay(togglerButton, togglerView){
         document.querySelectorAll(`[id^='${togglerButton}-']`).forEach(button => {
@@ -529,11 +429,11 @@
     }
 
 
-    // Show/Hide the comments when the comment icon/button is clicked
+     // Show/Hide the comments when the comment icon/button is clicked
     document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
         const buttonId = button.id;
         const pId = buttonId.replace('commentsBtn-', '');
-        const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);        
+        const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);
 
         if (collapseElements.length > 0) {
             const collapseInstances = [...collapseElements].map(el =>
@@ -542,71 +442,147 @@
             button.addEventListener('click', async function () {
                 const display = document.getElementById(`displayer-${pId}`);
                 var toggleStatus = display.classList.contains("show");
-                if(!toggleStatus){                    
+                if(!toggleStatus){
                         var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
                         var result = await res.json();
                         console.log(result);
-                        display.classList.add("show");                   
-                    let timeFormat = "";                 
+                        display.classList.add("show"); 
 
-                    if(!result || result.length !== 0){
-                         const html = result.map(comment => { 
-                               const utcDate = new Date(comment.sentOn);
-                               const nowSA = new Date(new Date().toLocaleString("en-US", {
-                                   timeZone: "Africa/Johannesburg"
-                               }));
-                               const sentOnSA = new Date(utcDate.toLocaleString("en-US", {
-                                   timeZone: "Africa/Johannesburg"
-                               }));
-                               const diffMs = nowSA - sentOnSA;
-                               const diffSeconds = Math.floor(diffMs / 1000);
-                               const diffMinutes = Math.floor(diffSeconds / 60);
-                               const diffHours = Math.floor(diffMinutes / 60);
-                               const diffDays = Math.floor(diffHours / 24);
-                               const diffWeeks = Math.floor(diffDays / 7);
-                               const diffMonths = Math.floor(diffDays / 30);
-                               const diffYears = Math.floor(diffDays / 365);
+                    if(!result || result.length !== 0)
+                    {                         
+                         const html = result.map(comment => {
+                             const userNameletter =  comment.userName?.charAt(0).toUpperCase() ?? "?";
+                             const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
+                             const commentTime = dateProcessing(comment.sentOn);
 
-                               if (diffSeconds < 60) {
-                                   timeFormat = "just now";
-                               }
-                               else if (diffMinutes < 60) {
-                                   timeFormat = `${diffMinutes}m`;
-                               }
-                               else if (diffHours < 24) {
-                                   timeFormat = `${diffHours}h`;
-                               }
-                               else if (diffDays < 7) {
-                                   timeFormat = `${diffDays}d`;
-                               }
-                                else if (diffWeeks < 4) {
-                                   timeFormat = `${diffWeeks}w`;
-                               }
-                               else if (diffMonths < 12) {
-                                   timeFormat = `${diffMonths}mo`;
-                               }
-                               else if (diffYears < 2) {
-                                   timeFormat = `${diffYears}y`;
-                               }
-                               else {
-                                   timeFormat = sentOnSA.toLocaleDateString();
-                               }
+                         let repliesDisplayer = "";
+                         let viewRepliesBtn = "";
+                         const commentsCount = comment.reply.length;
+                         if(commentsCount > 0)
+                         {
+                            viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
+                            comment.reply.forEach(replies => {
+                                const replyUserNameletter =  replies.userName?.charAt(0).toUpperCase() ?? "?";
+                                const replyFullUserName = replies.userName.charAt(0).toUpperCase() + replies.userName.slice(1) + ' ' + replies.lastName.charAt(0).toUpperCase() + replies.lastName.slice(1);
+                                const repliesTime = dateProcessing(replies.sentOn);                                
+                                repliesDisplayer += `<div class="d-flex mb-2">
+                                                        ${replies.userImageUrl ? `<img src="${replies.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+                                                        <ul class="list-unstyled overflow-hidden">
+                                                            <li>
+                                                                <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                                <small class="fw-bold">${replyFullUserName}</small>
+                                                                <p class="mb-1 small">${replies.message}</p>
+                                                                </div>
+                                                            </li>
+                                                            <li>
+                                                            <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+                                                                    <small class="text-muted me-3">${repliesTime}</small>
+                                                                    <div class="d-flex gap-2">
+                                                                    <button class="btn p-0 text-muted small">Like</button>
+                                                                    <button class="btn p-0 text-muted small ms-2" id="replyOfReplyBtn-${comment.id}">Reply</button>
+                                                                </div>
+                                                            </div>
+                                                            </li>
+                                                            <li>
+                                                                 <div class="collapse mt-3 mb-4" id="replyOfReplyView-${comment.id}">hiiiiii</div>
+                                                            </li>
+                                                        </ul>
+                                                    </div>`;                                       
+                            });
+                         }
 
-                         return  `<div>Username : ${comment.userName} <br> Message : ${comment.message} <br> Time : ${timeFormat} </div>`}).join("");
-                               display.innerHTML = html;
+                         return  `<div class="d-flex mb-2">
+                                    ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${userNameletter}</div>`}
+                                        <ul class="list-unstyled overflow-hidden">
+                                            <li>
+                                                <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                <small class="fw-bold">${fullUserName}</small>
+                                                <p class="mb-1 small">${comment.message}</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+                                                        <small class="text-muted me-3">${commentTime}</small>
+                                                        <div class="d-flex gap-2">
+                                                        <button class="btn p-0 text-muted small">Like</button>
+                                                        <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-${comment.id}">Reply</button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="collapse mt-3 mb-4" id="replySendReply-${comment.id}">
+                                                    <form asp-controller="Home" id="replyCommentForm-${comment.id}" asp-action="SendReplyComment" method="post" enctype="multipart/form-data">
+                                                        <div class="d-flex" style="width : 13rem; height : 15px;">
+                                                            <input type="hidden" name="CommentId" value="${comment.id}" />
+                                                            <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                            <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                            ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                            <div class="input-group toggle-group-replycomment" data-post-id="${comment.id}">
+                                                                <input type="text" name="Message" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
+                                                                        placeholder="Reply to a comment..." autocomplete="off">
+                                                                <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                    <i class="bi bi-send"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                ${viewRepliesBtn}
+                                                <div class="collapse mt-1" id="replyView-${comment.id}"> ${repliesDisplayer} </div>
+                                            </li>
+                                        </ul>
+                                 </div>`
+                             }).join("");
+                         display.innerHTML = html;
                     }
                     else {
                         display.innerHTML = `<div class="text-center py-2">
                                 <div class="display-1 text-muted mb-2">
                                     <i class="bi bi-chat-square-text"></i>
                                 </div>
-                                <h3 class="mb-2">No posts yet</h3>
-                                <p class="text-muted mb-2">Be the first to share something with your community!</p>
+                                <h3 class="mb-2">No comments yet</h3>
+                                <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
                                 </div>`;
                     }
+                        document.querySelectorAll('[id^="btnForComments-"]').forEach(data => {
+                             const Id = data.id.replace('btnForComments-', '');
+                             data.innerHTML =
+                                `<form asp-controller="Home" id="commentForm-${Id}" asp-action="SendComment" method="post" enctype="multipart/form-data">
+                                    <div class="d-flex" style="width : 95%; height : 35px;">
+                                        <input type="hidden" name="PostId" value="${Id}" />
+                                        <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                        <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                        ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                        <div class="input-group toggle-group-comment" data-post-id="${Id}">
+                                            <input type="text" name="Message" id="commentInput-${Id}" class="form-control form-control-sm rounded-pill"
+                                                    placeholder="Write a comment..." autocomplete="off">
+                                            <button type="submit" id="commentButton-${Id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                <i class="bi bi-send"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>`;
+
+                                const group = data.querySelector(".toggle-group-comment");
+                                const postId = group.dataset.postId;
+                                const input = group.querySelector(`#commentInput-${postId}`);
+                                const button = group.querySelector(`#commentButton-${postId}`);
+
+                                input.addEventListener("input", () => {
+                                    button.classList.toggle("d-none", input.value.trim() === "");
+                                });
+
+                        });
                 }else{
                         display.classList.remove("show");
-                    }
+                    } 
+
                 collapseInstances.forEach(c => c.toggle());
             });
         }
@@ -614,36 +590,22 @@
 
 
 
-    //  document.querySelectorAll('[id^="commentsBtn-"]').forEach(button => {
-    //     const buttonId = button.id;
-    //     const pId = buttonId.replace('commentsBtn-', '');
+        // Chek if Comment input box is empty or not, then toggle the send button to show/hide
+    // document.querySelectorAll(".toggle-group-comment").forEach(group => {
+    //     const postId = group.dataset.postId;
+    //     console.log(`second id ${postId}`);
+    //     const input = group.querySelector(`#commentInput-${postId}`);
+    //     const button = group.querySelector(`#commentButton-${postId}`);
 
-    //     const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);
-
-    //     if (collapseElements.length > 0) {
-
-    //         const collapseInstances = [...collapseElements].map(el =>
-    //             new bootstrap.Collapse(el, { toggle: false })
-    //         );
-
-    //         button.addEventListener('click', function () {
-    //             collapseInstances.forEach(c => c.toggle());
-    //         });
-    //     }
+    //     input.addEventListener("input", () => {
+    //         button.classList.toggle("d-none", input.value.trim() === "");
+    //     });
     // });
 
 
 
-    // Chek if Comment input box is empty or not, then toggle the send button to show/hide
-    document.querySelectorAll(".toggle-group").forEach(group => {
-        const postId = group.dataset.postId;
-        const input = group.querySelector(`#commentInput-${postId}`);
-        const button = group.querySelector(`#commentButton-${postId}`);
 
-        input.addEventListener("input", () => {
-            button.classList.toggle("d-none", input.value.trim() === "");
-        });
-    });
+
 
 
     });
@@ -713,6 +675,52 @@
 
         const buttonColours = document.getElementById("mainButton");
         buttonColours.style.display = 'block'
+    }
+
+    function dateProcessing(unformattedDate){
+        let timeFormat = "";
+        const utcDate = new Date(unformattedDate);
+        const nowSA = new Date(new Date().toLocaleString("en-US", {
+            timeZone: "Africa/Johannesburg"
+        }));
+        const sentOnSA = new Date(utcDate.toLocaleString("en-US", {
+            timeZone: "Africa/Johannesburg"
+        }));
+        const diffMs = nowSA - sentOnSA;
+        const diffSeconds = Math.floor(diffMs / 1000);
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30);
+        const diffYears = Math.floor(diffDays / 365);
+
+        if (diffSeconds < 60) {
+            timeFormat = "just now";
+        }
+        else if (diffMinutes < 60) {
+            timeFormat = `${diffMinutes}m`;
+        }
+        else if (diffHours < 24) {
+            timeFormat = `${diffHours}h`;
+        }
+        else if (diffDays < 7) {
+            timeFormat = `${diffDays}d`;
+        }
+        else if (diffWeeks < 4) {
+            timeFormat = `${diffWeeks}w`;
+        }
+        else if (diffMonths < 12) {
+            timeFormat = `${diffMonths}mo`;
+        }
+        else if (diffYears < 2) {
+            timeFormat = `${diffYears}y`;
+        }
+        else {
+            timeFormat = sentOnSA.toLocaleDateString();
+        }
+
+        return timeFormat;
     }
 
 

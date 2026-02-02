@@ -10,6 +10,7 @@
         public string? ImageContentUrl { get; set; }
         public string Content { get; set; }
         public int? likes { get; set; }
+        public int? TotalComments { get; set; }
         public int? Shares { get; set; }
         public bool Isliked { get; set; }
         public string PostScope { get; set; }

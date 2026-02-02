@@ -19,6 +19,8 @@ using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using static System.Formats.Asn1.AsnWriter;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -58,12 +60,13 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
             await AddUser();
-            var res = await _context.Post.Include(x => x.Comments.OrderByDescending(c => c.SentOn))
-                .ThenInclude(x => x.Reply.OrderByDescending(x => x.SentOn)).OrderByDescending(x => x.CreatedOn).ToListAsync();
+            var res = await _context.Post.AsNoTracking().OrderByDescending(x => x.CreatedOn).ToListAsync();
+            //var res = await _context.Post.Include(x => x.Comments.OrderByDescending(c => c.SentOn))
+            //    .ThenInclude(x => x.Reply.OrderByDescending(x => x.SentOn)).OrderByDescending(x => x.CreatedOn).ToListAsync();
             var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
             ViewBag.Username = CurrentUser.UserName;
             ViewBag.Lastname = CurrentUser.LastName;
-            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;            
+            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
             return View(res);            
         }
 
@@ -485,12 +488,25 @@ namespace Mvc_CRUD.Controllers
         [HttpPost]
         public async Task<IActionResult> SendComment(Comments model)
         {
-            model.UserId = _currentUserId;
-            model.UserName = _currentUserName;
-            await _context.Comment.AddAsync(model);
-            await _context.SaveChangesAsync();
-            TempData["Message"] = "SuccessFully Sent";
-            return Json(new { success = true, message = "Sent Successfully" });
+            using var trans = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                model.UserId = _currentUserId;
+                model.UserName = _currentUserName;
+                var postInfo = await _context.Post.Where(x => x.TotalComments == model.PostId)
+                    .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalComments, c => c.TotalComments + 1));
+                await _context.Comment.AddAsync(model);
+                await _context.SaveChangesAsync();
+                await trans.CommitAsync();
+                TempData["Message"] = "SuccessFully Sent";
+                return Json(new { success = true, message = "Sent Successfully" });
+            }
+            catch (Exception ex)
+            {
+                await trans.RollbackAsync();
+                return Json(new { success = true, message = $"Failed due to : {ex.Message}" });
+            }
+            
 
         }
 
@@ -607,9 +623,36 @@ namespace Mvc_CRUD.Controllers
         [HttpGet]
         public async Task<IActionResult> GetComments2(int postId)
         {
-            var query = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            var res = _mapper.Map<List<CommentsDto>>(query);
+            var res = await _context.Comment.Where(x => x.PostId == postId)
+                .Select(x => new CommentsDto
+                {
+                    Id = x.Id,
+                    UserName = x.UserName,
+                    LastName = x.LastName,
+                    UserImageUrl = x.UserImageUrl,
+                    Message = x.Message,
+                    PostId = x.PostId,
+                    SentOn = x.SentOn,
+                    Reply = x.Reply.Select(r => new CommentsReplyDto
+                    {
+                        Id = r.Id,
+                        UserName = r.UserName,
+                        LastName = r.LastName,
+                        UserImageUrl = r.UserImageUrl,
+                        Message = r.Message,
+                        SentOn = r.SentOn,
+                        CommentId = r.CommentId
+                    }).ToList()
+
+                })
+                .OrderByDescending(x => x.SentOn).AsSplitQuery().AsNoTracking().ToListAsync();
+            //var res = _mapper.Map<List<CommentsDto>>(query);
             return Json(res);
+
+            //var query = await _context.Comment.Include(x => x.Reply).Where(x => x.PostId == postId)
+            //.AsSplitQuery().OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
+            //var res = _mapper.Map<List<CommentsDto>>(query);
+            //return Json(res);
         }
 
         [HttpPost]

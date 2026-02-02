@@ -12,6 +12,6 @@ namespace Mvc_CRUD.Dto;
         public int PostId { get; set; }
         public string Message { get; set; }
         public DateTime SentOn { get; set; }
-        public ICollection<CommentsReply>? Reply { get; set; }
+        public ICollection<CommentsReplyDto>? Reply { get; set; }
     }
 
