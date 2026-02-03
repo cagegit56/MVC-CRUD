@@ -493,12 +493,11 @@ namespace Mvc_CRUD.Controllers
             {
                 model.UserId = _currentUserId;
                 model.UserName = _currentUserName;
-                var postInfo = await _context.Post.Where(x => x.TotalComments == model.PostId)
+                var postInfo = await _context.Post.Where(x => x.Id == model.PostId)
                     .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalComments, c => c.TotalComments + 1));
                 await _context.Comment.AddAsync(model);
                 await _context.SaveChangesAsync();
                 await trans.CommitAsync();
-                TempData["Message"] = "SuccessFully Sent";
                 return Json(new { success = true, message = "Sent Successfully" });
             }
             catch (Exception ex)
@@ -506,7 +505,7 @@ namespace Mvc_CRUD.Controllers
                 await trans.RollbackAsync();
                 return Json(new { success = true, message = $"Failed due to : {ex.Message}" });
             }
-            
+
 
         }
 
@@ -641,11 +640,20 @@ namespace Mvc_CRUD.Controllers
                         UserImageUrl = r.UserImageUrl,
                         Message = r.Message,
                         SentOn = r.SentOn,
-                        CommentId = r.CommentId
+                        CommentId = r.CommentId,
+                        Replies = r.Replies.Select(y => new ReplyOfReplyDto
+                        {
+                            Id = y.Id,
+                            UserName = y.UserName,
+                            LastName = y.LastName,
+                            UserImageUrl = y.UserImageUrl,
+                            Message = y.Message,
+                            ReplyId = y.ReplyId,
+                            SentOn = y.SentOn,
+                        }).ToList(),
                     }).ToList()
 
-                })
-                .OrderByDescending(x => x.SentOn).AsSplitQuery().AsNoTracking().ToListAsync();
+                }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
             //var res = _mapper.Map<List<CommentsDto>>(query);
             return Json(res);
 

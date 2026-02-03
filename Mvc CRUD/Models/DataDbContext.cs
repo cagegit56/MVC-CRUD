@@ -14,6 +14,7 @@ public class DataDbContext : DbContext
     public virtual DbSet<Posts> Post { get; set; }
     public virtual DbSet<Comments> Comment { get; set; }
     public virtual DbSet<CommentsReply> ReplyComments { get; set; }
+    public virtual DbSet<ReplyOfReply> Replies { get; set; }
         public DataDbContext(DbContextOptions<DataDbContext> options) : base(options)
         {
         }
@@ -31,35 +32,40 @@ public class DataDbContext : DbContext
                 .HasOne(r => r.Comment)
                 .WithMany(c => c.Reply)
                 .HasForeignKey(r => r.CommentId);
-            
 
-              //modelBuilder.Entity<CommentsReply>()
-              //  .HasOne<Comments>()
-              //  .WithMany(p => p.Reply)
-              //  .HasForeignKey(c => c.CommentId);
+               modelBuilder.Entity<ReplyOfReply>()
+                .HasOne(r => r.CommentReplies)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(r => r.ReplyId);
 
 
-            //modelBuilder.Entity<Friends>()
-            //    .HasOne(c => c.AllUsers)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.FriendId)
-            //    .HasPrincipalKey(u => u.UserId);
+        //modelBuilder.Entity<CommentsReply>()
+        //  .HasOne<Comments>()
+        //  .WithMany(p => p.Reply)
+        //  .HasForeignKey(c => c.CommentId);
 
-            //modelBuilder.Entity<Friends>()
-            //    .HasMany(c => c.FriendRequests)
-            //    .WithOne()
-            //    .HasForeignKey(c => c.UserId)
-            //    .HasPrincipalKey(u => u.UserId)
-            //    .IsRequired(false);
 
-            //modelBuilder.Entity<Friends>()
-            //    .HasOne(c => c.BlockedUser)
-            //    .WithMany()
-            //    .HasForeignKey(c => c.UserId)
-            //    .HasPrincipalKey(u => u.UserId)
-            //    .IsRequired(false);
+        //modelBuilder.Entity<Friends>()
+        //    .HasOne(c => c.AllUsers)
+        //    .WithMany()
+        //    .HasForeignKey(c => c.FriendId)
+        //    .HasPrincipalKey(u => u.UserId);
 
-        }
+        //modelBuilder.Entity<Friends>()
+        //    .HasMany(c => c.FriendRequests)
+        //    .WithOne()
+        //    .HasForeignKey(c => c.UserId)
+        //    .HasPrincipalKey(u => u.UserId)
+        //    .IsRequired(false);
+
+        //modelBuilder.Entity<Friends>()
+        //    .HasOne(c => c.BlockedUser)
+        //    .WithMany()
+        //    .HasForeignKey(c => c.UserId)
+        //    .HasPrincipalKey(u => u.UserId)
+        //    .IsRequired(false);
+
+    }
         
 
     }

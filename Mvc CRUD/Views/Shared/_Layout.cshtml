@@ -52,20 +52,21 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AdminPortal">Admin</a>
                         </li>
-
-                        @{
-                            var user = User;
-                            var username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
-                            var initial = !string.IsNullOrEmpty(username) ? username.Substring(0, 1).ToUpper() : "XX";
-                        }
-
                         <li class="nav-item dropdown ms-auto">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown"
                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="text-white rounded-circle d-flex justify-content-center align-items-center"
-                                     style="width:27px;height:27px;font-size:17px; background-color:#6c63ff">
-                                    <strong>@initial</strong>
-                                </div>
+                                @if(!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
+                                {
+                                  <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                       style="width:50px; height:50px; object-fit: cover; cursor : pointer" />
+                                }
+                                else{                                
+                                    var initial = !string.IsNullOrEmpty(@ViewBag.Username) ? @ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
+                                    <div class="text-white rounded-circle d-flex justify-content-center align-items-center"
+                                            style="width:27px;height:27px;font-size:17px; background-color:#6c63ff">
+                                        <strong>@initial</strong>
+                                    </div>
+                                }
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li><a class="dropdown-item" href="/Home/UserProfile">Profile</a></li>

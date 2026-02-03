@@ -21,7 +21,7 @@
                     else
                     {
                         <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                             style='width:50px; height:50px;'>
+                             style='width:50px; height:50px; font-size: 17px; font-weight: bold;'>
                             @initial
                         </div>
                     }
@@ -407,6 +407,22 @@
       }
     });
 
+    //Show/Hide the replies of replies when view replies clicked
+    document.addEventListener('click', function (e) {
+      const button = e.target.closest('[id^="replyOfBtn-"]');
+      if (!button) return;
+      const pId = button.id.replace('replyOfBtn-', '');
+      const collapseElement = document.querySelector(`#replyOfView-${pId}`);
+
+      if (collapseElement) {
+        const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, {
+          toggle: false
+        });
+
+        collapseInstance.toggle();
+      }
+    });
+
 
      async function toggleDisplay(togglerButton, togglerView){
         document.querySelectorAll(`[id^='${togglerButton}-']`).forEach(button => {
@@ -427,7 +443,6 @@
         }
     });
     }
-
 
      // Show/Hide the comments when the comment icon/button is clicked
     document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
@@ -450,10 +465,10 @@
 
                     if(!result || result.length !== 0)
                     {                         
-                         const html = result.map(comment => {
-                             const userNameletter =  comment.userName?.charAt(0).toUpperCase() ?? "?";
-                             const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
-                             const commentTime = dateProcessing(comment.sentOn);
+                         html = result.map(comment => {
+                         const userNameletter =  comment.userName?.charAt(0).toUpperCase() ?? "?";
+                         const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
+                         const commentTime = dateProcessing(comment.sentOn);
 
                          let repliesDisplayer = "";
                          let viewRepliesBtn = "";
@@ -461,18 +476,56 @@
                          if(commentsCount > 0)
                          {
                             viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
-                            comment.reply.forEach(replies => {
-                                const replyUserNameletter =  replies.userName?.charAt(0).toUpperCase() ?? "?";
-                                const replyFullUserName = replies.userName.charAt(0).toUpperCase() + replies.userName.slice(1) + ' ' + replies.lastName.charAt(0).toUpperCase() + replies.lastName.slice(1);
-                                const repliesTime = dateProcessing(replies.sentOn);                                
+                            comment.reply.forEach(res => {
+                                const replyUserNameletter =  res.userName?.charAt(0).toUpperCase() ?? "?";
+                                const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
+                                const repliesTime = dateProcessing(res.sentOn);
+
+                                let viewRepliesOfBtn = ""; 
+                                let displayReplyOfReply = "";
+                                const replyOfReplyCount = res.replies.length;
+                                res.replies.forEach(replyOf => {  
+                                    const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
+                                    const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
+                                    const replyOfReplyTime = dateProcessing(replyOf.sentOn);
+                                    if(replyOf !== null && replyOfReplyCount > 0 )
+                                    {
+                                        viewRepliesOfBtn = `<div class="view-data-btn" id="replyOfBtn-${replyOf.id}"> <small>View ${replyOfReplyCount} Replies</small> </div>`;
+                                        displayReplyOfReply = ` <div class="collapse mt-1" id="replyOfView-${replyOf.id}"> 
+                                                                    <div class="d-flex mb-2">
+                                                                        ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+                                                                        <ul class="list-unstyled overflow-hidden px-1">
+                                                                            <li>
+                                                                                <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                                                <small class="fw-bold">${replyOfRepyFullUserName}</small>
+                                                                                <p class="mb-1 small">${replyOf.message}</p>
+                                                                                </div>
+                                                                            </li>
+                                                                            <li>
+                                                                            <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+                                                                                    <small class="text-muted me-3">${replyOfReplyTime}</small>
+                                                                                    <div class="d-flex gap-2">
+                                                                                    <button class="btn p-0 text-muted small mb-1">Like</button>
+                                                                                </div>
+                                                                            </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>`;
+                                    }
+                                    
+                                });
+                                
+
                                 repliesDisplayer += `<div class="d-flex mb-2">
-                                                        ${replies.userImageUrl ? `<img src="${replies.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                        ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
                                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
-                                                        <ul class="list-unstyled overflow-hidden">
+                                                        <ul class="list-unstyled overflow-hidden px-1">
                                                             <li>
                                                                 <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
                                                                 <small class="fw-bold">${replyFullUserName}</small>
-                                                                <p class="mb-1 small">${replies.message}</p>
+                                                                <p class="mb-1 small">${res.message}</p>
                                                                 </div>
                                                             </li>
                                                             <li>
@@ -480,12 +533,33 @@
                                                                     <small class="text-muted me-3">${repliesTime}</small>
                                                                     <div class="d-flex gap-2">
                                                                     <button class="btn p-0 text-muted small">Like</button>
-                                                                    <button class="btn p-0 text-muted small ms-2" id="replyOfReplyBtn-${comment.id}">Reply</button>
+                                                                    <button class="btn p-0 text-muted small ms-2" id="replyOfReplyBtn-${res.id}">Reply</button>
                                                                 </div>
                                                             </div>
                                                             </li>
                                                             <li>
-                                                                 <div class="collapse mt-3 mb-4" id="replyOfReplyView-${comment.id}">hiiiiii</div>
+                                                                 <div class="collapse mt-3 mb-4" id="replyOfReplyView-${res.id}">
+                                                                        <form id="replyCommentForm-${res.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
+                                                                            <div class="d-flex" style="width : 10rem; height : 15px;">
+                                                                                <input type="hidden" name="CommentId" value="${res.id}" />
+                                                                                <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                                                <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                                                ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                                <div class="input-group toggle-group-replycomment" data-post-id="${res.id}">
+                                                                                    <input type="text" name="Message" id="replyCommentInput-${res.id}" class="form-control form-control-sm rounded-pill"
+                                                                                            placeholder="Reply to a reply..." autocomplete="off">
+                                                                                    <button type="submit" id="replyCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                                        <i class="bi bi-send"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </form>
+                                                                 </div>
+                                                            </li>
+                                                            <li>
+                                                                ${viewRepliesOfBtn}
+                                                                ${displayReplyOfReply}
                                                             </li>
                                                         </ul>
                                                     </div>`;                                       
@@ -495,7 +569,7 @@
                          return  `<div class="d-flex mb-2">
                                     ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${userNameletter}</div>`}
-                                        <ul class="list-unstyled overflow-hidden">
+                                        <ul class="list-unstyled overflow-hidden px-1">
                                             <li>
                                                 <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
                                                 <small class="fw-bold">${fullUserName}</small>
@@ -507,13 +581,13 @@
                                                         <small class="text-muted me-3">${commentTime}</small>
                                                         <div class="d-flex gap-2">
                                                         <button class="btn p-0 text-muted small">Like</button>
-                                                        <button class="btn p-0 text-muted small ms-2" id="replyCommentsBtn-${comment.id}">Reply</button>
+                                                        <button class="btn p-0 text-muted small ms-1 mb-1" id="replyCommentsBtn-${comment.id}">Reply</button>
                                                     </div>
                                                 </div>
                                             </li>
                                             <li>
                                                 <div class="collapse mt-3 mb-4" id="replySendReply-${comment.id}">
-                                                    <form asp-controller="Home" id="replyCommentForm-${comment.id}" asp-action="SendReplyComment" method="post" enctype="multipart/form-data">
+                                                    <form id="replyCommentForm-${comment.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
                                                         <div class="d-flex" style="width : 13rem; height : 15px;">
                                                             <input type="hidden" name="CommentId" value="${comment.id}" />
                                                             <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
@@ -552,7 +626,7 @@
                         document.querySelectorAll('[id^="btnForComments-"]').forEach(data => {
                              const Id = data.id.replace('btnForComments-', '');
                              data.innerHTML =
-                                `<form asp-controller="Home" id="commentForm-${Id}" asp-action="SendComment" method="post" enctype="multipart/form-data">
+                                `<form  id="commentForm-${Id}" action="Home/SendComment" method="post" enctype="multipart/form-data">
                                     <div class="d-flex" style="width : 95%; height : 35px;">
                                         <input type="hidden" name="PostId" value="${Id}" />
                                         <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
@@ -590,22 +664,6 @@
 
 
 
-        // Chek if Comment input box is empty or not, then toggle the send button to show/hide
-    // document.querySelectorAll(".toggle-group-comment").forEach(group => {
-    //     const postId = group.dataset.postId;
-    //     console.log(`second id ${postId}`);
-    //     const input = group.querySelector(`#commentInput-${postId}`);
-    //     const button = group.querySelector(`#commentButton-${postId}`);
-
-    //     input.addEventListener("input", () => {
-    //         button.classList.toggle("d-none", input.value.trim() === "");
-    //     });
-    // });
-
-
-
-
-
 
 
     });
@@ -630,6 +688,63 @@
     });
 
 
+    //after sending a comment display it
+     document.addEventListener('submit', async function (e) {
+        if (!e.target.matches('[id^="commentForm-"]')) return;
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const postId = formData.get("PostId");
+        const message = formData.get("Message");
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            });
+
+            if (response.ok) {
+                 let imageContent = '';
+                    const initial = loggedInUserName.charAt(0).toUpperCase();
+                    const fullUsernameComment = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' +
+                                      loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
+                    if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
+                        imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
+                    } else {
+                        imageContent = `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
+                                            ${initial}
+                                        </div>`;
+                    }
+                const container = document.querySelector(`#displayer-${postId}`);
+                    container.insertAdjacentHTML("afterbegin", `
+                        <div class="d-flex mb-2">
+                            ${imageContent}
+                            <ul class="list-unstyled">
+                                <li>
+                                    <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                        <small class="fw-bold">${fullUsernameComment}</small>
+                                        <p class="mb-1 small">${message}</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="d-flex align-items-center ms-3 mt-1">
+                                        <small class="text-muted me-3">just now</small>
+                                        <button class="btn btn-link p-0 text-muted small">Like</button>
+                                        <button class="btn btn-link p-0 text-muted small ms-2">Reply</button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>`);
+                form.reset();
+            } else {
+                 toastr.success("Failed to send comment.");
+            }
+        } catch (err) {
+             toastr.success(`Network error. Try again. ${err.message}`);
+        }
+    });
+
+
+   
     document.getElementById("mainButton").addEventListener("click", function () {
         const group = document.getElementById("colourButton");
         group.classList.toggle("d-none");
@@ -707,13 +822,13 @@
         else if (diffDays < 7) {
             timeFormat = `${diffDays}d`;
         }
-        else if (diffWeeks < 4) {
+        else if (diffWeeks < 5) {
             timeFormat = `${diffWeeks}w`;
         }
-        else if (diffMonths < 12) {
+        else if (diffMonths <= 12) {
             timeFormat = `${diffMonths}mo`;
         }
-        else if (diffYears < 2) {
+        else if (diffYears <= 2) {
             timeFormat = `${diffYears}y`;
         }
         else {
