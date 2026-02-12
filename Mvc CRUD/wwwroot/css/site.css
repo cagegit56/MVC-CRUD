@@ -302,6 +302,8 @@ td.message-cell {
     width: 100%;
     height: 85%;
     background-color: #F7E8EC;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
     transition: bottom .3s ease;
     padding: 10px;
     display: flex;
