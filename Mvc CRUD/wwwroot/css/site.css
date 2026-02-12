@@ -190,6 +190,17 @@ td.message-cell {
         width: 40px;
         height: 40px;
     }
+    .responsive-input {
+        width: 12rem !important;
+        height: 15px !important;
+    }
+    .responsive-input-reply {
+        width: 9rem !important;
+        height: 15px !important;
+    }
+    #post-on-mobile > *:not(#comments-on-mobile) {
+        display: none !important;
+    }
 }
 
 .circle-btn {
@@ -281,6 +292,54 @@ td.message-cell {
         height: 110px !important;
     }
 }
+
+
+/*   Comments pop up view for mobile devices*/
+.comment-pop-up {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 85%;
+    background-color: #F7E8EC;
+    transition: bottom .3s ease;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    touch-action: none;
+}
+
+.show {
+    bottom: 0 !important;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 999;
+}
+
+.comment-pop-up {
+    z-index: 1000;
+}
+
+.dragHandle {
+    width: 40px;
+    height: 5px;
+    background: #ccc;
+    border-radius: 5px;
+    margin: 5px auto 10px;
+    cursor: grab;
+}
+
+
+
 
 
 

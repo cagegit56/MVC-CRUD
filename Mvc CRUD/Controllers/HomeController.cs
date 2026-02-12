@@ -508,14 +508,7 @@ namespace Mvc_CRUD.Controllers
 
 
         }
-
-        [HttpPost]
-        public async Task<IActionResult> SendReplyComment(CommentsReply model)
-        {
-            await _context.ReplyComments.AddAsync(model);
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Sent Successfully" });
-        }
+  
 
         [HttpGet]
         public async Task<IActionResult> UserPosts()
@@ -612,6 +605,22 @@ namespace Mvc_CRUD.Controllers
          
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SendReplyComment(CommentsReply model)
+        {
+            await _context.ReplyComments.AddAsync(model);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Sent Successfully" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
+        {
+            await _context.Replies.AddAsync(model);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Sent Successfully" });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetComments(int postId)
         {
@@ -650,7 +659,7 @@ namespace Mvc_CRUD.Controllers
                             Message = y.Message,
                             ReplyId = y.ReplyId,
                             SentOn = y.SentOn,
-                        }).ToList(),
+                        }).OrderByDescending(x => x.SentOn).ToList(),
                     }).ToList()
 
                 }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
