@@ -252,10 +252,23 @@ td.message-cell {
     margin: 0 12px;
 }
 
+.custom-dropdown {
+    display: none;
+    background: white;
+    right: 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 150px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.dropdown-menu a:hover {
+    color: snow; 
+    background-color: #0d6efd;
+}
 
 
-
-                                         /*  *****************Userprofile CSS*************** */
+                                            /*  *****************Userprofile CSS*************** */
 .camera-icon {
     position: absolute;
     bottom: 4px;
@@ -277,7 +290,7 @@ td.message-cell {
     }
 
 
-    /* ********************** Update UserInfo */
+                                             /* ********************** Update UserInfo */
 
 @media (max-width: 768px) {
     .update-profile-img {
@@ -294,14 +307,14 @@ td.message-cell {
 }
 
 
-/*   Comments pop up view for mobile devices*/
+                                         /*   Comments pop up view for mobile devices*/
 .comment-pop-up {
     position: fixed;
     bottom: -100%;
     left: 0;
     width: 100%;
     height: 85%;
-    background-color: #F7E8EC;
+    background-color: whitesmoke; /* #F7E8EC */
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     transition: bottom .3s ease;
@@ -309,7 +322,7 @@ td.message-cell {
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
+/*    text-align: center;*/
     touch-action: none;
 }
 
@@ -334,16 +347,11 @@ td.message-cell {
 .dragHandle {
     width: 40px;
     height: 5px;
-    background: #ccc;
+    background: #0d6efd;
     border-radius: 5px;
     margin: 5px auto 10px;
     cursor: grab;
 }
-
-
-
-
-
 
 
 

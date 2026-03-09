@@ -4,11 +4,7 @@
     ViewData["Title"] = "ChatUp-Home";
     var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
     var userAgent = Context.Request.Headers["User-Agent"].ToString();
-    bool isMobile =
-        userAgent.Contains("Android") ||
-        userAgent.Contains("iPhone") ||
-        userAgent.Contains("iPad") ||
-        userAgent.Contains("Mobile");
+    bool isMobile = userAgent.Contains("Android") || userAgent.Contains("iPhone") || userAgent.Contains("iPad") || userAgent.Contains("Mobile");
 
 }
 
@@ -17,9 +13,10 @@
 
 <div class="container mt-4 col-10">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="create-post-box">
-                <div class="d-flex align-items-center gap-1 mb-3">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
+                <div class="card-body">
+                <div class="d-flex align-items-center gap-1 mb-2">
                     @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
                     {
                         <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
@@ -48,27 +45,38 @@
                     </button>
                 </div>
             </div>
+            </div>
             <br />
 
             @if (Model != null && Model.Any())
             {
                 foreach (var post in Model)
                 {
-                    <div class="post-card bg-white mb-4" id="Posts-@post.Id">
-                        <div class="post-header">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="d-flex align-items-center gap-1">
-                                    <img src="@post.UserImageUrl" class="rounded-circle" alt="user image" width="45" height="45"
-                                         style="object-fit: cover;">
-                                    <div>
+                    <div class="card shadow-sm border-0 rounded-4 position-relative mb-1 gap-0" id="Posts-@post.Id" >
+                        <div class="card-body p-0">
+                            <div class="d-flex align-items-center gap-1 p-2">
+                                <div class="d-flex gap-1">
+                                    <img src="@post.UserImageUrl" class="rounded-circle mb-2" alt="user image" width="45" height="45" style="object-fit: cover;">
+                                    <div class="col start-0">
                                         <h6 class="mb-0 fw-bold">@(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
                                         <small class="text-muted">
                                             <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
                                         </small>
                                     </div>
                                 </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
+                                <div class="dropdown ms-auto" id="dropdown-@post.Id">
+                                    <button class="btn btn-link text-muted" type="button" id="toggleDropDownMenu-@post.Id">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu custom-dropdown" id="dropDownMenu-@post.Id">
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                                 @* <div class="dropdown ms-auto">
+                                        <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu">
@@ -77,9 +85,8 @@
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
                                     </ul>
-                                </div>
+                                 </div> *@
                             </div>
-                        </div>
                         <div class="post-content">
                             @if (!string.IsNullOrEmpty(post.PostBgColour))
                             {
@@ -90,14 +97,15 @@
                             }
                             else
                             {
-                                <p class="mb-3">@post.Content</p>
+                                <p class="mb-1 p-2">@post.Content</p>
                             }
 
                             @if (!string.IsNullOrEmpty(post.ImageContentUrl))
                             {
-                                <img src="@post.ImageContentUrl" class="post-image img-fluid" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
+                                <img src="@post.ImageContentUrl" class="post-image img-fluid rounded mb-0" 
+                                     style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">                                
                             }
-                            <div class="d-flex justify-content-between text-muted mb-2">
+                            <div class="d-flex justify-content-between text-muted mb-0 p-2">
                                 <div>
                                     <span class="me-3">
                                         <i class="bi bi-heart-fill text-danger me-1"></i>
@@ -121,39 +129,40 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="post-actions">
-                            <div class="d-flex justify-content-around">
-                                <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
-                                    <i class="bi @(post.Isliked ? "bi-heart-fill" : "bi-heart") me-1"></i>
-                                    <span class="like-count">@post.likes</span>
+
+                        <div class="d-flex justify-content-around mb-1 p-2">
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
+                                    <i class="bi @(post.Isliked ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i> Like</button>
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" id="commentsBtn-@post.Id">
+                                    <i class="bi  bi-chat"></i> Comment</button>
+                                <button class="btn btn-link w-100 text-decoration-none text-muted">
+                                    <i class="bi  bi-share"></i> Share
                                 </button>
-                                <button class="btn btn-link text-decoration-none text-muted" id="commentsBtn-@post.Id">
-                                    <i class="bi bi-chat me-1"></i>Comment
-                                </button>
-                                <button class="btn btn-link text-decoration-none text-muted">
-                                    <i class="bi bi-share me-1"></i>Share
-                                </button>
+                        </div>
+
+                        @* ************************Comments ******************** *@
+                        @if (isMobile)
+                        {
+                            <div class="overlay" id="overlay-@post.Id"></div>
+                            <div class="comment-pop-up" id="commentsPopUp-@post.Id">
+                                <div class="dragHandle" id="dragHandle-@post.Id"></div>
+                                <div class="overflow-auto mt-4 w-100 " style="max-height: 340px;">
+                                    <div id="displayMobileComments-@post.Id"></div>
+                                     <p>heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey</p>
+                                </div>
                             </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <div class="reply-group-@post.Id collapse mt-3 mb-2" id="Comments-@post.Id">
+                                <div class="overflow-auto mb-2 p-2" id="displayer-@post.Id" style="max-height: 350px"></div>
+                                <div id="btnForComments-@post.Id"></div>
+                            </div>
+                        }
                         
-                    </div> 
-                    @* ************************Comments ******************** *@
-                    if (isMobile)
-                    {
-                        <div class="overlay" id="overlay-@post.Id"></div>
-                        <div class="comment-pop-up align-content-center" id="commentsPopUp-@post.Id">                            
-                            <div class="dragHandle" id="dragHandle-@post.Id"></div>
-                            <button class="btn btn-light" id="CancelCommentBtn-@post.Id"><i class="bi bi-list"></i></button>
-                            <p>heeeeeeeey</p>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="reply-group-@post.Id collapse mt-3 mb-2" id="Comments-@post.Id">
-                            <div class="overflow-auto mb-2" id="displayer-@post.Id" style="max-height: 350px"></div>
-                            <div id="btnForComments-@post.Id"></div>
-                        </div>
-                    }
+                    </div>
+                    </div>
+                   
                     
                 }
             }
@@ -413,19 +422,6 @@
     });
 
 
-    // Show/Hide send button when input is empty or not for comment reply
-    // document.addEventListener('click', function (e) {
-    //      const input = e.target.closest('[id^="replyCommentInput-"]');
-    //      if (!input) return;
-    //      const cId = input.id.replace('replyCommentInput-', '');
-    //      const button = document.querySelector(`#replyCommentButton-${cId}`);
-
-    //      input.addEventListener("input", () => {
-    //          button.classList.toggle("d-none", input.value.trim() === "");
-    //      });
-    // });
-
-
      //Show/Hide the send comment input/button when reply text/button from replies is clicked
     document.addEventListener('click', function (e) {
       const button = e.target.closest('[id^="replyOfReplyBtn-"]');
@@ -473,27 +469,8 @@
     });
 
 
-     async function toggleDisplay(togglerButton, togglerView){
-        document.querySelectorAll(`[id^='${togglerButton}-']`).forEach(button => {
-        const buttonId = button.id;
-        const pId = buttonId.replace('ViewReplies-', '');
 
-        const collapseElements = document.querySelectorAll(`#${togglerView}-${pId}`);
-
-        if (collapseElements.length > 0) {
-
-            const collapseInstances = [...collapseElements].map(el =>
-                new bootstrap.Collapse(el, { toggle: false })
-            );
-
-            button.addEventListener('click', function () {
-                collapseInstances.forEach(c => c.toggle());
-            });
-        }
-    });
-    }
-
-
+    // comments button for mobile devices.
     if (window.innerWidth <= 768) 
     {
          document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
@@ -507,6 +484,30 @@
                  hideBgContent.style.opacity = "1";
                  hideBgContent.style.pointerEvents = "auto";
                  document.body.style.overflow = "hidden";
+
+                 var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
+                 var result = await res.json();
+                 const data = document.getElementById(`displayMobileComments-${pId}`);
+                 if(!result || result.length !== 0)
+                 {
+                     html = result.map(comment => {
+                     return `<div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                    <small class="fw-bold">fullUserName</small>
+                                                    <p class="mb-1 small">${comment.message}</p>
+                                                    </div>`
+                     }).join("");
+                     data.innerHTML = html;
+
+                 }else 
+                 {
+                    data.innerHTML = `<div class="text-center py-2">
+                            <div class="display-1 text-muted mb-2">
+                                <i class="bi bi-chat-square-text"></i>
+                            </div>
+                            <h3 class="mb-2">No comments yet</h3>
+                            <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
+                    </div>`;
+                 }
 
                  let startY = 0;
                  let currentY = 0;
@@ -527,24 +528,20 @@
 
                  function drag(e) {
                      if (!dragging) return;
-                     currentY = e.touches ? e.touches[0].clientY : e.clientY;
-                     const diff = currentY - startY;
-
-                     if (diff > 0) {
-                     comments.style.bottom = `-${diff}px`;
-                     }
+                     currentY = e.touches?.[0]?.clientY ?? e.clientY;
+                     const diff = currentY - startY;  
+                     if (diff > 0) comments.style.transform = `translateY(${diff}px)`;                     
                  }
 
                  function endDrag() {
                      dragging = false;
-                     comments.style.transition = "bottom .3s ease";
-
+                     comments.style.transform = 'translateY(0)';
                      if (currentY - startY > 100) 
                      {
                          comments.classList.remove("show");
                          hideBgContent.style.opacity = "0";
                          hideBgContent.style.pointerEvents = "none";
-                         document.body.style.overflow = "";
+                         document.body.style.overflow = "";                         
                      } else {
                          comments.classList.add("show");
                          hideBgContent.style.opacity = "1";
@@ -561,7 +558,7 @@
 
              });            
          
-         document.getElementById(`CancelCommentBtn-${pId}`).addEventListener('click', async function () {
+         document.getElementById(`dragHandle-${pId}`).addEventListener('click', async function () {
              comments.classList.remove("show");
              hideBgContent.style.opacity = "0";
              hideBgContent.style.pointerEvents = "none";
@@ -595,6 +592,7 @@
                         {
                              html = result.map(comment => {
                              const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                             const commentUserNameletter =  comment.userName.charAt(0).toUpperCase() ?? "?";
                              const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
                              const commentTime = dateProcessing(comment.sentOn);
 
@@ -699,7 +697,7 @@
 
                                  return  `<div class="d-flex mb-2">
                                             ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${userNameletter}</div>`}
+                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
                                                 <ul class="list-unstyled overflow-hidden px-1">
                                                     <li>
                                                         <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
@@ -756,6 +754,7 @@
                                     </div>`;
                         }
                             document.querySelectorAll('[id^="btnForComments-"]').forEach(data => {
+                                const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
                                  const Id = data.id.replace('btnForComments-', '');
                                  data.innerHTML =
                                     `<form  id="commentForm-${Id}" action="Home/SendComment" method="post" enctype="multipart/form-data">
@@ -794,6 +793,8 @@
             }
         });
     }
+    
+
 
 
 
@@ -801,6 +802,45 @@
 
 
     });
+
+
+
+    let menuId = 0;
+    // function toggleDropMenu(id,event){
+    //     event.stopPropagation();
+    //     menuId = id;
+    //     const menu = document.getElementById(`dropDownMenu-${id}`);
+    //     if(menu.style.display === 'block'){
+    //         menu.style.display = 'none';
+    //     }else{
+    //         menu.style.display = 'block';
+    //     }       
+    // }
+
+    document.querySelectorAll('[id^="toggleDropDownMenu-"]').forEach(elipsis =>{        
+        elipsis.addEventListener("click", function(){
+            const clickId = elipsis.id;
+            const id = clickId.replace('toggleDropDownMenu-', '');
+            menuId = id;
+            const menu = document.getElementById(`dropDownMenu-${id}`);
+            if(menu.style.display === 'block'){
+                menu.style.display = 'none';
+            }else{
+                menu.style.display = 'block';
+            }
+        });
+      
+    });
+
+     document.addEventListener("click", function(e){
+        const dropdown = document.querySelector(`[id^="dropdown-${menuId}"]`);
+        const menu = document.getElementById(`dropDownMenu-${menuId}`);
+
+        if (dropdown && !dropdown.contains(e.target)) {
+            menu.style.display = "none";
+        }
+     });
+
 
     // Sends form data to an api then gets response, then serves the response to the user
     document.querySelector("form").addEventListener("submit", function (e) {
