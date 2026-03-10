@@ -75,17 +75,6 @@
                                         <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
                                     </ul>
                                 </div>
-                                 @* <div class="dropdown ms-auto">
-                                        <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
-                                        <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                    </ul>
-                                 </div> *@
                             </div>
                         <div class="post-content">
                             @if (!string.IsNullOrEmpty(post.PostBgColour))
@@ -806,17 +795,6 @@
 
 
     let menuId = 0;
-    // function toggleDropMenu(id,event){
-    //     event.stopPropagation();
-    //     menuId = id;
-    //     const menu = document.getElementById(`dropDownMenu-${id}`);
-    //     if(menu.style.display === 'block'){
-    //         menu.style.display = 'none';
-    //     }else{
-    //         menu.style.display = 'block';
-    //     }       
-    // }
-
     document.querySelectorAll('[id^="toggleDropDownMenu-"]').forEach(elipsis =>{        
         elipsis.addEventListener("click", function(){
             const clickId = elipsis.id;
@@ -828,18 +806,17 @@
             }else{
                 menu.style.display = 'block';
             }
-        });
-      
+        });      
     });
 
-     document.addEventListener("click", function(e){
+    document.addEventListener("click", function(e){
         const dropdown = document.querySelector(`[id^="dropdown-${menuId}"]`);
         const menu = document.getElementById(`dropDownMenu-${menuId}`);
-
-        if (dropdown && !dropdown.contains(e.target)) {
+        if (dropdown && !dropdown.contains(e.target))
+        {
             menu.style.display = "none";
         }
-     });
+    });
 
 
     // Sends form data to an api then gets response, then serves the response to the user

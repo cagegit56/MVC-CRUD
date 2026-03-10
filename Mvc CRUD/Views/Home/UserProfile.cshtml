@@ -6,11 +6,13 @@
 }
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link href="~/css/site.css" rel="stylesheet" />
 
 <div class="container py-4">
         <div class="position-relative">
-            <a data-bs-toggle="dropdown" aria-expanded="false">
-                @if (Model.UserProfilePicUrl != null || Model.UserProfilePicUrl?.Length > 0)
+            <div class="dropdown">
+            <button id="toggleDropDown" type="button" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
+            @if (Model.UserCoverPicUrl != null && Model.UserCoverPicUrl?.Length > 0)
                 {
                     <img src="@Model.UserCoverPicUrl" id="bgImage" class="img-fluid w-100" style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">
                 }
@@ -22,19 +24,21 @@
                         <small class="text-white h4">Add a Background picture</small>
                     </div>
                 }
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow">
-                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Profile Picture</a></li>
-                <li><a class="dropdown-item" href="#">Change Profile Picture
-                        <input type="file" id="coverInput" accept="image/*" class="d-none">
-                </a></li>
-                <li><a class="dropdown-item text-danger" href="#">Remove Photo</a></li>
+            </button>
+            <ul class="custom-menu" id="dropDownMenu">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a></li>
+                <li><label class="dropdown-item" href="#">Change Cover Photo
+                        <input type="file" id="coverInput" accept="image/*" class="d-none">  </label>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#">Remove Cover Photo</a></li>
             </ul>
+            </div>
 
             <div class="position-absolute"
                  style="bottom: -70px; left: 30px; z-index : 1;">
                 <div class="dropdown">
-                    <a data-bs-toggle="dropdown" aria-expanded="false">
+                    <button type="button" id="toggleProfileDropDown" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
                         @if (Model.UserProfilePicUrl != null && Model.UserProfilePicUrl.Length > 0)
                         {
                             <img src="@Model.UserProfilePicUrl" id="profileImg" class="rounded-circle border border-4 border-white update-profile-img"
@@ -50,12 +54,13 @@
                         <div class="camera-icon">
                             <i class="bi bi-camera-fill"></i>
                         </div>
-                    </a>                    
+                    </button>                    
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a></li>
+                    <ul class="custom-profile-pic-dropdown" id="profileDropdownMenu">
+                        <li selected><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a></li>
                         <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
                             <input type="file" id="picInput" accept="image/*" class="d-none"></label></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="#">Remove Photo</a></li>
                     </ul>
                 </div>
@@ -216,25 +221,54 @@
 
 
 <script>
-    getPosts();
-    async function getPosts()
-    {
-        const res = await fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  });
-         if (!res.ok) 
-              return document.getElementById('postContent').innerHTML =  `<div class="alert alert-danger text-center w-100">Error loading Posts. Please try again later.</div>`;
-         const result = await res.json();
-         const content = document.getElementById('postContent');
-         if (result.length === 0)
+    document.addEventListener("DOMContentLoaded", function(){
+        const dropdown = document.getElementById("toggleDropDown");
+        const menu = document.getElementById("dropDownMenu");
+        dropdown.addEventListener("click", function(e){
+            e.stopPropagation();
+            const menuDisplayState = window.getComputedStyle(menu).display === "none";
+            menu.style.display = menuDisplayState ? "block" : "none";
+        });
+
+        document.addEventListener("click", function () {
+            menu.style.display = "none";
+        });
+
+        const profileDropdown = document.getElementById("toggleProfileDropDown");
+        const profileMenu = document.getElementById("profileDropdownMenu");
+        profileDropdown.addEventListener("click", function(e){
+            e.stopPropagation();
+            const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
+            profileMenu.style.display = menuDisplayState ? "block" : "none";
+        });
+
+        document.addEventListener("click", function () {
+            profileMenu.style.display = "none";
+        });
+
+
+    });
+
+    fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  }).then(results =>{
+        if(!results)
+        {
+            return document.getElementById('postContent').innerHTML =  `<div class="alert alert-danger text-center w-100">Error loading Posts. Please try again later.</div>`;
+        }else{
+            return results.json();
+        }        
+    }).then(res =>{
+        const content = document.getElementById('postContent');
+         if (res.length === 0)
               return content.innerHTML = ` <div class="alert alert-primary text-center w-100">No Posts found. Please create a post and try again.</div>`;
          content.innerHTML = '';
-         result.forEach(post => {
+         res.forEach(post => {
                 const firstLetter = post.userName?.charAt(0).toUpperCase() ?? "?";
-                const username = post.userName.charAt(0).toUpperCase() + post.userName.slice(1) + ' ' + post.lastName.charAt(0).toUpperCase() + post.lastName.slice(1);   
+                const username = post.userName.charAt(0).toUpperCase() + post.userName.slice(1) + ' ' + post.lastName.charAt(0).toUpperCase() + post.lastName.slice(1);
                 const postInfo  =
                 ` <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
-                                    ${post.userImageUrl ? 
+                                    ${post.userImageUrl ?
                                         `<img src="${post.userImageUrl}" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" />`
                                               :  `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:45px;height:45px;">
                                     ${firstLetter}   </div>` }
@@ -256,8 +290,8 @@
                     </div>`;
                 content.insertAdjacentHTML('beforeend', postInfo);
          });
-        
-    }
+    }); 
+         
 
     document.getElementById("picInput").addEventListener("change", async function (event) {
         const file = event.target.files[0];

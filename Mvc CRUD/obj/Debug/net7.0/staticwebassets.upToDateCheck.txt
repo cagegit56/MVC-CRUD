@@ -1,3 +1,4 @@
+wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\images\cover-default.jpg
 wwwroot\images\cover.png
@@ -78,4 +79,3 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\css\site.css

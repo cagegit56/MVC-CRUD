@@ -262,7 +262,7 @@ td.message-cell {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.dropdown-menu a:hover {
+.dropdown-item:hover {
     color: snow; 
     background-color: #0d6efd;
 }
@@ -285,10 +285,42 @@ td.message-cell {
     z-index: 5;
 }
 
-    .camera-icon i {
-        font-size: 18px;
-    }
+.camera-icon i {
+    font-size: 18px;
+}
 
+.custom-menu {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 350px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 9999;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.custom-profile-pic-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-width: 150px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 9999;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
                                              /* ********************** Update UserInfo */
 

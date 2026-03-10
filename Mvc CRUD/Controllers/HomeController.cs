@@ -214,6 +214,19 @@ namespace Mvc_CRUD.Controllers
             return Json(new { success = true, message = res });
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            string cachedData = $"cacheUserInfo{_currentUserId}";
+            if (!_cache.TryGetValue(cachedData, out UserProfile? res))
+            {
+                res = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+                _cache.Set(cachedData, res, TimeSpan.FromMinutes(10));
+            }
+            return Json(res);
+        }
+
 
         [HttpGet]
         [Authorize]
