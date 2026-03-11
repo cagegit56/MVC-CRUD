@@ -7,16 +7,15 @@
 
 <link href="~/images" />
 <link href="~/css/site.css" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@* <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> *@
 
 <div class="container py-4">
         <div class="position-relative">
             <div class="dropdown">
-            <a data-bs-toggle="dropdown" aria-expanded="false">
-                @if(Model.UserProfilePicUrl != null || Model.UserProfilePicUrl?.Length > 0)
+                <button id="toggleDropDown" type="button" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
+                    @if(Model.UserProfilePicUrl != null || Model.UserProfilePicUrl?.Length > 0)
                     {
-                        <img src="@Model.UserCoverPicUrl" id="bgImage" class="img-fluid w-100 cover-pic-phone-width " 
-                        style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">
+                        <img src="@Model.UserCoverPicUrl" id="bgImage" class="img-fluid w-100" style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">
                     }
                     else
                     {
@@ -26,46 +25,51 @@
                             <small class="text-white h4">Add a Background picture</small>
                         </div>                      
                     }
-                     </a>
-                <button class="btn btn-primary position-absolute end-0 dropdown-toggle" data-bs-toggle="dropdown" style="bottom: 15px; right: 15px; z-index : 1;">
+                </button>
+                <button class="btn btn-primary position-absolute end-0" type="button" id="btnToggleDropDown" style="bottom: 0; right: 0;">
                     <i class="bi bi-camera"></i> Edit Cover Photo
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Picture</a></li>
-                        <li><label class="dropdown-item" style="cursor : pointer">Change Cover Picture
-                            <input type="file" id="bgInput" accept="image/*" class="d-none"></label>   </li>
-                    </ul>
+                <ul class="custom-menu" id="dropDownMenu">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a> </li>
+                    <li><label class="dropdown-item" style="cursor : pointer">Change Cover Photo
+                        <input type="file" id="bgInput" accept="image/*" class="d-none"></label>   
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Remove Cover Photo</a></li>
+                </ul>
             </div>
 
 
             <div class="position-absolute"
                  style="bottom: -70px; left: 30px; z-index : 1;">
                 <div class="dropdown">
-                    <a data-bs-toggle="dropdown" aria-expanded="false">
-                        @if (Model.UserProfilePicUrl != null && Model.UserProfilePicUrl.Length > 0)
-                        {
-                        <img src="@Model.UserProfilePicUrl" id="profileImg" class="rounded-circle border border-4 border-white profile-pic-phone-width"
-                                 style="width: 150px; height: 150px; min-width : 110px; min-height : 110px; object-fit: cover; cursor : pointer" />
-                        }
-                        else
-                        {
-                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
-                                 style='width:150px; height:150px; min-width:50px; min-height:50px;'>
+                    <button id="toggleProfileDropDown" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
+                       @if (Model.UserProfilePicUrl != null && Model.UserProfilePicUrl.Length > 0)
+                       {
+                           <img src="@Model.UserProfilePicUrl" id="profileImg" class="rounded-circle border border-4 border-white profile-pic-phone-width"
+                                    style="width: 150px; height: 150px; min-width : 110px; min-height : 110px; object-fit: cover; cursor : pointer" />
+                       }
+                       else
+                       {
+                           <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                                style='width:150px; height:150px; min-width:50px; min-height:50px;'>
                                 @initial 
-                            </div>
-                        }
+                           </div>
+                       }
                       
-                        <div class="camera-icon">
-                            <i class="bi bi-camera-fill"></i>
-                        </div>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a></li>
+                       <div class="camera-icon">
+                           <i class="bi bi-camera-fill"></i>
+                       </div>
+                    </button>
+                    <ul class="custom-profile-pic-dropdown" id="profileDropDownMenu">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a> </li>
                         <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
-                            <input type="file" id="picInput" accept="image/*" class="d-none"></label>   </li>
+                            <input type="file" id="picInput" accept="image/*" class="d-none"></label>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#">Remove Profile Picture</a></li>
                     </ul>
                 </div>
-
             </div>
 
           
@@ -98,15 +102,52 @@
         </ul>
 
         <form asp-controller="Home" asp-action="UpdateUserProfile" method="post">
-        <div class="tab-content mt-4">           
-                <div class="tab-pane fade show active" id="About">
+        <div class="tab-content mt-4">
+            <div class="tab-pane fade show active" id="About">
+                <div class="card shadow-sm border-0 rounded-4 mb-1 w-100">
+                    <div class="card-body gap-2">
+                        <h5 class="fw-bold">About</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mt-2 mb-1"> <strong>Bio:</strong> <br />
+                               <span class="text-muted fw-bold" data-group="hideInfo">@Model.Bio</span>
+                            </p>
+                            <a class="nav-link fw-bolder h5" id="edit" style="cursor: pointer;">Edit</a>
+                        </div>
+                        <textarea class="form-control d-none" name="Bio" rows="3" id="bioTxt">@Model.Bio</textarea>
+                        <p class="mt-2 mb-1"> <strong>RelationShip Status:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="hideInfo">@Model.RelationShipStatus</span>
+                        </p>
+                        <input id="combobox" type="text" class="form-control d-none" list="comboboxOptions" name="RelationShipStatus" value="@Model.RelationShipStatus" maxlength="30" autocomplete="off">
+                        <datalist id="comboboxOptions">
+                            <option value="In a RelationShip">In a RelationShip</option>
+                            <option value="Single">Single</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Married">Married</option>
+                            <option value="Complicated">Complicated</option>
+                        </datalist>
+                        <p class="mt-2 mb-1"> <strong>Location:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="hideInfo">@Model.Location</span>
+                        </p>
+                        <input type="text" class="form-control d-none" name="Location" value="@Model.Location" id="locationTxt" />
+                        <div class="d-flex align-items-center mt-3 gap-1">
+                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="cancelBtn"> Cancel</button>
+                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="saveBtn">Save Changes</button>
+                            <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                                <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                @* <div class="tab-pane fade show active" id="About">
                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">                   
                     <div class="card-body gap-2">
                         <h5 class="fw-bold">About</h5>
                         <div class="d-flex justify-content-between align-items-center">                            
-                            <p class="mt-3 mb-1"><strong>Bio:</strong> 
-                                <span class="collapse show ToggleBio">@Model.Bio</span>  </p>
-                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleBio">Edit</a>
+                            <p class="mt-3 mb-1"><strong>Bio:</strong> <br />
+                                <span><small class="text-muted fw-bold">@Model.Bio</small></span>
+                            </p>
+                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href="#" data-bs-target=".ToggleBio">Edit</a>
                         </div> 
                         <textarea class="collapse ToggleBio form-control" name="Bio" rows="3">@Model.Bio</textarea>
                         <p class="mt-3 mb-1"><strong>RelationShip Status:</strong>
@@ -125,15 +166,16 @@
                         </p>
                         <input type="text" class="collapse ToggleBio form-control" name="Location" value="@Model.Location" />
                         <div class="d-flex align-items-center mt-3 gap-1">
-                             <a class="btn btn-secondary mt-3 mb-1 collapse ToggleBio" data-bs-toggle="collapse" data-bs-target=".ToggleBio">Cancel</a>
+                            <a class="btn btn-secondary mt-3 mb-1 collapse ToggleBio" data-bs-toggle="collapse" href="#" data-bs-target=".ToggleBio"
+                             id="cancelBio"> Cancel</a>
                              <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleBio">Save Changes</button>
                              <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                                    <i class="bi bi-arrow-right fs-1"></i>
-                             <small>Continue</small>    </a> 
-                        </div>                                               
+                                <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>    
+                             </a> 
+                        </div>
                     </div>
                 </div>
-                </div>
+                </div> *@
 
                 <div class="tab-pane fade" id="Education">
                  <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
@@ -261,6 +303,89 @@
 
 
 <script>
+    document.addEventListener("DOMContentLoaded", function(){
+        const edit = document.getElementById("edit");
+        edit.addEventListener("click", function(){
+            const bioInput = document.getElementById("bioTxt");
+            const relationShipStatus = document.getElementById("combobox");
+            const location = document.getElementById("locationTxt");
+            const cancelBtn = document.getElementById("cancelBtn");
+            const saveBtn = document.getElementById("saveBtn");
+            document.querySelectorAll('[data-group="hideInfo"]').forEach(data =>{
+                data.classList.add("d-none");
+            });
+
+
+
+            bioInput.classList.remove("d-none");
+            relationShipStatus.classList.remove("d-none");
+            location.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            saveBtn.classList.remove("d-none");
+
+            cancelBtn.addEventListener("click", function(){
+                document.querySelectorAll('[data-group="hideInfo"]').forEach(data =>{
+                    data.classList.remove("d-none");
+                });
+
+                bioInput.classList.add("d-none");
+                relationShipStatus.classList.add("d-none");
+                location.classList.add("d-none");
+                cancelBtn.classList.add("d-none");
+                saveBtn.classList.add("d-none");
+            });
+
+        });
+
+        const toggle = document.getElementById("toggleDropDown");
+        const menu = document.getElementById("dropDownMenu");
+        toggle.addEventListener("click", function(e){
+            e.stopPropagation();
+            if(menu)
+            {
+                const menuDisplayState = window.getComputedStyle(menu).display === "none";
+                menu.style.display = menuDisplayState ? "block" : "none";
+            }         
+        });
+
+        document.addEventListener("click", function(){
+            menu.style.display = "none";
+        });
+
+
+        const btnToggle = document.getElementById("btnToggleDropDown");
+        const btnMenu = document.getElementById("dropDownMenu");
+        btnToggle.addEventListener("click", function(e){
+            e.stopPropagation();
+            if(btnMenu)
+            {
+                const menuDisplayState = window.getComputedStyle(btnMenu).display === "none";
+                btnMenu.style.display = menuDisplayState ? "block" : "none";
+            }
+        });
+
+        document.addEventListener("click", function(){
+            btnMenu.style.display = "none";
+        });
+
+
+        const profileToggle = document.getElementById("toggleProfileDropDown");
+        const profileMenu = document.getElementById("profileDropDownMenu");
+        profileToggle.addEventListener("click", function(e){
+            e.stopPropagation();
+            if(profileMenu)
+            {
+                const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
+                profileMenu.style.display = menuDisplayState ? "block" : "none";
+            }
+        });
+
+        document.addEventListener("click", function(){
+            profileMenu.style.display = "none";
+        });
+
+
+    });
     
     var tempInfo = '@TempData["Message"]';
     if(tempInfo != null && tempInfo.length > 0)
