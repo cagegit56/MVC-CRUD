@@ -228,6 +228,10 @@
             e.stopPropagation();
             const menuDisplayState = window.getComputedStyle(menu).display === "none";
             menu.style.display = menuDisplayState ? "block" : "none";
+            const firstItem = menu.querySelector("a");
+            if (firstItem) {
+                firstItem.focus();
+            }
         });
 
         document.addEventListener("click", function () {
@@ -240,6 +244,10 @@
             e.stopPropagation();
             const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
             profileMenu.style.display = menuDisplayState ? "block" : "none";
+            const firstItem = profileMenu.querySelector("a");
+            if (firstItem) {
+                firstItem.focus();
+            }
         });
 
         document.addEventListener("click", function () {

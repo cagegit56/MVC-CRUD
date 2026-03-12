@@ -43,7 +43,7 @@
             <div class="position-absolute"
                  style="bottom: -70px; left: 30px; z-index : 1;">
                 <div class="dropdown">
-                    <button id="toggleProfileDropDown" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
+                    <button id="toggleProfileDropDown" class="rounded-circle" type="button" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
                        @if (Model.UserProfilePicUrl != null && Model.UserProfilePicUrl.Length > 0)
                        {
                            <img src="@Model.UserProfilePicUrl" id="profileImg" class="rounded-circle border border-4 border-white profile-pic-phone-width"
@@ -129,7 +129,7 @@
                             <span class="text-muted fw-bold" data-group="hideInfo">@Model.Location</span>
                         </p>
                         <input type="text" class="form-control d-none" name="Location" value="@Model.Location" id="locationTxt" />
-                        <div class="d-flex align-items-center mt-3 gap-1">
+                        <div class="d-flex align-items-center mt-2 gap-1">
                             <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="cancelBtn"> Cancel</button>
                             <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="saveBtn">Save Changes</button>
                             <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
@@ -139,127 +139,101 @@
                     </div>
                 </div>
             </div>
-                @* <div class="tab-pane fade show active" id="About">
-                <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">                   
-                    <div class="card-body gap-2">
-                        <h5 class="fw-bold">About</h5>
-                        <div class="d-flex justify-content-between align-items-center">                            
-                            <p class="mt-3 mb-1"><strong>Bio:</strong> <br />
-                                <span><small class="text-muted fw-bold">@Model.Bio</small></span>
-                            </p>
-                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href="#" data-bs-target=".ToggleBio">Edit</a>
-                        </div> 
-                        <textarea class="collapse ToggleBio form-control" name="Bio" rows="3">@Model.Bio</textarea>
-                        <p class="mt-3 mb-1"><strong>RelationShip Status:</strong>
-                            <span class="collapse show ToggleBio">@Model.RelationShipStatus</span>
-                        </p>
-                        <input id="combobox" type="text" class="form-control collapse ToggleBio" list="comboboxOptions" name="RelationShipStatus" value="@Model.RelationShipStatus" maxlength="30" autocomplete="off">
-                                    <datalist id="comboboxOptions">
-                                        <option value="In a RelationShip">In a RelationShip</option>
-                                        <option value="Single">Single</option>
-                                        <option value="Divorced">Divorced</option>
-                                        <option value="Married">Married</option>
-                                        <option value="Complicated">Complicated</option>
-                                    </datalist>
-                        <p class="mt-3 mb-1"><strong>Location:</strong>
-                            <span class="collapse show ToggleBio">@Model.Location</span>
-                        </p>
-                        <input type="text" class="collapse ToggleBio form-control" name="Location" value="@Model.Location" />
-                        <div class="d-flex align-items-center mt-3 gap-1">
-                            <a class="btn btn-secondary mt-3 mb-1 collapse ToggleBio" data-bs-toggle="collapse" href="#" data-bs-target=".ToggleBio"
-                             id="cancelBio"> Cancel</a>
-                             <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleBio">Save Changes</button>
-                             <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                                <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>    
-                             </a> 
-                        </div>
-                    </div>
-                </div>
-                </div> *@
 
-                <div class="tab-pane fade" id="Education">
-                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
-                    <div class="card-body">
-                        <h5 class="fw-bold">Education</h5>
-                        <div class="d-flex justify-content-between">
-                            <p class="mt-3 mb-1"><strong>University/College:</strong>
-                                <span class="collapse show ToggleEdu">@Model.CollegeName</span>  </p>                           
-                            <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleEdu">Edit</a>
-                        </div>
-                        <input type="text" class="collapse ToggleEdu form-control" name="CollegeName" value="@Model.CollegeName" />
-                        <p class="mt-3 mb-1"><strong>Course:</strong>
-                            <span class="collapse show ToggleEdu">@Model.Course</span>  </p>
-                        <input type="text" class="collapse ToggleEdu form-control" name="Course" value="@Model.Course" />
-                            <p class="mt-3 mb-1"><strong>Period:</strong>
-                                <span class="collapse show ToggleEdu">@Model.CollegePeriod</span>  </p>
-                        <input type="text" class="collapse ToggleEdu form-control" name="CollegePeriod" value="@Model.CollegePeriod"  placeholder="Example-(2025-2025)"/>
-                        <p class="mt-3 mb-1"><strong>High School Name:</strong>
-                            <span class="collapse show ToggleEdu">@Model.HighSchoolName</span>  </p>
-                        <input type="text" class="collapse ToggleEdu form-control" name="HighSchoolName" value="@Model.HighSchoolName" />
-                        <p class="mt-3 mb-1"><strong>Subject:</strong>
-                            <span class="collapse show ToggleEdu">@Model.Subject</span>  </p>
-                        <input type="text" class="collapse ToggleEdu form-control" name="Subject" value="@Model.Subject" />
-                            <p class="mt-3 mb-1"><strong>Period:</strong>
-                                <span class="collapse show ToggleEdu">@Model.SchoolPeriod</span>  </p>
-                        <input type="text" class="collapse ToggleEdu form-control" name="SchoolPeriod" value="@Model.SchoolPeriod" placeholder="Example-(2025-2025)" />
-                        <div class="d-flex align-items-center mt-3 gap-1">
-                              <a class="btn btn-secondary mt-3 mb-1 collapse ToggleEdu" data-bs-toggle="collapse" data-bs-target=".ToggleEdu">Cancel</a>
-                             <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleEdu">Save Changes</button>
-                             <a id="CareerTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                                    <i class="bi bi-arrow-right fs-1"></i>
-                             <small>Continue</small>    </a> 
-                        </div> 
+            <div class="tab-pane fade" id="Education">
+                <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+                <div class="card-body">
+                    <h5 class="fw-bold">Education</h5>
+                    <div class="d-flex justify-content-between">
+                        <p class="mt-2 mb-1"><strong>University/College:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="educationInfo">@Model.CollegeName</span>
+                        </p>
+                        <a class="nav-link fw-bolder h5" id="toggleEducation" style="cursor : pointer;">Edit</a>
                     </div>
+                    <input type="text" class="form-control d-none" id="txtCollgeName" name="CollegeName" value="@Model.CollegeName" />
+                    <p class="mt-2 mb-1"><strong>Course:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.Course</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtCourse" name="Course" value="@Model.Course" />
+                    <p class="mt-2 mb-1"><strong>Period:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.CollegePeriod</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtCollegePeriod" name="CollegePeriod" value="@Model.CollegePeriod"  placeholder="Example-(2025-2025)"/>
+                    <p class="mt-2 mb-1"><strong>High School Name:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.HighSchoolName</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtSchoolName" name="HighSchoolName" value="@Model.HighSchoolName" />
+                    <p class="mt-2 mb-1"><strong>Subject:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.Subject</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtSubject" name="Subject" value="@Model.Subject" />
+                    <p class="mt-2 mb-1"><strong>Period:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.SchoolPeriod</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtSchoolPeriod" name="SchoolPeriod" value="@Model.SchoolPeriod" placeholder="Example-(2025-2025)" />
+                    <div class="d-flex align-items-center mt-2 gap-1">
+                        <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="educationCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="educationSave">Save Changes</button>
+                        <a id="CareerTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                            <i class="bi bi-arrow-right fs-1"></i>
+                            <small>Continue</small>   
+                        </a> 
+                    </div> 
                 </div>
                 </div>
+            </div>
 
-                 <div class="tab-pane fade" id="Career">
-                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+            <div class="tab-pane fade" id="Career">
+                <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
                     <div class="card-body">
                         <h5 class="fw-bold">Career</h5>
                         <div class="d-flex justify-content-between">
-                        <p class="mt-3 mb-1"><strong>Job Title:</strong>
-                             <span class="collapse show TapCar">@Model.JobTitle</span>   </p>                                
-                        <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".TapCar">Edit</a>
+                            <p class="mt-2 mb-1"><strong>Job Title:</strong> <br />
+                                <span class="text-muted fw-bold" data-group="careerInfo">@Model.JobTitle</span>
+                            </p>
+                            <a class="nav-link fw-bolder h5" id="careerEdit" style="cursor: pointer;">Edit</a>
                         </div>
-                        <input type="text" class="collapse TapCar form-control" name="JobTitle" value="@Model.JobTitle"  />
-                        <p class="mt-3 mb-1"><strong>Industry:</strong> 
-                            <span class="collapse show TapCar">@Model.Industry</span>  </p>
-                            <input type="text" class="collapse TapCar form-control" name="Industry" value="@Model.Industry"  />
-                        <p class="mt-3 mb-1"><strong>Period:</strong> 
-                            <span class="collapse show TapCar">@Model.JobPeriod</span>   </p>
-                            <input type="text" class="collapse TapCar form-control" name="JobPeriod" value="@Model.JobPeriod" placeholder="Example-(2025-2025)" />
-                    <div class="d-flex align-items-center mt-3 gap-1">
-                        <a class="btn btn-secondary mt-3 mb-1 collapse TapCar" data-bs-toggle="collapse" data-bs-target=".TapCar">Cancel</a>
-                         <button type="submit" class="btn btn-primary mt-3 mb-1 collapse TapCar">Save Changes</button>
-                        <a id="LocationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                            <i class="bi bi-arrow-right fs-1"></i>
-                            <small>Continue</small>
-                        </a>
-                    </div>    
+                        <input type="text" class="form-control d-none" id="txtJobTitle" name="JobTitle" value="@Model.JobTitle" />
+                        <p class="mt-2 mb-1"><strong>Industry:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="careerInfo">@Model.Industry</span>
+                        </p>
+                        <input type="text" class="form-control d-none" id="txtIndustry" name="Industry" value="@Model.Industry" />
+                        <p class="mt-2 mb-1"><strong>Period:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="careerInfo">@Model.JobPeriod</span>
+                        </p>
+                        <input type="text" class="form-control d-none" id="txtJobPeriod" name="JobPeriod" value="@Model.JobPeriod" placeholder="Example-(2025-2025)" />
+                        <div class="d-flex align-items-center mt-2 gap-1">
+                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="careerCancel">Cancel</button>
+                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="careerSave">Save Changes</button>
+                            <a id="LocationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                                <i class="bi bi-arrow-right fs-1"></i>
+                                <small>Continue</small>
+                            </a>
+                        </div>    
                     </div>
                 </div>
-                </div>
+            </div>
 
-                 <div class="tab-pane fade" id="Location">
-                 <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
-                    <div class="card-body">
-                        <h5 class="fw-bold">Location</h5>
-                        <div class="d-flex justify-content-between">
-                        <p class="mt-3 mb-1"><strong>Originally From:</strong>
-                            <span class="collapse show ToggleLoc">@Model.FromLocation</span>  </p>
-                        <a class="nav-link fw-bolder h5" data-bs-toggle="collapse" href=".ToggleLoc">Edit</a>
-                        </div>  
-                        <input type="text" class="collapse ToggleLoc form-control" name="FromLocation" value="@Model.FromLocation"  />
-                        <p class="mt-3 mb-1"><strong>Website:</strong>
-                                <span class="collapse show ToggleLoc">@Model.Website</span>  </p>
-                        <input type="text" class="collapse ToggleLoc form-control" name="Website" value="@Model.Website" />
-                        <a class="btn btn-secondary mt-3 mb-1 collapse ToggleLoc" data-bs-toggle="collapse" data-bs-target=".ToggleLoc">Cancel</a>
-                        <button type="submit" class="btn btn-primary mt-3 mb-1 collapse ToggleLoc">Save Changes</button>
-                    </div>
-                </div>
-                </div>
-
+            <div class="tab-pane fade" id="Location">
+               <div class="card shadow-sm border-0 rounded-4 mb-4 w-100">
+                  <div class="card-body">
+                     <h5 class="fw-bold">Location</h5>
+                    <div class="d-flex justify-content-between">
+                        <p class="mt-2 mb-1"><strong>Originally From:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="locationInfo">@Model.FromLocation</span>
+                        </p>
+                        <a class="nav-link fw-bolder h5" id="locationEdit" style="cursor: pointer;">Edit</a>
+                    </div>  
+                    <input type="text" class="form-control d-none" id="txtLocation" name="FromLocation" value="@Model.FromLocation"  />
+                    <p class="mt-2 mb-1"><strong>Website:</strong> <br />
+                        <span class="text-muted fw-bold" data-group="locationInfo">@Model.Website</span>
+                    </p>
+                    <input type="text" class="form-control d-none" id="txtWebsite" name="Website" value="@Model.Website" />
+                    <button type="button" class="btn btn-secondary mt-3 mb-1 d-none" id="locationCancel" >Cancel</button>
+                    <button type="submit" class="btn btn-primary mt-3 mb-1 d-none" id="locationSave">Save Changes</button>
+                  </div>
+               </div>
+            </div>
                
         </div>
         </form>
@@ -304,6 +278,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function(){
+        // toggle Text input for updating user bio info
         const edit = document.getElementById("edit");
         edit.addEventListener("click", function(){
             const bioInput = document.getElementById("bioTxt");
@@ -315,8 +290,6 @@
                 data.classList.add("d-none");
             });
 
-
-
             bioInput.classList.remove("d-none");
             relationShipStatus.classList.remove("d-none");
             location.classList.remove("d-none");
@@ -327,15 +300,111 @@
                 document.querySelectorAll('[data-group="hideInfo"]').forEach(data =>{
                     data.classList.remove("d-none");
                 });
-
                 bioInput.classList.add("d-none");
                 relationShipStatus.classList.add("d-none");
                 location.classList.add("d-none");
                 cancelBtn.classList.add("d-none");
                 saveBtn.classList.add("d-none");
             });
-
         });
+
+        // toggle Text input for updating user education info
+        const educationEdit = document.getElementById("toggleEducation");
+        educationEdit.addEventListener("click", function(){
+            const college = document.getElementById("txtCollgeName");
+            const course = document.getElementById("txtCourse");
+            const collegePeriod = document.getElementById("txtCollegePeriod");
+            const school = document.getElementById("txtSchoolName");
+            const subject = document.getElementById("txtSubject");
+            const schoolPeriod = document.getElementById("txtSchoolPeriod");
+            const cancelBtn = document.getElementById("educationCancel");
+            const saveBtn = document.getElementById("educationSave");
+            document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
+                data.classList.add("d-none");
+            });
+
+            college.classList.remove("d-none");
+            course.classList.remove("d-none");
+            collegePeriod.classList.remove("d-none");
+            school.classList.remove("d-none");
+            subject.classList.remove("d-none");
+            schoolPeriod.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            saveBtn.classList.remove("d-none");
+
+            cancelBtn.addEventListener("click", function(){
+                college.classList.add("d-none");
+                course.classList.add("d-none");
+                collegePeriod.classList.add("d-none");
+                school.classList.add("d-none");
+                subject.classList.add("d-none");
+                schoolPeriod.classList.add("d-none");
+                cancelBtn.classList.add("d-none");
+                saveBtn.classList.add("d-none");
+                document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
+                    data.classList.remove("d-none");
+                });
+            });
+        });
+
+        // toggle Text input for updating user career info
+        const editCareer = document.getElementById("careerEdit");
+        editCareer.addEventListener("click", function(){
+            const title = document.getElementById("txtJobTitle");
+            const period = document.getElementById("txtJobPeriod");
+            const industry = document.getElementById("txtIndustry");
+            const cancelBtn = document.getElementById("careerCancel");
+            const saveBtn = document.getElementById("careerSave");
+            document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
+                data.classList.add("d-none");
+            });
+
+            title.classList.remove("d-none");
+            period.classList.remove("d-none");
+            industry.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            saveBtn.classList.remove("d-none");
+
+            cancelBtn.addEventListener("click", function(){
+                title.classList.add("d-none");
+                period.classList.add("d-none");
+                industry.classList.add("d-none");
+                cancelBtn.classList.add("d-none");
+                saveBtn.classList.add("d-none");
+                document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
+                    data.classList.remove("d-none");
+                });
+
+            });
+        });
+
+
+        const editLocation = document.getElementById("locationEdit");
+        editLocation.addEventListener("click", function(){
+            const location = document.getElementById("txtLocation");
+            const website = document.getElementById("txtWebsite");
+            const cancelBtn = document.getElementById("locationCancel")
+            const saveBtn = document.getElementById("locationSave");
+            document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
+                data.classList.add("d-none");
+            });
+
+            location.classList.remove("d-none");
+            website.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            saveBtn.classList.remove("d-none");
+
+            cancelBtn.addEventListener("click", function(){
+                location.classList.add("d-none");
+                website.classList.add("d-none");
+                cancelBtn.classList.add("d-none");
+                saveBtn.classList.add("d-none");
+                document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
+                    data.classList.remove("d-none");
+                });
+            });
+        });
+
 
         const toggle = document.getElementById("toggleDropDown");
         const menu = document.getElementById("dropDownMenu");
@@ -345,9 +414,12 @@
             {
                 const menuDisplayState = window.getComputedStyle(menu).display === "none";
                 menu.style.display = menuDisplayState ? "block" : "none";
+                const firstItem = menu.querySelector("a");
+                if (firstItem) {
+                    firstItem.focus();
+                }
             }         
         });
-
         document.addEventListener("click", function(){
             menu.style.display = "none";
         });
@@ -361,9 +433,12 @@
             {
                 const menuDisplayState = window.getComputedStyle(btnMenu).display === "none";
                 btnMenu.style.display = menuDisplayState ? "block" : "none";
+                const firstItem = btnMenu.querySelector("a");
+                if (firstItem) {
+                    firstItem.focus();
+                }
             }
         });
-
         document.addEventListener("click", function(){
             btnMenu.style.display = "none";
         });
@@ -377,12 +452,18 @@
             {
                 const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
                 profileMenu.style.display = menuDisplayState ? "block" : "none";
+                const firstItem = profileMenu.querySelector("a");
+                if (firstItem) {
+                    firstItem.focus();
+                }
             }
         });
-
         document.addEventListener("click", function(){
             profileMenu.style.display = "none";
         });
+
+
+
 
 
     });
@@ -438,13 +519,13 @@
     });
 
 
-        document.getElementById("bgInput").addEventListener("change", async function (event) {
+    document.getElementById("bgInput").addEventListener("change", async function (event) {
         const file = event.target.files[0];
         if (file) {
-             const formImg = new FormData();
-             formImg.append("coverImage", file);
-             const res = await fetch('/Home/UpdateCoverPicture', {method : "PUT", body : formImg});
-             const result = await res.json();
+                const formImg = new FormData();
+                formImg.append("coverImage", file);
+                const res = await fetch('/Home/UpdateCoverPicture', {method : "PUT", body : formImg});
+                const result = await res.json();
             if(result.success)
             {
                 document.getElementById("bgImage").src = URL.createObjectURL(file);
