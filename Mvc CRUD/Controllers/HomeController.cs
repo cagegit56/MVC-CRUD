@@ -507,7 +507,7 @@ namespace Mvc_CRUD.Controllers
                 model.UserId = _currentUserId;
                 model.UserName = _currentUserName;
                 var postInfo = await _context.Post.Where(x => x.Id == model.PostId)
-                    .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalComments, c => c.TotalComments + 1));
+                    .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalComments, c => (c.TotalComments ?? 0) + 1));
                 await _context.Comment.AddAsync(model);
                 await _context.SaveChangesAsync();
                 await trans.CommitAsync();
@@ -518,7 +518,6 @@ namespace Mvc_CRUD.Controllers
                 await trans.RollbackAsync();
                 return Json(new { success = true, message = $"Failed due to : {ex.Message}" });
             }
-
 
         }
   

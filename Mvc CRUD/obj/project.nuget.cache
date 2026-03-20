@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Na/9esP3M38=",
+  "dgSpecHash": "xpRENuLOtfs=",
   "success": true,
   "projectFilePath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
   "expectedPackageFiles": [
@@ -82,6 +82,18 @@
       "warningLevel": 1,
       "filePath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "libraryId": "MediatR",
+      "targetGraphs": [
+        "net7.0"
+      ]
+    },
+    {
+      "code": "NU1903",
+      "level": "Warning",
+      "message": "Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "projectPath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\cage\\source\\repos\\Mvc CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "libraryId": "AutoMapper",
       "targetGraphs": [
         "net7.0"
       ]

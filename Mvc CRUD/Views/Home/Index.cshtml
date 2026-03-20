@@ -4,8 +4,11 @@
     ViewData["Title"] = "ChatUp-Home";
     var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
     var userAgent = Context.Request.Headers["User-Agent"].ToString();
-    bool isMobile = userAgent.Contains("Android") || userAgent.Contains("iPhone") || userAgent.Contains("iPad") || userAgent.Contains("Mobile");
-
+    bool isMobile = userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("Mobile", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("Mobi", StringComparison.OrdinalIgnoreCase);
 }
 
 <link href="~/css/site.css" rel="stylesheet" />
@@ -16,7 +19,7 @@
         <div class="col-md-8 mx-auto">
             <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
                 <div class="card-body">
-                <div class="d-flex align-items-center gap-1 mb-2">
+                <div class="d-flex align-items-center gap-1 mb-2">                    
                     @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
                     {
                         <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
@@ -52,11 +55,65 @@
             {
                 foreach (var post in Model)
                 {
-                    <div class="card shadow-sm border-0 rounded-4 position-relative mb-1 gap-0" id="Posts-@post.Id" >
+                    <div class="card  border-0 rounded-4 mb-4 gap-0">
+                    <div class="card-body p-0">
+                        <div class="d-flex align-items-center mb-3 p-2">
+                            @if(!string.IsNullOrEmpty(post.UserImageUrl))
+                            {
+                                <img src="@post.UserImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                var usernameFirstLetter = post.UserName.Substring(0,1).ToUpper();
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:45px;height:45px;">
+                                    @usernameFirstLetter
+                                </div>
+                            }
+                            <div class="col ms-1">
+                                <h6 class="mb-0 fw-bold">
+                                    @(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
+                                </small>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(post.PostBgColour))
+                        {
+                            <div class="post-bgcard" style="background-color:@post.PostBgColour">
+                                <div class="post-bgtext">@post.Content</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p>@post.Content</p>
+                        }
+                        @if (!string.IsNullOrEmpty(post.ImageContentUrl))
+                        {
+                            <img src="@post.ImageContentUrl" class="w-100 rounded mb-1" />
+                        }
+                        <div class="d-flex justify-content-around">
+                            <button class="btn btn-light w-100 me-2"><i class="bi bi-hand-thumbs-up"></i> Like</button>
+                            <button class="btn btn-light w-100 me-2"><i class="bi bi-chat"></i> Comment</button>
+                            <button class="btn btn-light w-100"><i class="bi bi-share"></i> Share</button>
+                        </div>
+                    </div>
+                    </div>
+                    @* <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0" id="Posts-@post.Id" >
                         <div class="card-body p-0">
                             <div class="d-flex align-items-center gap-1 p-2">
                                 <div class="d-flex gap-1">
-                                    <img src="@post.UserImageUrl" class="rounded-circle mb-2" alt="user image" width="45" height="45" style="object-fit: cover;">
+                                    @if(!string.IsNullOrEmpty(@post.UserImageUrl))
+                                    {
+                                        <img src="@post.UserImageUrl" class="rounded-circle mb-2" alt="user image" width="45" height="45" style="object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        var usernameFirstLetter = post.UserName.Substring(0, 1).ToUpper();
+                                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                             style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                            @usernameFirstLetter
+                                        </div>
+                                    }
                                     <div class="col start-0">
                                         <h6 class="mb-0 fw-bold">@(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
                                         <small class="text-muted">
@@ -103,7 +160,7 @@
                                 </div>
                                 <div>
                                     <span>
-                                        @if (@post.TotalComments != null && @post.TotalComments != 0)
+                                        @if (@post.TotalComments != null && @post.TotalComments > 0)
                                         {
                                             <span>@post.TotalComments</span>
                                         }
@@ -120,37 +177,38 @@
                         </div>
 
                         <div class="d-flex justify-content-around mb-1 p-2">
-                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")"
+                                 data-action="Like" data-id="@post.Id">
                                     <i class="bi @(post.Isliked ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i> Like</button>
-                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" id="commentsBtn-@post.Id">
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
                                     <i class="bi  bi-chat"></i> Comment</button>
-                                <button class="btn btn-link w-100 text-decoration-none text-muted">
+                                <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share" data-id="@post.Id">
                                     <i class="bi  bi-share"></i> Share
                                 </button>
-                        </div>
+                        </div> *@
 
                         @* ************************Comments ******************** *@
-                        @if (isMobile)
+                    @*     @if (isMobile)
                         {
                             <div class="overlay" id="overlay-@post.Id"></div>
                             <div class="comment-pop-up" id="commentsPopUp-@post.Id">
                                 <div class="dragHandle" id="dragHandle-@post.Id"></div>
                                 <div class="overflow-auto mt-4 w-100 " style="max-height: 340px;">
                                     <div id="displayMobileComments-@post.Id"></div>
-                                     <p>heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey</p>
+                                     <div id="sendCommentBtn-@post.Id"></div>
                                 </div>
                             </div>
                         }
                         else
                         {
-                            <div class="reply-group-@post.Id collapse mt-3 mb-2" id="Comments-@post.Id">
+                            <div class="reply-group-@post.Id collapse mt-3 mb-2" id="commentsContents-@post.Id">
                                 <div class="overflow-auto mb-2 p-2" id="displayer-@post.Id" style="max-height: 350px"></div>
-                                <div id="btnForComments-@post.Id"></div>
+                                    <div id="sendCommentBtn-@post.Id"></div>
                             </div>
                         }
                         
                     </div>
-                    </div>
+                    </div> *@
                    
                     
                 }
@@ -351,16 +409,26 @@
         }
     });
 
-    // when commenting Chek if the input box is empty or not, then toggle the send button to show/hide
-    document.querySelectorAll(".reply-toggle-group").forEach(group => {
-        const comId = group.dataset.commentId;
-        const input = group.querySelector(`#replyCommentInput-${comId}`);
-        const button = group.querySelector(`#replyCommentButton-${comId}`);
 
-        input.addEventListener("input", () => {
-            button.classList.toggle("d-none", input.value.trim() === "");
-        });
-    });
+
+
+
+
+
+
+
+
+
+    // when commenting Chek if the input box is empty or not, then toggle the send button to show/hide
+    // document.querySelectorAll(".reply-toggle-group").forEach(group => {
+    //     const comId = group.dataset.commentId;
+    //     const input = group.querySelector(`#replyCommentInput-${comId}`);
+    //     const button = group.querySelector(`#replyCommentButton-${comId}`);
+
+    //     input.addEventListener("input", () => {
+    //         button.classList.toggle("d-none", input.value.trim() === "");
+    //     });
+    // });
 
     //Show/Hide the replies when view replies clicked
     document.addEventListener('click', function (e) {
@@ -460,328 +528,328 @@
 
 
     // comments button for mobile devices.
-    if (window.innerWidth <= 768) 
-    {
-         document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
-         const buttonId = button.id;
-         const pId = buttonId.replace('commentsBtn-', '');
-         const comments = document.getElementById(`commentsPopUp-${pId}`);
-         const hideBgContent = document.getElementById(`overlay-${pId}`);
+    // if (window.innerWidth <= 768) 
+    // {
+    //      document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
+    //      const buttonId = button.id;
+    //      const pId = buttonId.replace('commentsBtn-', '');
+    //      const comments = document.getElementById(`commentsPopUp-${pId}`);
+    //      const hideBgContent = document.getElementById(`overlay-${pId}`);
               
-             button.addEventListener('click', async function () {             
-                 comments.classList.add("show");
-                 hideBgContent.style.opacity = "1";
-                 hideBgContent.style.pointerEvents = "auto";
-                 document.body.style.overflow = "hidden";
+    //          button.addEventListener('click', async function () {             
+    //              comments.classList.add("show");
+    //              hideBgContent.style.opacity = "1";
+    //              hideBgContent.style.pointerEvents = "auto";
+    //              document.body.style.overflow = "hidden";
 
-                 var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
-                 var result = await res.json();
-                 const data = document.getElementById(`displayMobileComments-${pId}`);
-                 if(!result || result.length !== 0)
-                 {
-                     html = result.map(comment => {
-                     return `<div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                    <small class="fw-bold">fullUserName</small>
-                                                    <p class="mb-1 small">${comment.message}</p>
-                                                    </div>`
-                     }).join("");
-                     data.innerHTML = html;
+    //              var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
+    //              var result = await res.json();
+    //              const data = document.getElementById(`displayMobileComments-${pId}`);
+    //              if(!result || result.length !== 0)
+    //              {
+    //                  html = result.map(comment => {
+    //                  return `<div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+    //                                                 <small class="fw-bold">fullUserName</small>
+    //                                                 <p class="mb-1 small">${comment.message}</p>
+    //                                                 </div>`
+    //                  }).join("");
+    //                  data.innerHTML = html;
 
-                 }else 
-                 {
-                    data.innerHTML = `<div class="text-center py-2">
-                            <div class="display-1 text-muted mb-2">
-                                <i class="bi bi-chat-square-text"></i>
-                            </div>
-                            <h3 class="mb-2">No comments yet</h3>
-                            <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
-                    </div>`;
-                 }
+    //              }else 
+    //              {
+    //                 data.innerHTML = `<div class="text-center py-2">
+    //                         <div class="display-1 text-muted mb-2">
+    //                             <i class="bi bi-chat-square-text"></i>
+    //                         </div>
+    //                         <h3 class="mb-2">No comments yet</h3>
+    //                         <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
+    //                 </div>`;
+    //              }
 
-                 let startY = 0;
-                 let currentY = 0;
-                 let dragging = false;
-                 comments.addEventListener("touchstart", startDrag);
-                 comments.addEventListener("mousedown", startDrag);
+    //              let startY = 0;
+    //              let currentY = 0;
+    //              let dragging = false;
+    //              comments.addEventListener("touchstart", startDrag);
+    //              comments.addEventListener("mousedown", startDrag);
 
-                 function startDrag(e) {
-                     dragging = true;
-                     startY = e.touches ? e.touches[0].clientY : e.clientY;
-                     comments.style.transition = "none";
+    //              function startDrag(e) {
+    //                  dragging = true;
+    //                  startY = e.touches ? e.touches[0].clientY : e.clientY;
+    //                  comments.style.transition = "none";
 
-                     document.addEventListener("touchmove", drag);
-                     document.addEventListener("mousemove", drag);
-                     document.addEventListener("touchend", endDrag);
-                     document.addEventListener("mouseup", endDrag);
-                 }
+    //                  document.addEventListener("touchmove", drag);
+    //                  document.addEventListener("mousemove", drag);
+    //                  document.addEventListener("touchend", endDrag);
+    //                  document.addEventListener("mouseup", endDrag);
+    //              }
 
-                 function drag(e) {
-                     if (!dragging) return;
-                     currentY = e.touches?.[0]?.clientY ?? e.clientY;
-                     const diff = currentY - startY;  
-                     if (diff > 0) comments.style.transform = `translateY(${diff}px)`;                     
-                 }
+    //              function drag(e) {
+    //                  if (!dragging) return;
+    //                  currentY = e.touches?.[0]?.clientY ?? e.clientY;
+    //                  const diff = currentY - startY;  
+    //                  if (diff > 0) comments.style.transform = `translateY(${diff}px)`;                     
+    //              }
 
-                 function endDrag() {
-                     dragging = false;
-                     comments.style.transform = 'translateY(0)';
-                     if (currentY - startY > 100) 
-                     {
-                         comments.classList.remove("show");
-                         hideBgContent.style.opacity = "0";
-                         hideBgContent.style.pointerEvents = "none";
-                         document.body.style.overflow = "";                         
-                     } else {
-                         comments.classList.add("show");
-                         hideBgContent.style.opacity = "1";
-                         hideBgContent.style.pointerEvents = "auto";
-                         document.body.style.overflow = "hidden";
+    //              function endDrag() {
+    //                  dragging = false;
+    //                  comments.style.transform = 'translateY(0)';
+    //                  if (currentY - startY > 100) 
+    //                  {
+    //                      comments.classList.remove("show");
+    //                      hideBgContent.style.opacity = "0";
+    //                      hideBgContent.style.pointerEvents = "none";
+    //                      document.body.style.overflow = "";                         
+    //                  } else {
+    //                      comments.classList.add("show");
+    //                      hideBgContent.style.opacity = "1";
+    //                      hideBgContent.style.pointerEvents = "auto";
+    //                      document.body.style.overflow = "hidden";
                         
-                     }
+    //                  }
 
-                     document.removeEventListener("touchmove", drag);
-                     document.removeEventListener("mousemove", drag);
-                     document.removeEventListener("touchend", endDrag);
-                     document.removeEventListener("mouseup", endDrag);
-                 }
+    //                  document.removeEventListener("touchmove", drag);
+    //                  document.removeEventListener("mousemove", drag);
+    //                  document.removeEventListener("touchend", endDrag);
+    //                  document.removeEventListener("mouseup", endDrag);
+    //              }
 
-             });            
+    //          });            
          
-         document.getElementById(`dragHandle-${pId}`).addEventListener('click', async function () {
-             comments.classList.remove("show");
-             hideBgContent.style.opacity = "0";
-             hideBgContent.style.pointerEvents = "none";
-             document.body.style.overflow = "";
-         });
+    //      document.getElementById(`dragHandle-${pId}`).addEventListener('click', async function () {
+    //          comments.classList.remove("show");
+    //          hideBgContent.style.opacity = "0";
+    //          hideBgContent.style.pointerEvents = "none";
+    //          document.body.style.overflow = "";
+    //      });
 
-         }); 
+    //      }); 
 
-    }else{
+    // }else{
           // Show/Hide the comments when the comment icon/button is clicked
-        document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
-            const buttonId = button.id;
-            const pId = buttonId.replace('commentsBtn-', '');
-            const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);
+    //     document.querySelectorAll('[id^="commentsBtn-"]').forEach( button => {
+    //         const buttonId = button.id;
+    //         const pId = buttonId.replace('commentsBtn-', '');
+    //         const collapseElements = document.querySelectorAll(`.reply-group-${pId}`);
 
-            if (collapseElements.length > 0) {
-                const collapseInstances = [...collapseElements].map(el =>
-                    new bootstrap.Collapse(el, { toggle: false })
-                );
+    //         if (collapseElements.length > 0) {
+    //             const collapseInstances = [...collapseElements].map(el =>
+    //                 new bootstrap.Collapse(el, { toggle: false })
+    //             );
 
-                button.addEventListener('click', async function () {
-                    const display = document.getElementById(`displayer-${pId}`);
-                    var toggleStatus = display.classList.contains("show");
-                    if(!toggleStatus){
-                            var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
-                            var result = await res.json();
-                            console.log(result);
-                            display.classList.add("show");
+    //             button.addEventListener('click', async function () {
+    //                 const display = document.getElementById(`displayer-${pId}`);
+    //                 var toggleStatus = display.classList.contains("show");
+    //                 if(!toggleStatus){
+    //                         var res = await fetch(`Home/GetComments2?postId=${pId}`, {method : "GET"});
+    //                         var result = await res.json();
+    //                         console.log(result);
+    //                         display.classList.add("show");
 
-                        if(!result || result.length !== 0)
-                        {
-                             html = result.map(comment => {
-                             const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
-                             const commentUserNameletter =  comment.userName.charAt(0).toUpperCase() ?? "?";
-                             const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
-                             const commentTime = dateProcessing(comment.sentOn);
+    //                     if(!result || result.length !== 0)
+    //                     {
+    //                          html = result.map(comment => {
+    //                          const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+    //                          const commentUserNameletter =  comment.userName.charAt(0).toUpperCase() ?? "?";
+    //                          const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
+    //                          const commentTime = dateProcessing(comment.sentOn);
 
-                             let repliesDisplayer = "";
-                             let viewRepliesBtn = "";
-                             const commentsCount = comment.reply.length;
-                             if(commentsCount > 0)
-                             {
-                                viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
-                                comment.reply.forEach(res => {
-                                    const replyUserNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
-                                    const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
-                                    const repliesTime = dateProcessing(res.sentOn);
+    //                          let repliesDisplayer = "";
+    //                          let viewRepliesBtn = "";
+    //                          const commentsCount = comment.reply.length;
+    //                          if(commentsCount > 0)
+    //                          {
+    //                             viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
+    //                             comment.reply.forEach(res => {
+    //                                 const replyUserNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+    //                                 const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
+    //                                 const repliesTime = dateProcessing(res.sentOn);
 
-                                    let viewRepliesOfBtn = "";
-                                    let displayReplyOfReply = "";
-                                    const replyOfReplyCount = res.replies.length;
-                                    if(replyOfReplyCount > 0 )
-                                    {
-                                        res.replies.forEach(replyOf => {
-                                            const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
-                                            const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
-                                            const replyOfReplyTime = dateProcessing(replyOf.sentOn);
+    //                                 let viewRepliesOfBtn = "";
+    //                                 let displayReplyOfReply = "";
+    //                                 const replyOfReplyCount = res.replies.length;
+    //                                 if(replyOfReplyCount > 0 )
+    //                                 {
+    //                                     res.replies.forEach(replyOf => {
+    //                                         const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
+    //                                         const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
+    //                                         const replyOfReplyTime = dateProcessing(replyOf.sentOn);
 
-                                            viewRepliesOfBtn = `<div class="view-data-btn" id="replyOfBtn-${res.id}"> <small>View ${replyOfReplyCount} Replies</small> </div>`;
-                                            displayReplyOfReply += `<div class="d-flex mb-2">
-                                                                        ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
-                                                                        <ul class="list-unstyled overflow-hidden px-1">
-                                                                            <li>
-                                                                                <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                                <small class="fw-bold">${replyOfRepyFullUserName}</small>
-                                                                                <p class="mb-1 small">${replyOf.message}</p>
-                                                                                </div>
-                                                                            </li>
-                                                                            <li>
-                                                                            <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
-                                                                                    <small class="text-muted me-3">${replyOfReplyTime}</small>
-                                                                                    <div class="d-flex gap-2">
-                                                                                    <button class="btn p-0 text-muted small mb-1">Like</button>
-                                                                                </div>
-                                                                            </div>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>`;
+    //                                         viewRepliesOfBtn = `<div class="view-data-btn" id="replyOfBtn-${res.id}"> <small>View ${replyOfReplyCount} Replies</small> </div>`;
+    //                                         displayReplyOfReply += `<div class="d-flex mb-2">
+    //                                                                     ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+    //                                                                     : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+    //                                                                     <ul class="list-unstyled overflow-hidden px-1">
+    //                                                                         <li>
+    //                                                                             <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+    //                                                                             <small class="fw-bold">${replyOfRepyFullUserName}</small>
+    //                                                                             <p class="mb-1 small">${replyOf.message}</p>
+    //                                                                             </div>
+    //                                                                         </li>
+    //                                                                         <li>
+    //                                                                         <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+    //                                                                                 <small class="text-muted me-3">${replyOfReplyTime}</small>
+    //                                                                                 <div class="d-flex gap-2">
+    //                                                                                 <button class="btn p-0 text-muted small mb-1">Like</button>
+    //                                                                             </div>
+    //                                                                         </div>
+    //                                                                         </li>
+    //                                                                     </ul>
+    //                                                                 </div>`;
 
-                                        });
-                                    }
-                                        repliesDisplayer += `<div class="d-flex mb-2">
-                                                                ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
-                                                                <ul class="list-unstyled overflow-hidden px-1">
-                                                                    <li>
-                                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                        <small class="fw-bold">${replyFullUserName}</small>
-                                                                        <p class="mb-1 small">${res.message}</p>
-                                                                        </div>
-                                                                    </li>
-                                                                    <li>
-                                                                    <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
-                                                                            <small class="text-muted me-3">${repliesTime}</small>
-                                                                            <div class="d-flex gap-2">
-                                                                            <button class="btn p-0 text-muted small">Like</button>
-                                                                            <button class="btn p-0 text-muted small ms-2 mb-1" id="replyOfReplyBtn-${res.id}">Reply</button>
-                                                                        </div>
-                                                                    </div>
-                                                                    </li>
-                                                                    <li>
-                                                                            <div class="collapse mt-3 mb-4" id="replyOfReplyView-${res.id}">
-                                                                                <form id="replyOfReplyForm-${res.id}" action="Home/SendReplyOfReply" method="post" enctype="multipart/form-data">
-                                                                                    <div class="d-flex responsive-input-reply" style="width : 15rem; height : 15px;">
-                                                                                        <input type="hidden" name="ReplyId" value="${res.id}" />
-                                                                                        <input type="hidden" name="UserName" value="${loggedInUserName}" />
-                                                                                        <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
-                                                                                        <input type="hidden" name="LastName" value="${loggedInLastName}" />
-                                                                                        ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
-                                                                                        <div class="input-group toggle-group-replycomment" data-post-id="${res.id}">
-                                                                                            <input type="text" name="Message" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                                                                    placeholder="Write a reply..." autocomplete="off">
-                                                                                            <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                                                                <i class="bi bi-send"></i>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </form>
-                                                                            </div>
-                                                                    </li>
-                                                                    <li>
-                                                                        ${viewRepliesOfBtn}
-                                                                        <div class="collapse mt-1" id="replyOfView-${res.id}">
-                                                                            ${displayReplyOfReply}
-                                                                        </div>
-                                                                    </li>
-                                                                </ul>
-                                        </div>`;
-
-
-                                });
-                             }
+    //                                     });
+    //                                 }
+    //                                     repliesDisplayer += `<div class="d-flex mb-2">
+    //                                                             ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+    //                                                             : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+    //                                                             <ul class="list-unstyled overflow-hidden px-1">
+    //                                                                 <li>
+    //                                                                     <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+    //                                                                     <small class="fw-bold">${replyFullUserName}</small>
+    //                                                                     <p class="mb-1 small">${res.message}</p>
+    //                                                                     </div>
+    //                                                                 </li>
+    //                                                                 <li>
+    //                                                                 <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+    //                                                                         <small class="text-muted me-3">${repliesTime}</small>
+    //                                                                         <div class="d-flex gap-2">
+    //                                                                         <button class="btn p-0 text-muted small">Like</button>
+    //                                                                         <button class="btn p-0 text-muted small ms-2 mb-1" id="replyOfReplyBtn-${res.id}">Reply</button>
+    //                                                                     </div>
+    //                                                                 </div>
+    //                                                                 </li>
+    //                                                                 <li>
+    //                                                                         <div class="collapse mt-3 mb-4" id="replyOfReplyView-${res.id}">
+    //                                                                             <form id="replyOfReplyForm-${res.id}" action="Home/SendReplyOfReply" method="post" enctype="multipart/form-data">
+    //                                                                                 <div class="d-flex responsive-input-reply" style="width : 15rem; height : 15px;">
+    //                                                                                     <input type="hidden" name="ReplyId" value="${res.id}" />
+    //                                                                                     <input type="hidden" name="UserName" value="${loggedInUserName}" />
+    //                                                                                     <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+    //                                                                                     <input type="hidden" name="LastName" value="${loggedInLastName}" />
+    //                                                                                     ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+    //                                                                                             : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+    //                                                                                     <div class="input-group toggle-group-replycomment" data-post-id="${res.id}">
+    //                                                                                         <input type="text" name="Message" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+    //                                                                                                 placeholder="Write a reply..." autocomplete="off">
+    //                                                                                         <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+    //                                                                                             <i class="bi bi-send"></i>
+    //                                                                                         </button>
+    //                                                                                     </div>
+    //                                                                                 </div>
+    //                                                                             </form>
+    //                                                                         </div>
+    //                                                                 </li>
+    //                                                                 <li>
+    //                                                                     ${viewRepliesOfBtn}
+    //                                                                     <div class="collapse mt-1" id="replyOfView-${res.id}">
+    //                                                                         ${displayReplyOfReply}
+    //                                                                     </div>
+    //                                                                 </li>
+    //                                                             </ul>
+    //                                     </div>`;
 
 
-                                 return  `<div class="d-flex mb-2">
-                                            ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
-                                                <ul class="list-unstyled overflow-hidden px-1">
-                                                    <li>
-                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                        <small class="fw-bold">${fullUserName}</small>
-                                                        <p class="mb-1 small">${comment.message}</p>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
-                                                                <small class="text-muted me-3">${commentTime}</small>
-                                                                <div class="d-flex gap-2">
-                                                                <button class="btn p-0 text-muted small">Like</button>
-                                                                <button class="btn p-0 text-muted small ms-1 mb-1" id="replyCommentsBtn-${comment.id}">Reply</button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="collapse mt-3 mb-4 flex-grow-1" id="replySendReply-${comment.id}">
-                                                            <form id="replyCommentForm-${comment.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
-                                                                <div class="d-flex responsive-input" style="width: 20rem; 15px;">
-                                                                    <input type="hidden" name="CommentId" value="${comment.id}" />
-                                                                    <input type="hidden" name="UserName" value="${loggedInUserName}" />
-                                                                     <input type="hidden" name="LastName" value="${loggedInLastName}" />
-                                                                    <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
-                                                                    ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
-                                                                    <div class="input-group toggle-group-replycomment" data-post-id="${comment.id}">
-                                                                        <input type="text" name="Message" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
-                                                                                placeholder="Write a reply..." autocomplete="off">
-                                                                        <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                                            <i class="bi bi-send"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        ${viewRepliesBtn}
-                                                        <div class="collapse mt-1" id="replyView-${comment.id}"> ${repliesDisplayer} </div>
-                                                    </li>
-                                                </ul>
-                                         </div>`
-                                 }).join("");
-                             display.innerHTML = html;
-                        }
-                        else {
-                            display.innerHTML = `<div class="text-center py-2">
-                                    <div class="display-1 text-muted mb-2">
-                                        <i class="bi bi-chat-square-text"></i>
-                                    </div>
-                                    <h3 class="mb-2">No comments yet</h3>
-                                    <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
-                                    </div>`;
-                        }
-                            document.querySelectorAll('[id^="btnForComments-"]').forEach(data => {
-                                const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
-                                 const Id = data.id.replace('btnForComments-', '');
-                                 data.innerHTML =
-                                    `<form  id="commentForm-${Id}" action="Home/SendComment" method="post" enctype="multipart/form-data">
-                                        <div class="d-flex" style="width : 95%; height : 35px;">
-                                            <input type="hidden" name="PostId" value="${Id}" />
-                                            <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
-                                            <input type="hidden" name="LastName" value="${loggedInLastName}" />
-                                            ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
-                                            <div class="input-group toggle-group-comment" data-post-id="${Id}">
-                                                <input type="text" name="Message" id="commentInput-${Id}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                        placeholder="Write a comment..." autocomplete="off">
-                                                <button type="submit" id="commentButton-${Id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
-                                                    <i class="bi bi-send"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>`;
+    //                             });
+    //                          }
 
-                                    const group = data.querySelector(".toggle-group-comment");
-                                    const postId = group.dataset.postId;
-                                    const input = group.querySelector(`#commentInput-${postId}`);
-                                    const button = group.querySelector(`#commentButton-${postId}`);
 
-                                    input.addEventListener("input", () => {
-                                        button.classList.toggle("d-none", input.value.trim() === "");
-                                    });
+    //                              return  `<div class="d-flex mb-2">
+    //                                         ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+    //                                             : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
+    //                                             <ul class="list-unstyled overflow-hidden px-1">
+    //                                                 <li>
+    //                                                     <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+    //                                                     <small class="fw-bold">${fullUserName}</small>
+    //                                                     <p class="mb-1 small">${comment.message}</p>
+    //                                                     </div>
+    //                                                 </li>
+    //                                                 <li>
+    //                                                     <div class="d-flex justify-content-between align-items-center ms-3 mt-1">
+    //                                                             <small class="text-muted me-3">${commentTime}</small>
+    //                                                             <div class="d-flex gap-2">
+    //                                                             <button class="btn p-0 text-muted small">Like</button>
+    //                                                             <button class="btn p-0 text-muted small ms-1 mb-1" id="replyCommentsBtn-${comment.id}">Reply</button>
+    //                                                         </div>
+    //                                                     </div>
+    //                                                 </li>
+    //                                                 <li>
+    //                                                     <div class="collapse mt-3 mb-4 flex-grow-1" id="replySendReply-${comment.id}">
+    //                                                         <form id="replyCommentForm-${comment.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
+    //                                                             <div class="d-flex responsive-input" style="width: 20rem; 15px;">
+    //                                                                 <input type="hidden" name="CommentId" value="${comment.id}" />
+    //                                                                 <input type="hidden" name="UserName" value="${loggedInUserName}" />
+    //                                                                  <input type="hidden" name="LastName" value="${loggedInLastName}" />
+    //                                                                 <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+    //                                                                 ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+    //                                                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+    //                                                                 <div class="input-group toggle-group-replycomment" data-post-id="${comment.id}">
+    //                                                                     <input type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
+    //                                                                             placeholder="Write a reply..." autocomplete="off">
+    //                                                                     <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+    //                                                                         <i class="bi bi-send"></i>
+    //                                                                     </button>
+    //                                                                 </div>
+    //                                                             </div>
+    //                                                         </form>
+    //                                                     </div>
+    //                                                 </li>
+    //                                                 <li>
+    //                                                     ${viewRepliesBtn}
+    //                                                     <div class="collapse mt-1" id="replyView-${comment.id}"> ${repliesDisplayer} </div>
+    //                                                 </li>
+    //                                             </ul>
+    //                                      </div>`
+    //                              }).join("");
+    //                          display.innerHTML = html;
+    //                     }
+    //                     else {
+    //                         display.innerHTML = `<div class="text-center py-2" id='noComment-${pId}'>
+    //                                 <div class="display-1 text-muted mb-2">
+    //                                     <i class="bi bi-chat-square-text"></i>
+    //                                 </div>
+    //                                 <h3 class="mb-2">No comments yet</h3>
+    //                                 <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
+    //                                 </div>`;
+    //                     }
+    //                         document.querySelectorAll('[id^="sendCommentBtn-"]').forEach(data => {
+    //                             const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+    //                              const Id = data.id.replace('sendCommentBtn-', '');
+    //                              data.innerHTML =
+    //                                 `<form  id="commentForm-${Id}" action="Home/SendComment" method="post" enctype="multipart/form-data">
+    //                                     <div class="d-flex" style="width : 95%; height : 35px;">
+    //                                         <input type="hidden" name="PostId" value="${Id}" />
+    //                                         <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+    //                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
+    //                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+    //                                                 : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+    //                                         <div class="input-group toggle-group-comment" data-post-id="${Id}">
+    //                                             <input type="text" name="Message" id="commentInput-${Id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+    //                                                     placeholder="Write a comment..." autocomplete="off">
+    //                                             <button type="submit" id="commentButton-${Id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+    //                                                 <i class="bi bi-send"></i>
+    //                                             </button>
+    //                                         </div>
+    //                                     </div>
+    //                                 </form>`;
 
-                            });
-                    }else{
-                            display.classList.remove("show");
-                        }
+    //                                 const group = data.querySelector(".toggle-group-comment");
+    //                                 const postId = group.dataset.postId;
+    //                                 const input = group.querySelector(`#commentInput-${postId}`);
+    //                                 const button = group.querySelector(`#commentButton-${postId}`);
 
-                    collapseInstances.forEach(c => c.toggle());
-                });
-            }
-        });
-    }
+    //                                 input.addEventListener("input", () => {
+    //                                     button.classList.toggle("d-none", input.value.trim() === "");
+    //                                 });
+
+    //                         });
+    //                 }else{
+    //                         display.classList.remove("show");
+    //                     }
+
+    //                 collapseInstances.forEach(c => c.toggle());
+    //             });
+    //         }
+    //     });
+    // }
     
 
 
@@ -865,6 +933,12 @@
                                             ${initial}
                                         </div>`;
                     }
+                    const noCommentDefaultMessage = document.getElementById(`noComment-${postId}`);
+                    if (noCommentDefaultMessage) 
+                    {
+                        if (window.getComputedStyle(noCommentDefaultMessage).display != "none") 
+                            noCommentDefaultMessage.style.display = "none";
+                    }                    
                     const container = document.querySelector(`#displayer-${postId}`);
                     container.insertAdjacentHTML("afterbegin", `
                         <div class="d-flex mb-2">
@@ -1117,6 +1191,495 @@
 
         return timeFormat;
     }
+
+    const eventListenerMethods = {
+                                      //  ******************* Click Methods ******************************
+        Like(event){
+        const postId = event.target.dataset.id;
+        console.log("Like post:", postId);
+        },
+
+        Share(event)
+        {
+            const postId = event.target.dataset.id;
+            console.log("Like post:", postId);
+        },
+
+        async CommentsToggle(event)
+        {            
+            const postId = event.target.dataset.id;
+            if (window.innerWidth <= 768 || window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window || navigator.maxTouchPoints > 0)
+            {
+                const comments = document.getElementById(`commentsPopUp-${postId}`);
+                const hideBgContent = document.getElementById(`overlay-${postId}`);
+                comments.classList.add("show");
+                hideBgContent.style.opacity = "1";
+                hideBgContent.style.pointerEvents = "auto";
+                document.body.style.overflow = "hidden";
+
+                var res = await fetch(`Home/GetComments2?postId=${postId}`, {method : "GET"});
+                var result = await res.json();
+                const data = document.getElementById(`displayMobileComments-${postId}`);
+                if(!result || result.length !== 0)
+                {
+                    html = result.map(comment => {
+                        let repliesDisplayer = "";
+                        let viewRepliesBtn = "";
+                        const commentsCount = comment.reply.length;
+                        if(commentsCount > 0)
+                        {
+                        viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
+                        comment.reply.forEach(res => {
+                            const replyUserNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                            const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
+                            const repliesTime = dateProcessing(res.sentOn);
+
+                            let viewRepliesOfBtn = "";
+                            let displayReplyOfReply = "";
+                            const replyOfReplyCount = res.replies.length;
+                            if(replyOfReplyCount > 0 )
+                            {
+                                res.replies.forEach(replyOf => {
+                                    const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
+                                    const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
+                                    const replyOfReplyTime = dateProcessing(replyOf.sentOn);
+
+                                    viewRepliesOfBtn = `<div class="view-data-btn" id="replyOfBtn-${res.id}"> <small>View ${replyOfReplyCount} Replies</small> </div>`;
+                                    displayReplyOfReply += `<div class="d-flex mb-2">
+                                                                ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+                                                                <ul class="list-unstyled overflow-hidden px-1">
+                                                                    <li>
+                                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                                        <small class="fw-bold">${replyOfRepyFullUserName}</small>
+                                                                        <p class="mb-1 small">${replyOf.message}</p>
+                                                                        </div>
+                                                                           <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                            <span class="text-muted small lh-sm flex-shrink-0 me-2">${replyOfReplyTime}</span>
+                                                                            <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                                                <button class="btn btn-sm p-0 text-muted lh-sm">Like</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>`;
+
+                                });
+                            }
+
+                            repliesDisplayer += `<div class="d-flex mb-2">
+                                                    ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+                                                    <ul class="list-unstyled overflow-hidden px-1">
+                                                        <li>
+                                                            <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                            <small class="fw-bold">${replyFullUserName}</small>
+                                                            <p class="mb-1 small">${res.message}</p>
+                                                            </div>
+                                                               <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="text-muted small lh-sm flex-shrink-0 me-2">${repliesTime}</span>
+                                                                <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                                    <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
+                                                                    <button class="btn btn-sm p-0 text-muted lh-sm" id="replyOfReplyBtn-${res.id}">Reply</button>
+                                                                </div>
+                                                             </div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="collapse mt-3 mb-4" id="replyOfReplyView-${res.id}">
+                                                                <form id="replyOfReplyForm-${res.id}" action="Home/SendReplyOfReply" method="post" enctype="multipart/form-data">
+                                                                    <div class="d-flex" style="height: 12px;">
+                                                                        <input type="hidden" name="ReplyId" value="${res.id}" />
+                                                                        <input type="hidden" name="UserName" value="${loggedInUserName}" />
+                                                                        <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                                        <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                                        ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                        <div class="input-group" data-post-id="${res.id}">
+                                                                            <input type="text" name="Message" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill"
+                                                                                    placeholder="Write a reply..." autocomplete="off">
+                                                                            <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                                <i class="bi bi-send"></i>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </li>
+                                                        <li>
+                                                            ${viewRepliesOfBtn}
+                                                            <div class="collapse mt-1" id="replyOfView-${res.id}">
+                                                                ${displayReplyOfReply}
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                            </div>`;
+
+
+                        });
+                        }
+
+                        const commentUserNameletter = comment.userName.charAt(0).toUpperCase();
+                        const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) +" "+ comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
+                        const commentTime = dateProcessing(comment.sentOn);
+                        return `<div class="d-flex">
+                                    ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
+                                    <ul class="list-unstyled overflow-hidden">
+                                        <li>
+                                            <div class="bg-light rounded p-2 flex-grow-1 text-break">
+                                            <small class="fw-bold">${fullUserName}</small>
+                                            <p class="mb-1 small">${comment.message}</p>
+                                            </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-muted small lh-sm flex-shrink-0 me-2">${commentTime}</span>
+                                                <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                    <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
+                                                    <button class="btn btn-sm p-0 text-muted lh-sm" id="replyCommentsBtn-${comment.id}">
+                                                        Reply
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="collapse mt-3 mb-4" id="replySendReply-${comment.id}">
+                                                <form id="replyCommentForm-${comment.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
+                                                    <div class="d-flex" style="height: 12px;">
+                                                        <input type="hidden" name="CommentId" value="${comment.id}" />
+                                                        <input type="hidden" name="UserName" value="${loggedInUserName}" />
+                                                            <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                        <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                        ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                        <div class="input-group me-2" data-post-id="${comment.id}">
+                                                            <input type="text" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" 
+                                                                   class="form-control form-control-sm rounded-pill" placeholder="Write a reply..." autocomplete="off">
+                                                            <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                <i class="bi bi-send"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            ${viewRepliesBtn}
+                                            <div class="collapse mt-1" id="replyView-${comment.id}"> ${repliesDisplayer} </div>
+                                        </li>
+                                    </ul>
+                                </div>`
+                    }).join("");
+                    data.innerHTML = html;
+                }else {
+                    data.innerHTML = `<div class="text-center py-2 mb-4 mt-4">
+                            <div class="display-1 text-muted mb-2">
+                                <i class="bi bi-chat-square-text"></i>
+                            </div>
+                            <h3 class="mb-2">No comments yet</h3>
+                            <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
+                    </div>`;
+                }
+
+                const sendCommentBtn = document.getElementById(`sendCommentBtn-${postId}`);
+                const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                sendCommentBtn.innerHTML = `<form  id="commentForm-${postId}" action="Home/SendComment" method="post" enctype="multipart/form-data">
+                                                <div class="d-flex px-1 mb-1" style="width: 95%; height: 35px;">
+                                                    <input type="hidden" name="PostId" value="${postId}" />
+                                                    <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                    <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                    ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                    <div class="input-group" data-post-id="${postId}">
+                                                        <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                placeholder="Write a comment..." autocomplete="off">
+                                                        <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                            <i class="bi bi-send"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                </form>`;
+
+                // handle comments PopUp closing/dragging actions 
+                let startY = 0;
+                let currentY = 0;
+                let dragging = false;
+                comments.addEventListener("touchstart", startDrag);
+                comments.addEventListener("mousedown", startDrag);
+
+                function startDrag(e) {
+                    dragging = true;
+                    startY = e.touches ? e.touches[0].clientY : e.clientY;
+                    comments.style.transition = "none";
+
+                    document.addEventListener("touchmove", drag);
+                    document.addEventListener("mousemove", drag);
+                    document.addEventListener("touchend", endDrag);
+                    document.addEventListener("mouseup", endDrag);
+                }
+
+                function drag(e) {
+                    if (!dragging) return;
+                    currentY = e.touches?.[0]?.clientY ?? e.clientY;
+                    const diff = currentY - startY;
+                    if (diff > 0) comments.style.transform = `translateY(${diff}px)`;
+                }
+
+                function endDrag() {
+                    dragging = false;
+                    comments.style.transform = 'translateY(0)';
+                    if (currentY - startY > 100)
+                    {
+                        comments.classList.remove("show");
+                        hideBgContent.style.opacity = "0";
+                        hideBgContent.style.pointerEvents = "none";
+                        document.body.style.overflow = "";
+                    } else {
+                        comments.classList.add("show");
+                        hideBgContent.style.opacity = "1";
+                        hideBgContent.style.pointerEvents = "auto";
+                        document.body.style.overflow = "hidden";
+
+                    }
+
+                    document.removeEventListener("touchmove", drag);
+                    document.removeEventListener("mousemove", drag);
+                    document.removeEventListener("touchend", endDrag);
+                    document.removeEventListener("mouseup", endDrag);
+                }
+
+                document.getElementById(`dragHandle-${postId}`).addEventListener('click', async function () {
+                    comments.classList.remove("show");
+                    hideBgContent.style.opacity = "0";
+                    hideBgContent.style.pointerEvents = "none";
+                    document.body.style.overflow = "";
+                });
+
+            }else {
+                const collapseElements = document.getElementById(`commentsContents-${postId}`);
+                if (collapseElements != null) 
+                {
+                    const collapseInstances = new bootstrap.Collapse(collapseElements, { toggle: false })
+                    const display = document.getElementById(`displayer-${postId}`);
+                    var toggleStatus = display.classList.contains("show");
+                    if(!toggleStatus){
+                            var res = await fetch(`Home/GetComments2?postId=${postId}`, {method : "GET"});
+                            var result = await res.json();
+                            console.log(result);
+                            display.classList.add("show");
+
+                        if(!result || result.length !== 0)
+                        {
+                                html = result.map(comment => {
+                                const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                                const commentUserNameletter =  comment.userName.charAt(0).toUpperCase() ?? "?";
+                                const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
+                                const commentTime = dateProcessing(comment.sentOn);
+
+                                let repliesDisplayer = "";
+                                let viewRepliesBtn = "";
+                                const commentsCount = comment.reply.length;
+                                if(commentsCount > 0)
+                                {
+                                viewRepliesBtn = `<div class="view-data-btn" id="replyBtn-${comment.id}"> <small>View ${commentsCount} Replies</small> </div>`;
+                                comment.reply.forEach(res => {
+                                    const replyUserNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                                    const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
+                                    const repliesTime = dateProcessing(res.sentOn);
+
+                                    let viewRepliesOfBtn = "";
+                                    let displayReplyOfReply = "";
+                                    const replyOfReplyCount = res.replies.length;
+                                    if(replyOfReplyCount > 0 )
+                                    {
+                                        res.replies.forEach(replyOf => {
+                                            const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
+                                            const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
+                                            const replyOfReplyTime = dateProcessing(replyOf.sentOn);
+
+                                            viewRepliesOfBtn = `<div class="view-data-btn" id="replyOfBtn-${res.id}"> <small>View ${replyOfReplyCount} Replies</small> </div>`;
+                                            displayReplyOfReply += `<div class="d-flex mb-2">
+                                                                        ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+                                                                        <ul class="list-unstyled overflow-hidden px-1">
+                                                                            <li>
+                                                                                <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                                                    <small class="fw-bold">${replyOfRepyFullUserName}</small>
+                                                                                    <p class="mb-1 small">${replyOf.message}</p>
+                                                                                </div>
+                                                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                                    <span class="text-muted small lh-sm flex-shrink-0 me-2">${replyOfReplyTime}</span>
+                                                                                    <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                                                        <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
+                                                                                    </div>
+                                                                                 </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>`;
+
+                                        });
+                                    }
+
+                                    repliesDisplayer += `<div class="d-flex mb-2">
+                                                            ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+                                                            <ul class="list-unstyled overflow-hidden">
+                                                                <li>
+                                                                    <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                                                    <small class="fw-bold">${replyFullUserName}</small>
+                                                                    <p class="mb-1 small">${res.message}</p>
+                                                                    </div>
+                                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                      <span class="text-muted small lh-sm flex-shrink-0 me-2">${repliesTime}</span>
+                                                                      <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                                         <button class="btn btn-sm p-0 text-muted lh-sm">Like</button>
+                                                                         <button class="btn btn-sm p-0 text-muted lh-sm" id="replyOfReplyBtn-${res.id}">Reply</button>
+                                                                      </div>
+                                                                   </div>
+                                                                </li>
+                                                                <li>
+                                                                        <div class="collapse mt-3 mb-4" id="replyOfReplyView-${res.id}">
+                                                                            <form id="replyOfReplyForm-${res.id}" action="Home/SendReplyOfReply" method="post" enctype="multipart/form-data">
+                                                                                <div class="d-flex" style="height: 12px;">
+                                                                                    <input type="hidden" name="ReplyId" value="${res.id}" />
+                                                                                    <input type="hidden" name="UserName" value="${loggedInUserName}" />
+                                                                                    <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                                                    <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                                                    ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                                    <div class="input-group me-2" data-post-id="${res.id}">
+                                                                                        <input type="text" name="Message" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                                                placeholder="Write a reply..." autocomplete="off">
+                                                                                        <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                                            <i class="bi bi-send"></i>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </form>
+                                                                        </div>
+                                                                </li>
+                                                                <li>
+                                                                    ${viewRepliesOfBtn}
+                                                                    <div class="collapse mt-1" id="replyOfView-${res.id}">
+                                                                        ${displayReplyOfReply}
+                                                                    </div>
+                                                                </li>
+                                                            </ul>
+                                    </div>`;
+
+
+                                });
+                                }
+
+                                return  `<div class="d-flex">
+                                           ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
+                                            <ul class="list-unstyled overflow-hidden">
+                                               <li>
+                                                  <div class="bg-light rounded p-2 flex-grow-1 text-break">
+                                                    <small class="fw-bold">${fullUserName}</small>
+                                                    <p class="mb-1 small">${comment.message}</p>
+                                                  </div>
+                                                  <div class="d-flex justify-content-between align-items-center mb-1">
+                                                      <span class="text-muted small lh-sm flex-shrink-0 me-2">${commentTime}</span>
+                                                      <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                                         <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
+                                                         <button class="btn btn-sm p-0 text-muted lh-sm" id="replyCommentsBtn-${comment.id}">Reply</button>
+                                                      </div>
+                                                   </div>
+                                                </li>
+                                                <li>
+                                                    <div class="collapse mt-3 mb-4 flex-grow-1" id="replySendReply-${comment.id}">
+                                                        <form id="replyCommentForm-${comment.id}" action="Home/SendReplyComment" method="post" enctype="multipart/form-data">
+                                                            <div class="d-flex" style="height: 12px;">
+                                                                <input type="hidden" name="CommentId" value="${comment.id}" />
+                                                                <input type="hidden" name="UserName" value="${loggedInUserName}" />
+                                                                    <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                                <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                                ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                <div class="input-group me-2" data-post-id="${comment.id}">
+                                                                    <input type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
+                                                                            placeholder="Write a reply..." autocomplete="off">
+                                                                    <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                        <i class="bi bi-send"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    ${viewRepliesBtn}
+                                                    <div class="collapse mt-1" id="replyView-${comment.id}"> ${repliesDisplayer} </div>
+                                                </li>
+                                            </ul>
+                                        </div>`
+                                }).join("");
+                                display.innerHTML = html;
+                        }
+                        else {
+                            display.innerHTML = `<div class="text-center py-2" id='noComment-${postId}'>
+                                                    <div class="display-1 text-muted mb-2">
+                                                        <i class="bi bi-chat-square-text"></i>
+                                                    </div>
+                                                    <h3 class="mb-2">No comments yet</h3>
+                                                    <p class="text-muted mb-2">Be the first to share your thoughts on this post!</p>
+                            </div>`;
+                        }
+                        const sendCommentBtn = document.getElementById(`sendCommentBtn-${postId}`);
+                        const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
+                        sendCommentBtn.innerHTML = `<form  id="commentForm-${postId}" action="Home/SendComment" method="post" enctype="multipart/form-data">
+                                                        <div class="d-flex px-1" style="width : 95%; height : 35px;">
+                                                            <input type="hidden" name="PostId" value="${postId}" />
+                                                            <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
+                                                            <input type="hidden" name="LastName" value="${loggedInLastName}" />
+                                                            ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
+                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                            <div class="input-group" data-post-id="${postId}">
+                                                                <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                        placeholder="Write a comment..." autocomplete="off">
+                                                                <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                                                    <i class="bi bi-send"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                        </form>`;
+                    }else{
+                            display.classList.remove("show");
+                        }
+                    collapseInstances.toggle();
+                }
+            }
+
+        },
+                                     //  ******************* Input Methods ******************************
+
+        ReplyCommentInput(event){
+            const commentId = event.target.dataset.id;
+            const button = document.getElementById(`replyCommentButton-${commentId}`);
+            button.classList.toggle("d-none", event.target.value.trim() === "");           
+        },
+
+        CommentInput(event){
+            const id = event.target.dataset.id;
+            const button = document.getElementById(`commentButton-${id}`);
+            button.classList.toggle("d-none", event.target.value.trim() === "");
+        }
+
+    }
+
+    document.addEventListener("click", function(event){
+        const click = event.target.dataset.action;
+        if(!click) return;
+        const handler = eventListenerMethods[click];
+        if(handler) handler(event);
+    });
+
+    document.addEventListener("input", function(event){
+        const action = event.target.dataset.action;
+        if(!action) return;
+        const handler = eventListenerMethods[action];
+        if(handler) handler(event);
+    });
 
 
 </script>
