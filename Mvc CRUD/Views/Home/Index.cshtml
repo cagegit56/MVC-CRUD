@@ -55,9 +55,9 @@
             {
                 foreach (var post in Model)
                 {
-                    <div class="card  border-0 rounded-4 mb-4 gap-0">
+                    <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0">
                     <div class="card-body p-0">
-                        <div class="d-flex align-items-center mb-3 p-2">
+                        <div class="d-flex align-items-center mb-1 p-2">
                             @if(!string.IsNullOrEmpty(post.UserImageUrl))
                             {
                                 <img src="@post.UserImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" />
@@ -76,6 +76,17 @@
                                     <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
                                 </small>
                             </div>
+                            <div class="dropdown ms-auto" id="dropdown-@post.Id">
+                                <button class="btn btn-link text-muted" type="button" id="toggleDropDownMenu-@post.Id">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu custom-dropdown" id="dropDownMenu-@post.Id">
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                </ul>
+                            </div>
                         </div>
                         @if (!string.IsNullOrEmpty(post.PostBgColour))
                         {
@@ -85,17 +96,64 @@
                         }
                         else
                         {
-                            <p>@post.Content</p>
+                            <span>@post.Content</span>
                         }
                         @if (!string.IsNullOrEmpty(post.ImageContentUrl))
                         {
-                            <img src="@post.ImageContentUrl" class="w-100 rounded mb-1" />
+                            <img src="@post.ImageContentUrl" class="post-image img-fluid rounded mb-0" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
                         }
-                        <div class="d-flex justify-content-around">
-                            <button class="btn btn-light w-100 me-2"><i class="bi bi-hand-thumbs-up"></i> Like</button>
-                            <button class="btn btn-light w-100 me-2"><i class="bi bi-chat"></i> Comment</button>
-                            <button class="btn btn-light w-100"><i class="bi bi-share"></i> Share</button>
+                        <div class="d-flex justify-content-between text-muted">
+                            <div>
+                                <span class="me-3"> <i class="bi bi-heart-fill text-danger me-1"></i>
+                                    <span>@post.likes</span>
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                    @if (@post.TotalComments != null && @post.TotalComments > 0)
+                                    {
+                                        <span>@post.TotalComments</span>
+                                    }
+                                    <i class="bi bi-chat me-1"></i>
+                                </span>
+                                <span>
+                                    @if (@post.Comments != null && @post.Comments.Any())
+                                    {
+                                        <span>@post.Shares</span>
+                                    }
+                                    <i class="fa-solid fa-share"></i>
+                                </span>
+                            </div>
                         </div>
+                        <hr class="dropdown mt-2 mb-0">
+                        <div class="d-flex justify-content-around mb-1 p-2">
+                            <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")" data-action="Like" data-id="@post.Id">
+                                <i class="bi @(post.Isliked ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i> Like</button>
+                            <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
+                                <i class="bi  bi-chat"></i> Comment</button>
+                            <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share" data-id="@post.Id">
+                                <i class="bi  bi-share"></i> Share
+                            </button>
+                        </div>
+                        @* *************** Comments *********** *@
+                        @if (isMobile)
+                        {
+                            <div class="overlay" id="overlay-@post.Id"></div>
+                            <div class="comment-pop-up" id="commentsPopUp-@post.Id">
+                                <div class="dragHandle" id="dragHandle-@post.Id"></div>
+                                <div class="overflow-auto mt-4 w-100 " style="max-height: 340px;">
+                                    <div id="displayMobileComments-@post.Id"></div>
+                                     <div id="sendCommentBtn-@post.Id"></div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="reply-group-@post.Id collapse mt-3 mb-2" id="commentsContents-@post.Id">
+                                <div class="overflow-auto mb-2 p-2" id="displayer-@post.Id" style="max-height: 350px"></div>
+                                    <div id="sendCommentBtn-@post.Id"></div>
+                            </div>
+                        }
                     </div>
                     </div>
                     @* <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0" id="Posts-@post.Id" >
