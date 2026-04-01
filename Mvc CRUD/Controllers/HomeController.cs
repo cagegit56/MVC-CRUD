@@ -54,20 +54,39 @@ namespace Mvc_CRUD.Controllers
             _currentUserName = _httpContext.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value ?? _httpContext.HttpContext.User.FindFirst("preferred_username").Value;
         }
 
-        
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            await AddUser();
-            var res = await _context.Post.AsNoTracking().OrderByDescending(x => x.CreatedOn).ToListAsync();
-            //var res = await _context.Post.Include(x => x.Comments.OrderByDescending(c => c.SentOn))
-            //    .ThenInclude(x => x.Reply.OrderByDescending(x => x.SentOn)).OrderByDescending(x => x.CreatedOn).ToListAsync();
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-            ViewBag.Username = CurrentUser.UserName;
-            ViewBag.Lastname = CurrentUser.LastName;
-            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-            return View(res);            
+            try
+            {
+                var newUser = await AddUser();
+                if (!newUser.success)
+                {
+                    ViewBag.ErrorMessage = newUser.error;
+                    TempData["ErrorMessage"] = newUser.error;
+                }
+                var res = await _mediator.Send(new GetAllPostsQuery());
+                var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+                if (CurrentUser != null)
+                {
+                    ViewBag.Username = CurrentUser.UserName;
+                    ViewBag.Lastname = CurrentUser.LastName;
+                    ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
+                }
+                else
+                {
+                    if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = "User does not Exist";
+                }
+                return View(res);
+            }
+            catch (Exception ex)
+            {
+                if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = $"Failed due to: {ex.Message}";
+                return View(new List<Posts>());
+            }
+
         }
 
         [HttpGet]
@@ -97,7 +116,7 @@ namespace Mvc_CRUD.Controllers
             var res = await _mediator.Send(new GetChatsQuery(_currentUserId, _currentUserName, toFriend));
             if (!string.IsNullOrEmpty(toFriend))
                 return Json(res);
-                return View(res);
+            return View(res);
         }
 
         [Authorize]
@@ -232,13 +251,13 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> AddData(int? Id)
         {
-          if(Id.HasValue && Id.Value > 0)
+            if (Id.HasValue && Id.Value > 0)
             {
                 var res = await _context.Chats.SingleOrDefaultAsync(x => x.Id == Id);
                 return View(res);
             }
 
-          return View(new Chat());
+            return View(new Chat());
         }
 
         [HttpPost]
@@ -248,14 +267,14 @@ namespace Mvc_CRUD.Controllers
             Console.WriteLine(model);
             if (ModelState.IsValid)
             {
-               
-               if (model.Id == 0)
+
+                if (model.Id == 0)
                 {
-                  await _context.Chats.AddAsync(model);
+                    await _context.Chats.AddAsync(model);
                 }
-               else
-                { 
-                  _context.Chats.Update(model);               
+                else
+                {
+                    _context.Chats.Update(model);
                 }
 
                 await _context.SaveChangesAsync();
@@ -268,7 +287,7 @@ namespace Mvc_CRUD.Controllers
                 return Json(model);
             }
 
-                return View(model);
+            return View(model);
         }
 
         [Authorize]
@@ -300,6 +319,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> UpdateUserProfile()
         {
             var res = await _context.Profile.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
@@ -307,6 +327,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> UpdateUserProfile(UserProfile userInfo)
         {
             try
@@ -316,7 +337,7 @@ namespace Mvc_CRUD.Controllers
                 {
                     TempData["Message"] = "User not found";
                     return RedirectToAction("UpdateUserProfile");
-                }               
+                }
 
                 if (string.IsNullOrWhiteSpace(userInfo.Bio))
                     userInfo.Bio = res.Bio;
@@ -376,6 +397,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateUserProfile(IFormFile profileImage)
         {
             if (profileImage.Length > 0 && profileImage != null)
@@ -403,11 +425,12 @@ namespace Mvc_CRUD.Controllers
             else
             {
                 return Json(new { success = false, message = $"Failed due to " });
-            }         
+            }
 
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateCoverPicture(IFormFile coverImage)
         {
             if (coverImage.Length > 0 && coverImage != null)
@@ -441,7 +464,7 @@ namespace Mvc_CRUD.Controllers
 
 
         [Authorize]
-        public async Task<IActionResult> AddUser()
+        public async Task<(bool success, string error)> AddUser()
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -452,14 +475,15 @@ namespace Mvc_CRUD.Controllers
                 {
                     var model = new Chat_Users
                     {
+                        UserId = _currentUserId,
                         UserName = _currentUserName,
                         FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value!,
                         LastName = Surname,
                         Email = User.FindFirst(ClaimTypes.Email)?.Value!,
                         //Roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
-                    };                    
+                    };
                     await _context.ChatUsers.AddAsync(model);
-                }               
+                }
 
                 var existingProfile = await _context.Profile.AsNoTracking().AnyAsync(x => x.UserId == _currentUserId);
                 if (!existingProfile)
@@ -472,22 +496,23 @@ namespace Mvc_CRUD.Controllers
                     };
                     await _context.Profile.AddAsync(profileModel);
                 }
-               
-               if(!existingUser || !existingProfile)
+
+                if (!existingUser || !existingProfile)
                 {
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                 }
-                    
-                return Ok("Saved Successfully");
+
+                return (true, "SuccessFully Saved");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return BadRequest($"Unable to save User's Info : {ex.Message}");
+                return (false, $"Unable to save User's Info due to : {ex.Message}");
             }
         }
 
+        [Authorize]
         public async Task<IActionResult> Posts()
         {
             var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
@@ -499,6 +524,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SendComment(Comments model)
         {
             using var trans = await _context.Database.BeginTransactionAsync();
@@ -520,104 +546,9 @@ namespace Mvc_CRUD.Controllers
             }
 
         }
-  
-
-        [HttpGet]
-        public async Task<IActionResult> UserPosts()
-        {
-            var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
-                                         .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
-            return Json(res);
-        }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
-        {
-            try
-            {
-                var model = new Posts();
-                var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
-                model.UserId = CurrentUser.UserId;
-                model.UserName = CurrentUser.UserName!;
-                model.LastName = CurrentUser.LastName!;
-                model.UserImageUrl = CurrentUser.ProfilePicPath;
-                model.PostScope = Scope;
-                model.Content = content;
-                model.PostBgColour = selectedColor;
-                if (postImage != null && postImage.Length > 0)
-                {
-                    string folder = Path.Combine("wwwroot/images/PostPictures");
-                    Directory.CreateDirectory(folder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-                    ViewBag.PostPic = fileName;
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await postImage.CopyToAsync(stream);
-                    }
-
-                    model.ImageContentUrl = "/images/PostPictures/" + fileName;
-                }
-
-                _context.Post.Add(model);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "successful" });
-            }
-            catch (Exception Ex)
-            {
-                return Json(new { success = false, message = $"Unsuccessful due to : {Ex.Message}" });
-            }
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> ChangeProfilePic(IFormFile profileImage)
-        {
-            var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                if (profileImage != null && profileImage.Length > 0)
-                {
-                    var rec = await _context.ChatUsers.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
-             
-                    string folder = Path.Combine("wwwroot/images/ProfilePictures");
-                    Directory.CreateDirectory(folder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await profileImage.CopyToAsync(stream);
-                    }
-
-                    rec!.ProfilePicPath = "/images/ProfilePictures/" + fileName;
-                    _context.ChatUsers.Update(rec);
-
-                    var postPic = await _context.Post.Where(x => x.UserId == _currentUserId).ToListAsync();
-                    var model = new List<Posts>();
-                    foreach (var post in postPic)
-                    {
-                        post.UserImageUrl = $"/images/ProfilePictures/{fileName}";
-                        model.Add(post);
-                    }
-                    _context.Post.UpdateRange(model); 
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }              
-
-                return Json(new { success = true, message = "successful" });
-
-            }catch(Exception Ex)
-            {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = $"Failed due to : {Ex.Message}" });
-            }
-         
-        }
-
-        [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SendReplyComment(CommentsReply model)
         {
             await _context.ReplyComments.AddAsync(model);
@@ -626,6 +557,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
         {
             await _context.Replies.AddAsync(model);
@@ -634,13 +566,15 @@ namespace Mvc_CRUD.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetComments(int postId)
         {
-            var res = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();            
+            var res = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
             return Json(res);
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetComments2(int postId)
         {
             var res = await _context.Comment.Where(x => x.PostId == postId)
@@ -684,7 +618,112 @@ namespace Mvc_CRUD.Controllers
             //return Json(res);
         }
 
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> UserPosts()
+        {
+            var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
+                                         .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
+            return Json(res);
+        }
+
         [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(content) && (postImage == null || postImage.Length == 0))
+                {
+                    return Json(new { success = false, message = "Text content and Image content cannot both be null/empty" });
+                }
+                //var model = new Posts();
+                //var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+                //model.UserId = CurrentUser.UserId;
+                //model.UserName = CurrentUser.UserName!;
+                //model.LastName = CurrentUser.LastName!;
+                //model.UserImageUrl = CurrentUser.ProfilePicPath;
+                //model.PostScope = Scope;
+                //model.Content = content;
+                //model.PostBgColour = selectedColor;
+                //if (postImage != null && postImage.Length > 0)
+                //{
+                //    string folder = Path.Combine("wwwroot/images/PostPictures");
+                //    Directory.CreateDirectory(folder);
+
+                //    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
+                //    string filePath = Path.Combine(folder, fileName);
+                //    ViewBag.PostPic = fileName;
+
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await postImage.CopyToAsync(stream);
+                //    }
+
+                //    model.ImageContentUrl = "/images/PostPictures/" + fileName;
+                //}
+
+                //_context.Post.Add(model);
+                //await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "successful" });
+            }
+            catch (Exception Ex)
+            {
+                return Json(new { success = false, message = $"Unsuccessful due to : {Ex.Message}" });
+            }
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> ChangeProfilePic(IFormFile profileImage)
+        {
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (profileImage != null && profileImage.Length > 0)
+                {
+                    var rec = await _context.ChatUsers.Where(x => x.UserId == _currentUserId).FirstOrDefaultAsync();
+
+                    string folder = Path.Combine("wwwroot/images/ProfilePictures");
+                    Directory.CreateDirectory(folder);
+
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(profileImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+
+                    rec!.ProfilePicPath = "/images/ProfilePictures/" + fileName;
+                    _context.ChatUsers.Update(rec);
+
+                    var postPic = await _context.Post.Where(x => x.UserId == _currentUserId).ToListAsync();
+                    var model = new List<Posts>();
+                    foreach (var post in postPic)
+                    {
+                        post.UserImageUrl = $"/images/ProfilePictures/{fileName}";
+                        model.Add(post);
+                    }
+                    _context.Post.UpdateRange(model);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+
+                return Json(new { success = true, message = "successful" });
+
+            }
+            catch (Exception Ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = $"Failed due to : {Ex.Message}" });
+            }
+
+        }
+
+        [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Gallery(IFormFile photo)
         {
             if (photo != null && photo.Length > 0)
@@ -708,7 +747,7 @@ namespace Mvc_CRUD.Controllers
             //await _context.SaveChangesAsync();
             return Json(new { success = true, message = "successful" });
         }
-        
+
         public IActionResult Logout()
         {
             return SignOut(
@@ -720,6 +759,7 @@ namespace Mvc_CRUD.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
+        [Authorize]
         public IActionResult Privacy()
         {
             return View();

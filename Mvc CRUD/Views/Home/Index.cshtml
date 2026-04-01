@@ -93,7 +93,7 @@
                                 <div class="post-bgtext p-2">@post.Content</div>
                             </div>
                         }
-                        else
+                        @if (!string.IsNullOrEmpty(post.Content) && string.IsNullOrEmpty(post.PostBgColour) )
                         {
                             <span class="p-2">@post.Content</span>
                         }
@@ -205,7 +205,7 @@
                     <textarea id="textAreaBackground" class="form-control text-center mb-2" rows="5" placeholder="What's on your mind?" name="content"
                               style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
                     <button type="button" id="mainButton" data-action="PostColourBtn" class="btn btn-primary mb-2">Colour</button>
-                    <div id="colourButton" class="d-none d-flex gap-1 mb-5">
+                    <div id="colourButton" class="d-none d-flex gap-1 mb-2">
                         <input type="hidden" id="selectedColor" name="selectedColor" />
                         <button type="button" class="btn btn-danger rounded-circle circle-btn" onclick="changeColor('red')"></button>
                         <button type="button" class="btn btn-success rounded-circle circle-btn" onclick="changeColor('green')"></button>
@@ -214,6 +214,7 @@
                         <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('aqua')" style="background-color : aqua"></button>
                         <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('black')" style="background-color : black"></button>
                         <button type="button" class="btn rounded-circle circle-btn" onclick="changeColor('gold')" style="background-color : gold"></button>
+                        <button class="btn btn-sm text-primary" type="button" data-action="HideColours" id="hideShownColourBtn">_Hide</button>
                     </div>
                     <div class="mb-3" id="imagePreviewContainer" style="display: none; max-height : 220px;">
                         <div class="border rounded p-2 position-relative" style="overflow-y: auto; max-height : 200px;">
@@ -1318,10 +1319,26 @@
 
         PostColourBtn(e){
             const coloursBtn = document.getElementById("colourButton");
-            coloursBtn.classList.toggle("d-none");
+            coloursBtn.classList.toggle("d-none", false);
             e.target.style.display = "none";
             const noImageInput = document.getElementById("labelImageInput");
             noImageInput.style.display = 'none';
+            const hideColours = document.getElementById("hideShownColourBtn");
+            hideColours.style.display = "block";
+        },
+
+        HideColours(e){
+            const coloursBtn = document.getElementById("colourButton");
+            coloursBtn.classList.toggle("d-none", true);
+            e.target.style.display = "none";
+            const coloursToggleBtn = document.getElementById("mainButton");
+            coloursToggleBtn.style.display = "block";
+            const selectedColourExist = document.getElementById("selectedColor").value;
+            if(selectedColourExist === ""){
+                const imageInput = document.getElementById("labelImageInput");
+                imageInput.style.display = 'block';
+            }
+           
         },
 
         ToggleDropDownMenu(event){
@@ -1387,6 +1404,14 @@
                             const usernameLetter = loggedInUserName.charAt(0).toUpperCase();
                             const fullName = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + " " + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
                             let image = "";
+                            let bgColour = "";
+                            let postMsg = "";
+                            bgColour = `<div class="post-bgcard" style="background-color: ${postBgColour}">
+                                            <div class="post-bgtext p-2">
+                                                ${imageContent}
+                                            </div>  
+                                        </div>`;
+                            postMsg = `<span class="p-2">${imageContent}</span>`;
                             if (imageContent.size != 0) {
                                  const url = URL.createObjectURL(imageContent);
                                  image = `<img src="${url}" class="post-image img-fluid rounded mb-0" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">`
@@ -1418,12 +1443,31 @@
                                                 </ul>
                                             </div>                                       
                                         </div>
-                                            ${postBgColour ? `<div class="post-bgcard" style="background-color: ${postBgColour}">
-                                                                    <div class="post-bgtext p-2">
-                                                                        ${txtContent}
-                                                                    </div>  
-                                            </div>` :  `<span class="p-2">${txtContent}</span>`}
+                                        ${bgColour}
+                                        ${postMsg}
                                         <div class="p-0">${image}<div>
+                                        <div class="d-flex justify-content-between text-muted">
+                                        <div>
+                                            <span class="me-3"> <i class="bi bi-heart-fill text-danger me-1"></i>
+                                                <span>1</span>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span>1 <i class="bi bi-chat me-1"></i> </span>
+                                            <span>1 <i class="fa-solid fa-share"></i> </span>
+                                        </div>
+                                    </div>
+                                    <hr class="dropdown mt-2 mb-0">
+                                    <div class="d-flex justify-content-around mb-1 p-2">
+                                        <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn active" data-action="Like">
+                                            <i class="bi bi-hand-thumbs-up-fill"></i> Like</button>
+                                        <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle">
+                                            <i class="bi  bi-chat"></i> Comment</button>
+                                        <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share">
+                                            <i class="bi  bi-share"></i> Share
+                                        </button>
+                                    </div>
+
                                     </div>
                                     </div>`);
                             toastr.success("Succesfully created a Post.");

@@ -266,6 +266,16 @@ td.message-cell {
     background-color: #0d6efd;
 }
 
+.fixed-btn {
+    position: fixed;
+    bottom: 2px;
+    width: 100%;
+}
+
+.no-default-display {
+    display: none;
+}
+
 
                                             /*  *****************Userprofile CSS*************** */
 .camera-icon {

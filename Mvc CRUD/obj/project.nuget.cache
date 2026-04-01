@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "JVwUdKanKR0=",
+  "dgSpecHash": "XwCeiu0xv6Q=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Kagiso\\Documents\\Clone chat app\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+  "projectFilePath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kagiso\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Kagiso\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
@@ -78,9 +78,9 @@
       "code": "NU1608",
       "level": "Warning",
       "message": "Detected package version outside of dependency constraint: MediatR.Extensions.Microsoft.DependencyInjection 11.1.0 requires MediatR (>= 11.0.0 && < 12.0.0) but version MediatR 13.1.0 was resolved.",
-      "projectPath": "C:\\Users\\Kagiso\\Documents\\Clone chat app\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "projectPath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\Kagiso\\Documents\\Clone chat app\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "filePath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "libraryId": "MediatR",
       "targetGraphs": [
         "net7.0"
@@ -90,9 +90,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
-      "projectPath": "C:\\Users\\Kagiso\\Documents\\Clone chat app\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "projectPath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\Kagiso\\Documents\\Clone chat app\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "filePath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net7.0"

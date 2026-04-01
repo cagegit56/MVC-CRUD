@@ -175,20 +175,22 @@
             }
 
             friends.forEach(friend => {
+                const username = friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) +" " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1);
+                const usernameFirstLetter = friend.userName.charAt(0).toUpperCase();
                 const card = document.createElement('div');
                 card.id = `row-${friend.id}`;
                 card.className = 'card h-card w-100 shadow-sm border-0 p-3';
                 card.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between flex-wrap">
-                        <div class="d-flex align-items-center mb-2 mb-sm-0">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                        <div class="d-flex">
+                            <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
                                  style="width:50px; height:50px; font-size:1.5rem;">
-                                ${(friend.userName || '?').charAt(0).toUpperCase()}
+                                ${usernameFirstLetter}
                             </div>
-                            <div>
-                                <h6 class="fw-semibold mb-1">${friend.userName ?? 'Unknown User'}</h6>
-                                <small class="text-muted">1.3k followers</small><br />
-                                <small class="text-muted">3 Mutual Friends</small>
+                            <div class="col">
+                                <div class="fw-bold">${username ?? 'XX'}</div>
+                                <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
+                                <div> <small class="text-muted">3 Mutual Friends</small> </div>
                             </div>
                         </div>
 
