@@ -15,7 +15,9 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
     {
         try
         {
-            var res = await _context.Post.OrderByDescending(x => x.CreatedOn).AsNoTracking().ToListAsync(cancellationToken);
+            var allowedScope = new[] { "Public", "Friends", "Only me" };
+            var res = await _context.Post.Where(p => allowedScope.Contains(p.PostScope)).OrderByDescending(x => x.CreatedOn).AsNoTracking()
+                                         .ToListAsync(cancellationToken);
             return res;
         }
         catch (Exception ex)

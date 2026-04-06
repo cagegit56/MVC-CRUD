@@ -153,8 +153,8 @@ C:\Users\Kagiso\Documents\Clone chat app\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc 
 C:\Users\Kagiso\Documents\Clone chat app\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.Development.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.json
-C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.endpoints.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.runtime.json
+C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.endpoints.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.exe
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.deps.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.runtimeconfig.json
@@ -221,10 +221,10 @@ C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.development.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.endpoints.json
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\swae.build.ex.cache
+C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.upToDateCheck.txt
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.Up2Date
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.dll
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.dll
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.pdb
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.genruntimeconfig.cache
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll
-C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.upToDateCheck.txt
