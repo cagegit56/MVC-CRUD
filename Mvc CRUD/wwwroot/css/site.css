@@ -276,6 +276,20 @@ td.message-cell {
     display: none;
 }
 
+.create-post-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);   
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+}
+
+.no-scroll {
+    overflow: hidden;
+    height: 100vh;
+}
+
 
                                             /*  *****************Userprofile CSS*************** */
 .camera-icon {

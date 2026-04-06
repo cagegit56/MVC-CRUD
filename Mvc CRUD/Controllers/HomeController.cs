@@ -638,34 +638,34 @@ namespace Mvc_CRUD.Controllers
                 {
                     return Json(new { success = false, message = "Text content and Image content cannot both be null/empty" });
                 }
-                //var model = new Posts();
-                //var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
-                //model.UserId = CurrentUser.UserId;
-                //model.UserName = CurrentUser.UserName!;
-                //model.LastName = CurrentUser.LastName!;
-                //model.UserImageUrl = CurrentUser.ProfilePicPath;
-                //model.PostScope = Scope;
-                //model.Content = content;
-                //model.PostBgColour = selectedColor;
-                //if (postImage != null && postImage.Length > 0)
-                //{
-                //    string folder = Path.Combine("wwwroot/images/PostPictures");
-                //    Directory.CreateDirectory(folder);
+                var model = new Posts();
+                var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
+                model.UserId = CurrentUser.UserId;
+                model.UserName = CurrentUser.UserName!;
+                model.LastName = CurrentUser.LastName!;
+                model.UserImageUrl = CurrentUser.ProfilePicPath;
+                model.PostScope = Scope;
+                model.Content = content;
+                model.PostBgColour = selectedColor;
+                if (postImage != null && postImage.Length > 0)
+                {
+                    string folder = Path.Combine("wwwroot/images/PostPictures");
+                    Directory.CreateDirectory(folder);
 
-                //    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
-                //    string filePath = Path.Combine(folder, fileName);
-                //    ViewBag.PostPic = fileName;
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
+                    string filePath = Path.Combine(folder, fileName);
+                    ViewBag.PostPic = fileName;
 
-                //    using (var stream = new FileStream(filePath, FileMode.Create))
-                //    {
-                //        await postImage.CopyToAsync(stream);
-                //    }
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await postImage.CopyToAsync(stream);
+                    }
 
-                //    model.ImageContentUrl = "/images/PostPictures/" + fileName;
-                //}
+                    model.ImageContentUrl = "/images/PostPictures/" + fileName;
+                }
 
-                //_context.Post.Add(model);
-                //await _context.SaveChangesAsync();
+                _context.Post.Add(model);
+                await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "successful" });
             }
             catch (Exception Ex)

@@ -6,7 +6,9 @@ wwwroot\images\CoverPictures\63e78a6a-14fe-408f-9954-d603c95c85df.jfif
 wwwroot\images\CoverPictures\6e7c796b-dde7-4225-af00-ac65ad516ac8.jfif
 wwwroot\images\CoverPictures\bc3ac593-4af5-42ef-ae89-3395d0eb2b09.jfif
 wwwroot\images\default-profile.jfif
+wwwroot\images\PostPictures\2194fbf8-c0ea-4c2c-a92a-e83ddbd6616b.jfif
 wwwroot\images\PostPictures\296d07c8-b88e-47e1-b5c5-05be6a9faf64.jfif
+wwwroot\images\PostPictures\405a811a-6235-47a7-ad7d-e8de9a94dd05.png
 wwwroot\images\PostPictures\afe50538-b5ee-47e7-be9f-0f612ba0f3b4.png
 wwwroot\images\PostPictures\f962e1c5-9be3-411e-b243-d7445dde2ffb.jfif
 wwwroot\images\ProfilePictures\228f24ec-467a-4d78-bd70-d7a262061dfc.jpg
