@@ -22,7 +22,7 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
         }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to retrieve posts due to : {ex.Message}");
+            throw new Exception($"Failed to retrieve posts due to : {ex.Message} who is it");
         }
     }
 }

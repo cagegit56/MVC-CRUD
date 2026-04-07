@@ -12,6 +12,7 @@ public class DataDbContext : DbContext
     public virtual DbSet<BlockedUsers> BlockedUser { get; set; }
     public virtual DbSet<UserProfile> Profile { get; set; }
     public virtual DbSet<Posts> Post { get; set; }
+    public virtual DbSet<Likes> Like { get; set; }
     public virtual DbSet<Comments> Comment { get; set; }
     public virtual DbSet<CommentsReply> ReplyComments { get; set; }
     public virtual DbSet<ReplyOfReply> Replies { get; set; }

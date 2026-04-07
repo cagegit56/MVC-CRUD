@@ -74,16 +74,14 @@ namespace Mvc_CRUD.Controllers
                     ViewBag.Username = CurrentUser.UserName;
                     ViewBag.Lastname = CurrentUser.LastName;
                     ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-                }
-                else
-                {
-                    if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = "User does not Exist";
+                }else {
+                    TempData["UserProfile-ErrorMessage"] = "User does not exist please create an account or refresh you browser";
                 }
                 return View(res);
             }
             catch (Exception ex)
             {
-                if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = $"Failed due to: {ex.Message}";
+                TempData["Posts-ErrorMessage"] = $"{ex.Message}";
                 return View(new List<Posts>());
             }
 
@@ -141,7 +139,7 @@ namespace Mvc_CRUD.Controllers
             model.ToUserEmail = email;
             var res = await _mediator.Send(new SendFriendRequestCommand(model));
             if (res != "SuccessFully Sent")
-                return Json(new { success = true, message = $"Failed to send a friend request due to : {res}" });
+                return Json(new { success = false, message = $"Failed to send a friend request due to : {res}" });
 
             return Json(new { success = true, message = "Friend Request Successfully Sent" });
         }
@@ -244,6 +242,35 @@ namespace Mvc_CRUD.Controllers
                 _cache.Set(cachedData, res, TimeSpan.FromMinutes(10));
             }
             return Json(res);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> LikePost(int postId)
+        {
+            var model = new Likes();
+            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+            if (CurrentUser != null)
+            {
+                model.Username = CurrentUser.UserName;
+                model.Lastname = CurrentUser.LastName;
+                model.UserProfilePicUrl = CurrentUser.UserProfilePicUrl;
+                model.PostId = postId;
+            }
+            var res = await _mediator.Send(new LikeCommand(model));
+            if(res)
+                return Json(new {success = true, message = "Liked successfully"});
+            return Json(new { success = false, message = $"Unsuccessfully, due to {res}" });
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UnlikePost(int postId)
+        {
+            var res = await _mediator.Send(new UnlikePostCommand(postId, _currentUserName));
+            if(res)
+                return Json(new { success = true, message = "Unliked Successfully" });
+            return Json(new { success = false, message = $"failed to unlike due to {res}" });
         }
 
 

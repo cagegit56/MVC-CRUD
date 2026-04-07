@@ -1,6 +1,6 @@
 ﻿@model List<Mvc_CRUD.Models.Posts>
 
-@if (TempData["ErrorMessage"] == null)
+@if (!TempData.ContainsKey("ErrorMessage") && !TempData.ContainsKey("Posts-ErrorMessage") && !TempData.ContainsKey("UserProfile-ErrorMessage"))
 {
     ViewData["Title"] = "ChatUp-Home";
     var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
@@ -18,7 +18,7 @@
             <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
                 <div class="card-body">
                 <div class="d-flex align-items-center gap-1 mb-2">                    
-                    @if (!string.IsNullOrEmpty(@ViewBag.UserProfilePic))
+                    @if (!string.IsNullOrEmpty(ViewBag.UserProfilePic))
                     {
                         <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
                              style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
@@ -31,7 +31,7 @@
                         </div>
                     }
                     <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
-                        What's on your mind, @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))?
+                        What's on your mind, @(char.ToUpper(ViewBag.Username![0]) + ViewBag.Username.Substring(1))?
                     </button>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -127,7 +127,7 @@
                         <hr class="dropdown mt-2 mb-0">
                         <div class="d-flex justify-content-around mb-1 p-2">
                             <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")" data-action="Like" data-id="@post.Id">
-                                <i class="bi-hand-thumbs-up"></i> Like</button>
+                                <i class="bi-hand-thumbs-up"></i> Like </button>
                             @* <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")" data-action="Like" data-id="@post.Id">
                                 <i class="bi @(post.Isliked ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i> Like</button> *@
                             <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
@@ -181,10 +181,11 @@
     <div class="overflow-auto col-md-5 mx-auto" style="max-height: 540px;">  
         <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
             <div class="card-body">
-                <div class="d-flex justify-content-center position-relative">
+                <div class="d-flex justify-content-center position-relative mb-3">
                     <h5 class="text-muted fw-bold">Create Post</h5>
                     <button type="button" class="btn-close position-absolute end-0 me-3" data-action="ToggleClosePostCard"></button>
                 </div>
+                <hr class="dropdown mt-2 mb-2">
                 <form asp-controller="Home" asp-action="CreatePost" method="post" data-action="PostForm" id="postForm" enctype="multipart/form-data">
                     <div class="col align-items-center gap-2 mb-2">
                         <div class="d-flex gap-1">
@@ -192,8 +193,8 @@
                                 @initial
                             </div>                        
                             <span class="fw-bolder mt-1">
-                                @(char.ToUpper(@ViewBag.Username[0]) + @ViewBag.Username.Substring(1))
-                                @(char.ToUpper(@ViewBag.Lastname[0]) + @ViewBag.Lastname.Substring(1))
+                                @(char.ToUpper(ViewBag.Username[0]) + ViewBag.Lastname.Substring(1))
+                                @(char.ToUpper(ViewBag.Username[0]) + ViewBag.Lastname.Substring(1))
                             </span> 
                         </div>  
                         <select class="form-select form-select-sm w-auto mt-1" name="Scope">
@@ -292,7 +293,11 @@
                 <i class="bi bi-chat-square-text"></i>
             </div>
             <h3 class="mb-3">Something Went Wrong!<br />We currently attending to the issue.</h3>
-            <p class="text-muted mb-4">The issue is : @TempData["ErrorMessage"] </p>
+            <p class="text-muted mb-4">The issue is : 
+                    @if (TempData.ContainsKey("ErrorMessage")){ @TempData["ErrorMessage"]; }
+                    @if (TempData.ContainsKey("Posts-ErrorMessage")){ @TempData["Posts-ErrorMessage"]; }
+                    @if (TempData.ContainsKey("UserProfile-ErrorMessage")){ @TempData["UserProfile-ErrorMessage"]; }
+            </p>
             <button class="btn btn-primary btn-lg action-btn">
                 <i class="bi bi-plus-circle me-2"></i>Refresh
             </button>
@@ -316,21 +321,35 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const eventListenerClickMethods = {
-            Like(event){
+            async Like(event){
                 const postId = event.target.dataset.id;
                 const icon = event.target.querySelector("i");
                 event.target.classList.toggle("active");
                 if (event.target.classList.contains("active")) {
-                    icon.classList.remove("bi-hand-thumbs-up");
-                    icon.classList.add("bi-hand-thumbs-up-fill");
-                    icon.style.color = "#0d6efd";
-                } else {
-                    event.target.classList.contains("active")
-                    icon.classList.remove("bi-hand-thumbs-up-fill");
-                    icon.classList.add("bi-hand-thumbs-up");
-                }
-            
-                console.log("Like post:", postId);
+                    var results = await fetch(`Home/LikePost?postId=${postId}`, {method : "POST"})
+                    var res = await results.json();
+                    if(res.success)
+                    {
+                        icon.classList.remove("bi-hand-thumbs-up");
+                        icon.classList.add("bi-hand-thumbs-up-fill");
+                        icon.style.color = "#0d6efd";
+                    }else{
+                        toastr.error("Failed to like");
+                    }
+                   
+                }else {
+                    var result = await fetch(`Home/UnlikePost?postId=${postId}`, {method: "PUT"});
+                    var res = await result.json();
+                    if(res.success)
+                    {
+                        event.target.classList.contains("active")
+                        icon.classList.remove("bi-hand-thumbs-up-fill");
+                        icon.classList.add("bi-hand-thumbs-up");
+                    }else{
+                        toastr.error("Failed to unlike");
+                    }
+                   
+                }            
             },
 
             Share(event)
