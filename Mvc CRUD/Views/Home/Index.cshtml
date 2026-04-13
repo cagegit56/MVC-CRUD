@@ -1,4 +1,4 @@
-﻿@model List<Mvc_CRUD.Models.Posts>
+﻿@model List<Mvc_CRUD.Dto.PostsDto>
 
 @if (!TempData.ContainsKey("ErrorMessage") && !TempData.ContainsKey("Posts-ErrorMessage") && !TempData.ContainsKey("UserProfile-ErrorMessage"))
 {
@@ -103,8 +103,12 @@
                         }
                         <div class="d-flex justify-content-between text-muted">
                             <div>
-                                <span class="me-3"> <i class="bi bi-heart-fill text-danger me-1"></i>
-                                    <span>@post.likes</span>
+                                <span class="me-3"> 
+                                    @if (@post.PostLikes?.Count > 0)
+                                    {
+                                        <span>@post.PostLikes?.Count</span>  
+                                        <i class="bi bi-heart-fill text-danger me-1"></i>                                        
+                                    }                                   
                                 </span>
                             </div>
                             <div>
@@ -116,7 +120,7 @@
                                     <i class="bi bi-chat me-1"></i>
                                 </span>
                                 <span>
-                                    @if (@post.Comments != null && @post.Comments.Any())
+                                    @if (@post.Shares > 0)
                                     {
                                         <span>@post.Shares</span>
                                     }
@@ -126,16 +130,23 @@
                         </div>
                         <hr class="dropdown mt-2 mb-0">
                         <div class="d-flex justify-content-around mb-1 p-2">
-                            <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")" data-action="Like" data-id="@post.Id">
-                                <i class="bi-hand-thumbs-up"></i> Like </button>
-                            @* <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")" data-action="Like" data-id="@post.Id">
-                                <i class="bi @(post.Isliked ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i> Like</button> *@
+                            @if (post.PostLikes?.Count > 0)
+                            {
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn" data-action="Like" data-id="@post.Id">
+                                    <i class="bi-hand-thumbs-up-fill" style="color: #0d6efd"></i> Like
+                                </button>
+                            }else{
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn" data-action="Like" data-id="@post.Id">                                    
+                                    <i class="bi-hand-thumbs-up"></i> Like
+                                </button>                                  
+                            }
                             <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
                                 <i class="bi  bi-chat"></i> Comment</button>
                             <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share" data-id="@post.Id">
                                 <i class="bi  bi-share"></i> Share
                             </button>
                         </div>
+
                         @* *************** Comments *********** *@
                         @if (isMobile)
                         {
@@ -167,7 +178,7 @@
                    </div>
                    <h3 class="mb-3">NO Post Yet Incoming Soon....................</h3>
                    <p class="text-muted mb-4">Exciting news : thought provoking post are on the way wait to be woooowed </p>
-                   <button class="btn btn-primary btn-lg action-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                   <button class="btn btn-primary btn-lg action-btn" data-action="ToggleCreatePostCard">
                         <i class="bi bi-plus-circle me-2"></i>Create First Post
                    </button>
                </div>
@@ -290,7 +301,7 @@
     <div class="container mb-5 mt-5">
         <div class="text-center py-5">
             <div class="display-1 text-muted mb-3">
-                <i class="bi bi-chat-square-text"></i>
+                <i class="bi bi-exclamation-triangle text-danger"></i>
             </div>
             <h3 class="mb-3">Something Went Wrong!<br />We currently attending to the issue.</h3>
             <p class="text-muted mb-4">The issue is : 

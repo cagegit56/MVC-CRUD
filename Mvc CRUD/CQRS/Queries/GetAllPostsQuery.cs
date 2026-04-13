@@ -1,6 +1,7 @@
 ﻿using MediatR;
+using Mvc_CRUD.Dto;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-public record GetAllPostsQuery : IRequest<List<Posts>>;
+public record GetAllPostsQuery : IRequest<List<PostsDto>>;

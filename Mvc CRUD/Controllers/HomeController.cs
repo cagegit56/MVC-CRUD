@@ -62,11 +62,7 @@ namespace Mvc_CRUD.Controllers
             try
             {
                 var newUser = await AddUser();
-                if (!newUser.success)
-                {
-                    ViewBag.ErrorMessage = newUser.error;
-                    TempData["ErrorMessage"] = newUser.error;
-                }
+                if (!newUser.success) TempData["ErrorMessage"] = newUser.error;
                 var res = await _mediator.Send(new GetAllPostsQuery());
                 var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
                 if (CurrentUser != null)
@@ -74,7 +70,8 @@ namespace Mvc_CRUD.Controllers
                     ViewBag.Username = CurrentUser.UserName;
                     ViewBag.Lastname = CurrentUser.LastName;
                     ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-                }else {
+                }else 
+                {
                     TempData["UserProfile-ErrorMessage"] = "User does not exist please create an account or refresh you browser";
                 }
                 return View(res);
@@ -82,7 +79,7 @@ namespace Mvc_CRUD.Controllers
             catch (Exception ex)
             {
                 TempData["Posts-ErrorMessage"] = $"{ex.Message}";
-                return View(new List<Posts>());
+                return View(new List<PostsDto>());
             }
 
         }
@@ -539,16 +536,16 @@ namespace Mvc_CRUD.Controllers
             }
         }
 
-        [Authorize]
-        public async Task<IActionResult> Posts()
-        {
-            var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-            ViewBag.Username = CurrentUser.UserName;
-            ViewBag.Lastname = CurrentUser.LastName;
-            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-            return View(res);
-        }
+        //[Authorize]
+        //public async Task<IActionResult> Posts()
+        //{
+        //    var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
+        //    var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+        //    ViewBag.Username = CurrentUser.UserName;
+        //    ViewBag.Lastname = CurrentUser.LastName;
+        //    ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
+        //    return View(res);
+        //}
 
         [HttpPost]
         [Authorize]
@@ -650,8 +647,10 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> UserPosts()
         {
-            var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
-                                         .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
+            var res = await _context.Post.Where(x => x.UserId == _currentUserId)
+                                       .OrderByDescending(x => x.CreatedOn).ToListAsync();
+            //var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
+            //                             .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
             return Json(res);
         }
 
