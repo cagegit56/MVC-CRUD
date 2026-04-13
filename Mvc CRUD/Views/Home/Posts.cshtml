@@ -102,11 +102,11 @@
                                     <div>
                                         <span class="me-3">
                                             <i class="bi bi-heart-fill text-danger me-1"></i>
-                                            <span>@post.likes</span>
+                                            @* <span>@post.likes</span> *@
                                         </span>
                                         <span>
                                             <i class="bi bi-chat me-1"></i>
-                                            <span>@post.Comments.Count</span> comments
+                                            @* <span>@post.Comments.Count</span> comments *@
                                         </span>
                                     </div>
                                     <div>
@@ -118,10 +118,10 @@
                             <!-- Post Actions -->
                             <div class="post-actions">
                                 <div class="d-flex justify-content-around">
-                                    <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
+                                    @* <button class="btn btn-link text-decoration-none text-muted like-btn @(post.Isliked ? "active" : "")">
                                         <i class="bi @(post.Isliked ? "bi-heart-fill" : "bi-heart") me-1"></i>
                                         <span class="like-count">@post.likes</span>
-                                    </button>
+                                    </button> *@
                                     <button class="btn btn-link text-decoration-none text-muted"
                                             data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
                                         <i class="bi bi-chat me-1"></i>Comment
@@ -135,7 +135,7 @@
                                 <div class="collapse mt-3" id="comments-@post.Id">
                                     <div class="comment-box">
                                         <!-- Existing Comments -->
-                                        @foreach (var comment in post.Comments)
+                                        @* @foreach (var comment in post.Comments)
                                         {
                                             <div class="d-flex mb-2">
                                                 <img src="@comment.UserImageUrl" class="rounded-circle me-2"
@@ -150,7 +150,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        }
+                                        } *@
 
                                         <!-- Add Comment -->
                                         <div class="d-flex mt-3">

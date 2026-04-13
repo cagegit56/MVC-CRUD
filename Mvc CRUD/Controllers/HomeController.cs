@@ -62,11 +62,7 @@ namespace Mvc_CRUD.Controllers
             try
             {
                 var newUser = await AddUser();
-                if (!newUser.success)
-                {
-                    ViewBag.ErrorMessage = newUser.error;
-                    TempData["ErrorMessage"] = newUser.error;
-                }
+                if (!newUser.success) TempData["ErrorMessage"] = newUser.error;
                 var res = await _mediator.Send(new GetAllPostsQuery());
                 var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
                 if (CurrentUser != null)
@@ -74,17 +70,16 @@ namespace Mvc_CRUD.Controllers
                     ViewBag.Username = CurrentUser.UserName;
                     ViewBag.Lastname = CurrentUser.LastName;
                     ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-                }
-                else
+                }else 
                 {
-                    if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = "User does not Exist";
+                    TempData["UserProfile-ErrorMessage"] = "User does not exist please create an account or refresh you browser";
                 }
                 return View(res);
             }
             catch (Exception ex)
             {
-                if (TempData["ErrorMessage"] == null) TempData["ErrorMessage"] = $"Failed due to: {ex.Message}";
-                return View(new List<Posts>());
+                TempData["Posts-ErrorMessage"] = $"{ex.Message}";
+                return View(new List<PostsDto>());
             }
 
         }
@@ -141,7 +136,7 @@ namespace Mvc_CRUD.Controllers
             model.ToUserEmail = email;
             var res = await _mediator.Send(new SendFriendRequestCommand(model));
             if (res != "SuccessFully Sent")
-                return Json(new { success = true, message = $"Failed to send a friend request due to : {res}" });
+                return Json(new { success = false, message = $"Failed to send a friend request due to : {res}" });
 
             return Json(new { success = true, message = "Friend Request Successfully Sent" });
         }
@@ -244,6 +239,35 @@ namespace Mvc_CRUD.Controllers
                 _cache.Set(cachedData, res, TimeSpan.FromMinutes(10));
             }
             return Json(res);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> LikePost(int postId)
+        {
+            var model = new Likes();
+            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+            if (CurrentUser != null)
+            {
+                model.Username = CurrentUser.UserName;
+                model.Lastname = CurrentUser.LastName;
+                model.UserProfilePicUrl = CurrentUser.UserProfilePicUrl;
+                model.PostId = postId;
+            }
+            var res = await _mediator.Send(new LikeCommand(model));
+            if(res)
+                return Json(new {success = true, message = "Liked successfully"});
+            return Json(new { success = false, message = $"Unsuccessfully, due to {res}" });
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UnlikePost(int postId)
+        {
+            var res = await _mediator.Send(new UnlikePostCommand(postId, _currentUserName));
+            if(res)
+                return Json(new { success = true, message = "Unliked Successfully" });
+            return Json(new { success = false, message = $"failed to unlike due to {res}" });
         }
 
 
@@ -512,16 +536,16 @@ namespace Mvc_CRUD.Controllers
             }
         }
 
-        [Authorize]
-        public async Task<IActionResult> Posts()
-        {
-            var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-            ViewBag.Username = CurrentUser.UserName;
-            ViewBag.Lastname = CurrentUser.LastName;
-            ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-            return View(res);
-        }
+        //[Authorize]
+        //public async Task<IActionResult> Posts()
+        //{
+        //    var res = await _context.Post.Include(x => x.Comments).OrderByDescending(x => x.CreatedOn).ToListAsync();
+        //    var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
+        //    ViewBag.Username = CurrentUser.UserName;
+        //    ViewBag.Lastname = CurrentUser.LastName;
+        //    ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
+        //    return View(res);
+        //}
 
         [HttpPost]
         [Authorize]
@@ -623,8 +647,10 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> UserPosts()
         {
-            var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
-                                         .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
+            var res = await _context.Post.Where(x => x.UserId == _currentUserId)
+                                       .OrderByDescending(x => x.CreatedOn).ToListAsync();
+            //var res = await _context.Post.Include(x => x.Comments).Where(x => x.UserId == _currentUserId)
+            //                             .OrderByDescending(x => x.CreatedOn).AsSplitQuery().ToListAsync();
             return Json(res);
         }
 

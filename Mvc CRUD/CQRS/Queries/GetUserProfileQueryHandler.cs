@@ -22,7 +22,7 @@ internal sealed class GetUserProfileQueryHandler : IRequestHandler<GetUserProfil
         }
         catch (Exception ex) 
         {
-            throw new Exception($"Failed to return data due to : {ex.Message}");
+            throw new Exception($"Failed to return data from user profile due to : {ex.Message}");
         }
 
     }
