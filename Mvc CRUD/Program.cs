@@ -1,20 +1,22 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddDbContext<DataDbContext>( options => 
 options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionStr")));
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IGetAllService, GetAllService>();
 builder.Services.AddScoped<IPaginationService, PaginationService>();
+builder.Services.AddScoped<IRateLimitViolationTracker, RateLimitViolationTracker>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(Program));
  builder.Services.AddMediatR(cfg =>
@@ -23,6 +25,7 @@ builder.Services.AddAutoMapper(typeof(Program));
   });
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+builder.Services.AddDistributedMemoryCache();
 
 
 builder.Services.AddAuthentication(options =>
@@ -38,7 +41,7 @@ builder.Services.AddAuthentication(options =>
     options.Authority = config["Authority"];
     options.ClientId = config["ClientId"];
     options.ClientSecret = config["ClientSecret"];
-    options.ResponseType = config["ResponseType"];
+    options.ResponseType = config["ResponseType"]!;
     options.CallbackPath = config["CallbackPath"];
     options.SaveTokens = true;
     options.GetClaimsFromUserInfoEndpoint = true;
@@ -49,7 +52,6 @@ builder.Services.AddAuthentication(options =>
     options.NonceCookie.SameSite = SameSiteMode.None;
     options.CorrelationCookie.SameSite = SameSiteMode.None;
     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
 
     options.Events = new Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents
     {
@@ -75,6 +77,39 @@ builder.Services.AddAuthentication(options =>
 });
 
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("CommentReplyPolicy", context =>
+    {
+        var user = context.User.FindFirst(ClaimTypes.Name)?.Value ?? context.User.FindFirst("preferred_username")?.Value 
+                          ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        return RateLimitPartition.GetSlidingWindowLimiter(user, _ => new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 4,
+            Window = TimeSpan.FromSeconds(15),
+            SegmentsPerWindow = 6,
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        // var endpoint = httpContext.GetEndpoint();
+        // var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+        var httpContext = context.HttpContext; 
+        var user = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        var violation = context.HttpContext.RequestServices.GetRequiredService<IRateLimitViolationTracker>();
+        var total = await violation.ExtendBlockAsync(user);
+        httpContext.Response.Headers.RetryAfter = total.ToString();
+        httpContext.Response.StatusCode = 429;
+        await httpContext.Response.WriteAsync($"Error too many request, please retry after: {total}");
+    };
+
+});
+
+
+
 
 var app = builder.Build();
 
@@ -95,7 +130,47 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.Use(async (context, next) =>
+{
+    var violation = context.RequestServices.GetRequiredService<IRateLimitViolationTracker>();
+    var key = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    var (blocked, retryAfter) = await violation.IsBlockedAsync(key);
+    if (blocked)
+    {
+        var total = await violation.ExtendBlockAsync(key);
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = 429;
+        context.Response.Headers["Retry-After"] = total.ToString();
+        var acceptsHtml = context.Request.Headers["Accept"].ToString().Contains("text/html");
+        if (acceptsHtml)
+        {
+            context.Response.ContentType = "text/html";
+            await context.Response.WriteAsync($"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Too Many Requests</title>
+                    <meta http-equiv="refresh" content="{total}">
+                </head>
+                <body>
+                    <h1>Too Many Requests</h1>
+                    <p>You have been temporarily blocked. Try again after: <strong>{total} seconds</strong>.</p>
+                    <p>This page will automatically refresh when your block expires.</p>
+                    <p>for further assistance/help please visit: www.bepatientcalmdownrelax.com or contact : 076 987 6543</p>
+                </body>
+                </html>
+            """);
+        }
+        else
+        {
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync($"error you have been temporarily blocked due to: Too many requests, please refresh after :{total}");
+        }
+        return;
+    }
+    await next();
+});
+app.UseRateLimiter();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

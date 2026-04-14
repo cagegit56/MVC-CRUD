@@ -2720,11 +2720,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "projectUniqueName": "C:\\Users\\Kagiso\\Desktop\\Test Project\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "projectName": "Mvc CRUD",
-      "projectPath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
+      "projectPath": "C:\\Users\\Kagiso\\Desktop\\Test Project\\MVC-CRUD\\Mvc CRUD\\Mvc CRUD.csproj",
       "packagesPath": "C:\\Users\\Kagiso\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Kagiso\\source\\repos\\MVC-CRUD\\Mvc CRUD\\obj\\",
+      "outputPath": "C:\\Users\\Kagiso\\Desktop\\Test Project\\MVC-CRUD\\Mvc CRUD\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

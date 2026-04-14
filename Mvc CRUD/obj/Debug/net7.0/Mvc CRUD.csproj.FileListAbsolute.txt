@@ -228,3 +228,80 @@ C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.pdb
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.genruntimeconfig.cache
 C:\Users\Kagiso\source\repos\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.Development.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\appsettings.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.runtime.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.staticwebassets.endpoints.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.exe
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.deps.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.runtimeconfig.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mvc CRUD.pdb
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\AutoMapper.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Humanizer.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\MediatR.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\MediatR.Contracts.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\MediatR.Extensions.Microsoft.DependencyInjection.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Bcl.TimeProvider.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Design.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Hosting.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.ObjectPool.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Options.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.Extensions.Primitives.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Mono.TextTemplating.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.CodeDom.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.Diagnostics.DiagnosticSource.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.IO.Pipelines.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.Net.WebSockets.WebSocketProtocol.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.Text.Encodings.Web.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\System.Threading.Channels.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\bin\Debug\net7.0\runtimes\browser\lib\net7.0\System.Text.Encodings.Web.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.AssemblyReference.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\rpswa.dswa.cache.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfoInputs.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.AssemblyInfo.cs
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.CoreCompileInputs.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.RazorAssemblyInfo.cs
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.sourcelink.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\rjimswa.dswa.cache.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmrazor.dswa.cache.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\rjsmcshtml.dswa.cache.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\bundle\Mvc CRUD.styles.css
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\scopedcss\projectbundle\Mvc CRUD.bundle.scp.css
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.json.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.development.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.build.endpoints.json
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\swae.build.ex.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\staticwebassets.upToDateCheck.txt
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.csproj.Up2Date
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\refint\Mvc CRUD.dll
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.pdb
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\Mvc CRUD.genruntimeconfig.cache
+C:\Users\Kagiso\Desktop\Test Project\MVC-CRUD\Mvc CRUD\obj\Debug\net7.0\ref\Mvc CRUD.dll

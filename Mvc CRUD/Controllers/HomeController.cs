@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Common;
@@ -18,6 +19,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -56,7 +58,7 @@ namespace Mvc_CRUD.Controllers
 
 
         [HttpGet]
-        [Authorize]
+        [Authorize]      
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
             try
@@ -549,6 +551,7 @@ namespace Mvc_CRUD.Controllers
 
         [HttpPost]
         [Authorize]
+        [EnableRateLimiting("CommentReplyPolicy")]
         public async Task<IActionResult> SendReplyComment(CommentsReply model)
         {
             await _context.ReplyComments.AddAsync(model);
@@ -605,11 +608,10 @@ namespace Mvc_CRUD.Controllers
                             Message = y.Message,
                             ReplyId = y.ReplyId,
                             SentOn = y.SentOn,
-                        }).OrderByDescending(x => x.SentOn).ToList(),
-                    }).ToList()
+                        }).OrderByDescending(y => y.SentOn).ToList(),
+                    }).OrderByDescending(r => r.SentOn).ToList()
 
                 }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            //var res = _mapper.Map<List<CommentsDto>>(query);
             return Json(res);
 
             //var query = await _context.Comment.Include(x => x.Reply).Where(x => x.PostId == postId)
