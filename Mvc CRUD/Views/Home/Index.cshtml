@@ -263,7 +263,7 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-secondary" data-action="CancelPostForm">Cancel</button>
-                    <button type="submit" class="btn btn-primary action-btn px-4">
+                    <button type="submit" id="createPostBtn" class="btn btn-primary action-btn px-4">
                         <i class="bi bi-send me-2"></i>Post
                     </button>
                 </form>
@@ -644,7 +644,7 @@
                                     const commentsCount = comment.reply.length; 
                                     if(commentsCount > 0)
                                     {
-                                    viewRepliesBtn = `<div class="view-data-btn small" data-action="ViewRepliesToggle" data-id="${comment.id}">View ${commentsCount} Replies</div>`;
+                                    viewRepliesBtn = `<div class="view-data-btn small" data-action="ViewRepliesToggle" data-id="${comment.id}" id="replyBtn-${comment.id}">View ${commentsCount} Replies</div>`;
                                     comment.reply.forEach(res => {
                                         const replyUserNameletter =  res.userName.charAt(0).toUpperCase() ?? "?";
                                         const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
@@ -941,13 +941,15 @@
                 const button = document.getElementById(`commentButton-${id}`);
                 if(!button) return;
                 button.classList.toggle("d-none", event.target.value.trim() === "");
+                button.disabled = false;
             },
 
             ReplyCommentInput(event){
                 const commentId = event.target.dataset.id;
                 const button = document.getElementById(`replyCommentButton-${commentId}`);
                 if(!button) return;
-                button.classList.toggle("d-none", event.target.value.trim() === "");           
+                button.classList.toggle("d-none", event.target.value.trim() === ""); 
+                button.disabled = false;
             },    
 
             ReplyOfReplyInput(e){
@@ -955,6 +957,7 @@
                 const button = document.getElementById(`replyOfCommentButton-${id}`);
                 if(!button) return;
                 button.classList.toggle("d-none", e.target.value.trim() === "");
+                button.disabled = false;
             }
         };
 
@@ -1116,6 +1119,9 @@
                                 </ul>
                             </div>`);
                         form.reset();
+                        const submitBtn = document.getElementById(`commentButton-${id}`);
+                        submitBtn.disabled = true;
+                        submitBtn.classList.toggle("d-none", true);
                     }else {
                          toastr.error("Failed to send a comment due to : ");
                     }
@@ -1130,9 +1136,14 @@
                 const form = e.target;
                 const formData = new FormData(form);
                 const message = formData.get("Message");
+                if(!message) return toastr.error("Cannot send an empty comment! please say or add something..");
                 try 
                 {
                     const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                    if (response.status === 429){
+                        const retryTime = parseInt(response.headers.get("Retry-After")) || 15;
+                        return rateLimitingError(retryTime);
+                    }                   
                     if (response.ok) {
                         let imageContent = '';
                         const initial = loggedInUserName.charAt(0).toUpperCase();
@@ -1147,11 +1158,9 @@
                         }
                         const visibilityCheck = document.getElementById(`replyBtn-${id}`);
                         const collapseElement = document.querySelector(`#replyView-${id}`);                    
-                        if (collapseElement) 
-                        {
-                            const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false });
-                            collapseInstance.toggle();
-                        }                   
+                        if(!collapseElement.classList.contains("show")) {
+                            bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false }).show();
+                        }                  
                         const container = collapseElement;
                         container.insertAdjacentHTML("afterbegin", `
                             ${visibilityCheck ? "" : `<div class="view-data-btn" id="replyBtn-${id}"> <small>View 1 Replies</small> </div>`}
@@ -1176,6 +1185,9 @@
                                 </ul>
                             </div>`);
                         form.reset();
+                        const submitBtn = document.getElementById(`replyCommentButton-${id}`);
+                        submitBtn.disabled = true;
+                        submitBtn.classList.toggle("d-none", true);
                     }else {
                         toastr.error("Failed to send a reply due to : ");
                     }
@@ -1208,15 +1220,13 @@
 
                         const visibilityCheck = document.getElementById(`replyOfBtn-${id}`);
                         const collapseElement = document.querySelector(`#replyOfView-${id}`);
-                        if (collapseElement)
-                        {
-                            const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false });
-                            collapseInstance.toggle();
-                        }
+                        if(!collapseElement.classList.contains("show")) {
+                            bootstrap.Collapse.getOrCreateInstance(collapseElement, { toggle: false }).show();
+                        }  
 
                         const container = collapseElement;
                         container.insertAdjacentHTML("afterbegin", `
-                            ${visibilityCheck ? "" : `<div class="view-data-btn" id="replyBtn-${id}"> <small>View 1 Replies</small> </div>`}
+                            ${visibilityCheck ? "" : `<div class="view-data-btn" id="replyOfBtn-${id}"> <small>View 1 Replies</small> </div>`}
                             <div class="d-flex mb-2">
                                 ${imageContent}
                                 <ul class="list-unstyled">
@@ -1237,6 +1247,9 @@
                                 </ul>
                             </div>`);
                         form.reset();
+                        const submitBtn = document.getElementById(`replyOfCommentButton-${id}`);
+                        submitBtn.disabled = true;
+                        submitBtn.classList.toggle("d-none", true);
                     } else {
                         toastr.error("Failed to send a reply due to : ");
                     }
@@ -1270,11 +1283,44 @@
             if(handler) handler(event);
         });
 
+      
 
+     
 
 
 
     });
+
+    let activeToast = "";
+    let activeInterval = "";
+    function rateLimitingError(retryTime){ 
+        if (activeToast) {
+            clearInterval(activeInterval);
+            toastr.clear(activeToast);
+            activeToast = null;
+        }
+        let remainingSec = retryTime;
+
+        toastr.options = {
+            "closeButton": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "0"
+        };
+
+        activeToast = toastr.error(`Too many requests. Try again in ${remainingSec} sec.`); 
+        
+        activeInterval = setInterval(() => {
+            remainingSec--;
+            if (remainingSec <= 0) {
+                clearInterval(activeInterval);
+                activeInterval = "";
+                activeToast = "";
+                toastr.clear();
+                return toastr.success("You can try again now.","",{timeOut: 7000});
+            }
+            activeToast.find('.toast-message').text(`Too many requests. Try again in ${remainingSec} sec.`);                       
+        }, 1000);         
+    }
 
     function changeColor(color) {
         var textarea = document.getElementById("textAreaBackground");

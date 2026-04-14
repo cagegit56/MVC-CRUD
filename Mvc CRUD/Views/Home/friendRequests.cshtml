@@ -95,14 +95,7 @@
     <script>
         let currentPage = 1;
         let pageSize = 5;
-        let selectedTab = "";
-
-        toastr.options = {
-            "closeButton": true,
-            "progressBar": false,
-            "positionClass": "toast-top-right",
-            "timeOut": "5000"
-        };
+        let selectedTab = "";       
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('pageSize').addEventListener('change', handlePageSizeChange);   
