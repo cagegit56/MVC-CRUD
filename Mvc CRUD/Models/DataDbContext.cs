@@ -12,6 +12,7 @@ public class DataDbContext : DbContext
     public virtual DbSet<BlockedUsers> BlockedUser { get; set; }
     public virtual DbSet<UserProfile> Profile { get; set; }
     public virtual DbSet<Posts> Post { get; set; }
+    public virtual DbSet<Likes> Like { get; set; }
     public virtual DbSet<Comments> Comment { get; set; }
     public virtual DbSet<CommentsReply> ReplyComments { get; set; }
     public virtual DbSet<ReplyOfReply> Replies { get; set; }
@@ -21,12 +22,11 @@ public class DataDbContext : DbContext
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-               modelBuilder.Entity<Comments>()
+              
+               modelBuilder.Entity<Likes>()
                 .HasOne<Posts>()
-                .WithMany(p => p.Comments)
-                .HasForeignKey(c => c.PostId);
-
+                .WithMany(x => x.PostLikes)
+                .HasForeignKey(k => k.PostId);
 
                modelBuilder.Entity<CommentsReply>()
                 .HasOne(r => r.Comment)
@@ -39,11 +39,15 @@ public class DataDbContext : DbContext
                 .HasForeignKey(r => r.ReplyId);
 
 
+        //modelBuilder.Entity<Comments>()
+        // .HasOne<Posts>()
+        // .WithMany(p => p.Comments)
+        // .HasForeignKey(c => c.PostId);
+
         //modelBuilder.Entity<CommentsReply>()
         //  .HasOne<Comments>()
         //  .WithMany(p => p.Reply)
         //  .HasForeignKey(c => c.CommentId);
-
 
         //modelBuilder.Entity<Friends>()
         //    .HasOne(c => c.AllUsers)
@@ -66,7 +70,7 @@ public class DataDbContext : DbContext
         //    .IsRequired(false);
 
     }
-        
 
-    }
+
+}
 

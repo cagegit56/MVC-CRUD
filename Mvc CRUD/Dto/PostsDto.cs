@@ -1,6 +1,8 @@
-﻿namespace Mvc_CRUD.Models;
+﻿using Mvc_CRUD.Models;
 
-    public class Posts
+namespace Mvc_CRUD.Dto;
+
+    public class PostsDto
     {
         public int Id { get; set; }
         public string UserId { get; set; }
@@ -11,10 +13,8 @@
         public string? Content { get; set; }
         public int? TotalComments { get; set; } = 0;
         public int? Shares { get; set; }
-        public string PostScope { get; set; }
         public string? PostBgColour { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
-        public ICollection<Likes> PostLikes { get; set; }
-        //public  ICollection<Comments>? Comments { get; set; }
+        public ICollection<LikesDto>? PostLikes { get; set; }
     }
 
