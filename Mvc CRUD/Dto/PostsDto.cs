@@ -14,6 +14,7 @@ namespace Mvc_CRUD.Dto;
         public int? TotalComments { get; set; } = 0;
         public int? Shares { get; set; }
         public string? PostBgColour { get; set; }
+        public string PostScope { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
         public ICollection<LikesDto>? PostLikes { get; set; }
     }

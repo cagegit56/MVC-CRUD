@@ -4,20 +4,20 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class UpdateLikesCommandHandler : IRequestHandler<UpdateLikesCommand, bool>
+internal sealed class ReLikeCommandHandler : IRequestHandler<ReLikeCommand, bool>
 {
     private readonly DataDbContext _context;
 
-    public UpdateLikesCommandHandler(DataDbContext context)
+    public ReLikeCommandHandler(DataDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context)); 
     }
 
-    public async Task<bool> Handle(UpdateLikesCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ReLikeCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var res = await _context.Like.Where(x => x.PostId == request.postId && x.Username == request.Username).FirstOrDefaultAsync();
+            var res = await _context.Like.Where(x => x.PostId == request.postId && x.Username == request.Username && x.IsDeleted == true).FirstOrDefaultAsync();
             if (res != null)
             {
                 res.IsDeleted = false;
@@ -27,7 +27,7 @@ internal sealed class UpdateLikesCommandHandler : IRequestHandler<UpdateLikesCom
             }
             else
             {
-                throw new Exception($"Falied to re-like");
+                return false;
             }
         }catch(Exception ex)
         {

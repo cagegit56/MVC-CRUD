@@ -15,8 +15,8 @@ internal sealed class UnlikePostCommandHandler : IRequestHandler<UnlikePostComma
     {
         try
         {
-            var existingRecord = await _context.Like.Where(x => x.PostId == request.postId &&
-                                   x.Username == request.userName).FirstOrDefaultAsync();
+            var existingRecord = await _context.Like.Where(x => x.PostId == request.postId 
+                                 && x.Username == request.userName && x.IsDeleted == false).FirstOrDefaultAsync();
             if (existingRecord == null) return false;
             existingRecord.IsDeleted = true;
             _context.Update(existingRecord);

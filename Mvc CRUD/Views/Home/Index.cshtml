@@ -103,11 +103,11 @@
                         }
                         <div class="d-flex justify-content-between text-muted">
                             <div>
-                                <span class="me-3"> 
+                                <span class="me-3" id="LikesContainer-@post.Id"> 
                                     @if (@post.PostLikes?.Count > 0)
                                     {
-                                        <span>@post.PostLikes?.Count</span>  
-                                        <i class="bi bi-heart-fill text-danger me-1"></i>                                        
+                                        <span id="totalLikes-@post.Id">@post.PostLikes?.Count</span>  
+                                        <i class="bi bi-heart-fill text-danger me-1"></i>  
                                     }                                   
                                 </span>
                             </div>
@@ -130,15 +130,21 @@
                         </div>
                         <hr class="dropdown mt-2 mb-0">
                         <div class="d-flex justify-content-around mb-1 p-2">
-                            @if (post.PostLikes?.Count > 0)
-                            {
-                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn" data-action="Like" data-id="@post.Id">
-                                    <i class="bi-hand-thumbs-up-fill" style="color: #0d6efd"></i> Like
+                            @{
+                                var likedByMe = post.PostLikes?.Any(x => x.Username == ViewBag.Username);
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn"
+                                        data-action="Like" 
+                                        data-id="@post.Id">
+                                        @if(likedByMe == true)
+                                        {
+                                            <i class="bi-hand-thumbs-up-fill" style="color: #0d6efd" ></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi-hand-thumbs-up"></i>
+                                        }
+                                        Like
                                 </button>
-                            }else{
-                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn" data-action="Like" data-id="@post.Id">                                    
-                                    <i class="bi-hand-thumbs-up"></i> Like
-                                </button>                                  
                             }
                             <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
                                 <i class="bi  bi-chat"></i> Comment</button>
@@ -335,8 +341,8 @@
             async Like(event){
                 const postId = event.target.dataset.id;
                 const icon = event.target.querySelector("i");
-                event.target.classList.toggle("active");
-                if (event.target.classList.contains("active")) {
+                const likeStatus = icon.classList.value;               
+                if (likeStatus === "bi-hand-thumbs-up") {
                     var results = await fetch(`Home/LikePost?postId=${postId}`, {method : "POST"})
                     var res = await results.json();
                     if(res.success)
@@ -344,22 +350,37 @@
                         icon.classList.remove("bi-hand-thumbs-up");
                         icon.classList.add("bi-hand-thumbs-up-fill");
                         icon.style.color = "#0d6efd";
+                        let totalLikesCount = document.getElementById(`totalLikes-${postId}`);                      
+                        if(totalLikesCount){
+                            let likesCount = parseInt(totalLikesCount.textContent)
+                            totalLikesCount.textContent = likesCount + 1;
+                        }else{
+                            let displayLikes = document.getElementById(`LikesContainer-${postId}`);
+                            displayLikes.innerHTML = ` <span id="totalLikes-${postId}">1</span>  
+                                                       <i class="bi bi-heart-fill text-danger me-1"></i>`;
+                        }
                     }else{
                         toastr.error("Failed to like");
-                    }
-                   
+                    }                   
                 }else {
                     var result = await fetch(`Home/UnlikePost?postId=${postId}`, {method: "PUT"});
                     var res = await result.json();
                     if(res.success)
                     {
-                        event.target.classList.contains("active")
                         icon.classList.remove("bi-hand-thumbs-up-fill");
                         icon.classList.add("bi-hand-thumbs-up");
+                        let totalLikesCount = document.getElementById(`totalLikes-${postId}`);                      
+                        if(totalLikesCount){
+                            let likesCount = parseInt(totalLikesCount.textContent)
+                            totalLikesCount.textContent = likesCount - 1;
+                            if(likesCount <= 1){
+                                let displayLikes = document.getElementById(`LikesContainer-${postId}`);
+                                displayLikes.innerHTML = "";
+                            }
+                        }
                     }else{
                         toastr.error("Failed to unlike");
-                    }
-                   
+                    }                   
                 }            
             },
 

@@ -9,7 +9,7 @@ namespace Mvc_CRUD.Dto;
         public string Lastname { get; set; }
         public string? UserProfilePicUrl { get; set; }
         public int PostId { get; set; }
-        public bool IsDeleted { get; set; } = false;
+        public bool IsDeleted { get; set; } 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
     }
 

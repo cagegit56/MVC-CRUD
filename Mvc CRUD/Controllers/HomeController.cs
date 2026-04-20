@@ -63,9 +63,8 @@ namespace Mvc_CRUD.Controllers
         {
             try
             {
-                var newUser = await AddUser();
-                if (!newUser.success) TempData["ErrorMessage"] = newUser.error;
-                var res = await _mediator.Send(new GetAllPostsQuery());
+                //var newUser = await AddUser();
+                //if (!newUser.success) TempData["ErrorMessage"] = newUser.error;               
                 var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
                 if (CurrentUser != null)
                 {
@@ -76,6 +75,7 @@ namespace Mvc_CRUD.Controllers
                 {
                     TempData["UserProfile-ErrorMessage"] = "User does not exist please create an account or refresh you browser";
                 }
+                var res = await _mediator.Send(new GetAllPostsQuery(CurrentUser!.UserName));
                 return View(res);
             }
             catch (Exception ex)

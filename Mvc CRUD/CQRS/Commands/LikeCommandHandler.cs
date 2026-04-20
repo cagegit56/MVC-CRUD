@@ -22,20 +22,14 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, bool>
                                   x.Username == request.model.Username).FirstOrDefaultAsync();
             if (checkExistence != null)
             {
-                bool res = false;
-                if(checkExistence.IsDeleted)
-                {
-                    res = await _mediator.Send(new UpdateLikesCommand(checkExistence.PostId, checkExistence.Username)); 
-                }
-                return res;
+                return await _mediator.Send(new ReLikeCommand(checkExistence.PostId, checkExistence.Username));
             }
             else
             {
                 await _context.AddAsync(request.model, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
                 return true;
-            }
-           
+            }           
         }
         catch (Exception ex) {
             throw new Exception(ex.Message);

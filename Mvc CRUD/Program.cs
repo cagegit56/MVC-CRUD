@@ -26,6 +26,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<IUserInfoContextService, UserInfoContextService>();
 
 
 builder.Services.AddAuthentication(options =>
