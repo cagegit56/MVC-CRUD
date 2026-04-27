@@ -6,8 +6,7 @@
 }
 
 @{
-    var user = User;
-    var username = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("preferred_username")?.Value;
+    var username = User.FindFirst(ClaimTypes.Name)?.Value ?? User.FindFirst("preferred_username")?.Value;
     string displayTime = "";
     foreach (var k in Model)
     {
@@ -139,8 +138,8 @@
     const messagesContainer = document.getElementById('messagesContainer');
     const input = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
-    let currentUser = null;
-    const cUser = '@username';
+    let currentUserId = "";
+    const currentUser = '@username';
 
     function renderMessages(messages) {
         messagesContainer.innerHTML = '';
@@ -150,7 +149,7 @@
 
     function appendMessage(msg){
         const sender = (msg.userName || msg.UserName || '').toString();
-        const isMine = sender.trim().toLowerCase() === cUser.trim().toLowerCase();
+        const isMine = sender.trim().toLowerCase() === currentUser.trim().toLowerCase();
         const div = document.createElement('div');
         div.className = 'd-flex mb-3 ' + (isMine ? 'justify-content-end' : 'justify-content-start');
         const isFriendNotification = msg.message.includes("You are now Friends with") && msg.message.includes("Send a Message");
@@ -193,7 +192,7 @@
 
     connection.on("MessageConfirmation", (toUser, message) => {
           const currentDate = new Date();
-          const info = {userName:`${cUser}`, message:`${message}`, sentOn:currentDate};
+          const info = {userName:`${currentUser}`, message:`${message}`, sentOn:currentDate};
           appendMessage(info);
           updateContactPreview(toUser, `You : ${message}`);
     });
@@ -223,15 +222,16 @@
 
     sendBtn.addEventListener('click', async () => {
         const message = input.value.trim();
-        const user = cUser;
-        let toUser = document.getElementById('chatUserName').textContent;
-        try {
-                const res = await fetch(`/Home/SendDbMessage?username=${encodeURIComponent(cUser)}&friend=${encodeURIComponent(toUser)}&message=${encodeURIComponent(message)}`);
-               if(res.ok)
-             {
-                  if (!message || !user) return;
-                  await connection.invoke('SendPrivateMessage', toUser, message);
-             }
+        let ToUser = document.getElementById('chatUserName').textContent;
+        const UserName = currentUser;
+        try 
+        {
+            const res = await fetch(`/Home/SendMessage?username=${encodeURIComponent(currentUser)}&friend=${encodeURIComponent(ToUser)}&message=${encodeURIComponent(message)}`);
+            if(res.success)
+            {
+                if (!message || !currentUser) return;
+                await connection.invoke('SendPrivateMessage', ToUser, message);
+            }
             
          } catch (err) {
              console.error(err);
@@ -262,7 +262,7 @@
 
     document.querySelectorAll('.chat-contact').forEach(c => c.addEventListener('click', async (e) => {
         e.preventDefault();
-        currentUser = c.dataset.userid;
+        currentUserId = c.dataset.userid;
         let userName = c.dataset.username;
         document.getElementById('chatUserName').textContent = userName;
         document.querySelector('#chatHeader .avatar-lg').textContent = userName.charAt(0).toUpperCase();

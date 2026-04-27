@@ -12,6 +12,6 @@ namespace Mvc_CRUD.Dto;
         public string? ImageContentUrl { get; set; }
         public int CommentId { get; set; }
         public DateTime SentOn { get; set; } = DateTime.UtcNow;
-        public ICollection<ReplyOfReplyDto> Replies { get; set; }
+        public ICollection<ReplyOfReplyDto>? Replies { get; set; }
     }
 

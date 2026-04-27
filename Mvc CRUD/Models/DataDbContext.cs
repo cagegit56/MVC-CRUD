@@ -38,6 +38,20 @@ public class DataDbContext : DbContext
                 .WithMany(c => c.Replies)
                 .HasForeignKey(r => r.ReplyId);
 
+                //  *********** Database Indexes **************
+
+               modelBuilder.Entity<Friends>()
+                 .HasIndex(f => new {f.UserName, f.FriendName});
+
+               modelBuilder.Entity<Friends>()
+                .HasIndex(f => new { f.FriendName, f.UserName});
+
+               modelBuilder.Entity<Posts>()
+                .HasIndex(p => new {p.PostScope, p.UserName });
+
+               modelBuilder.Entity<Likes>()
+                .HasIndex(x => new {x.PostId, x.IsDeleted});
+
 
         //modelBuilder.Entity<Comments>()
         // .HasOne<Posts>()

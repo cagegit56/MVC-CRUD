@@ -26,6 +26,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddScoped<IUserInfoContextService, UserInfoContextService>();
 
 
 builder.Services.AddAuthentication(options =>
@@ -74,19 +75,20 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true
     };
 
+
 });
 
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddPolicy("CommentReplyPolicy", context =>
+    options.AddPolicy("RateLimitPolicy", context =>
     {
         var user = context.User.FindFirst(ClaimTypes.Name)?.Value ?? context.User.FindFirst("preferred_username")?.Value 
-                          ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+                   ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
         return RateLimitPartition.GetSlidingWindowLimiter(user, _ => new SlidingWindowRateLimiterOptions
         {
-            PermitLimit = 4,
-            Window = TimeSpan.FromSeconds(15),
+            PermitLimit = 50,
+            Window = TimeSpan.FromSeconds(30),
             SegmentsPerWindow = 6,
             QueueLimit = 0,
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst
@@ -95,8 +97,6 @@ builder.Services.AddRateLimiter(options =>
 
     options.OnRejected = async (context, token) =>
     {
-        // var endpoint = httpContext.GetEndpoint();
-        // var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
         var httpContext = context.HttpContext; 
         var user = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
         var violation = context.HttpContext.RequestServices.GetRequiredService<IRateLimitViolationTracker>();

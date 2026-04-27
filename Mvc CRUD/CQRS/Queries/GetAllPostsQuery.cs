@@ -4,4 +4,4 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-public record GetAllPostsQuery : IRequest<List<PostsDto>>;
+public record GetAllPostsQuery : IRequest<PostsViewDto>;

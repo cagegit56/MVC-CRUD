@@ -30,7 +30,7 @@ body {
 }
 
 .chat-contact p {
-    max-width: 180px; /* adjust to fit your layout */
+    max-width: 180px;
 }
 
 .avatar-lg, .avatar {

@@ -3,5 +3,5 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-public record LikeCommand(int postId) : IRequest<bool>;
+public record SendCommentCommand(Comments model) : IRequest<bool>;
 
