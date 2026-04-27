@@ -6,6 +6,7 @@
         public string UserName { get; set; }
         public string LastName { get; set; }
         public string UserId { get; set; }
+        public string? Email { get; set; }
         public string? UserProfilePicUrl { get; set; }
         public string? UserCoverPicUrl { get; set; }
         public string? Bio { get; set; }

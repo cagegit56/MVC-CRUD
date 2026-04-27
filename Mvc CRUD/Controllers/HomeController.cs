@@ -58,32 +58,13 @@ namespace Mvc_CRUD.Controllers
 
 
         [HttpGet]
-        [Authorize]      
+        [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            try
-            {
-                //var newUser = await AddUser();
-                //if (!newUser.success) TempData["ErrorMessage"] = newUser.error;               
-                var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-                if (CurrentUser != null)
-                {
-                    ViewBag.Username = CurrentUser.UserName;
-                    ViewBag.Lastname = CurrentUser.LastName;
-                    ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
-                }else 
-                {
-                    TempData["UserProfile-ErrorMessage"] = "User does not exist please create an account or refresh you browser";
-                }
-                var res = await _mediator.Send(new GetAllPostsQuery(CurrentUser!.UserName));
-                return View(res);
-            }
-            catch (Exception ex)
-            {
-                TempData["Posts-ErrorMessage"] = $"{ex.Message}";
-                return View(new List<PostsDto>());
-            }
-
+            var res = await _mediator.Send(new GetAllPostsQuery());
+            //var accessToken = await HttpContext.GetTokenAsync("access_token");
+            //Console.WriteLine(accessToken);
+            return View(res);
         }
 
         [HttpGet]
@@ -106,6 +87,16 @@ namespace Mvc_CRUD.Controllers
             return View(res);
         }
 
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
+        {
+            var res = await _mediator.Send(new CreatePostCommand(content, selectedColor, postImage, Scope));
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Successfully created a new post" });
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Chats(string toFriend)
@@ -117,7 +108,7 @@ namespace Mvc_CRUD.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> SendDbMessage(string username, string friend, string message)
+        public async Task<IActionResult> SendMessage(string username, string friend, string message)
         {
             var model = new Chat();
             model.UserName = username;
@@ -228,35 +219,14 @@ namespace Mvc_CRUD.Controllers
             if (res != "Successfully Saved")
                 return Json(new { success = false, message = res });
             return Json(new { success = true, message = res });
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetUserInfo()
-        {
-            string cachedData = $"cacheUserInfo{_currentUserId}";
-            if (!_cache.TryGetValue(cachedData, out UserProfile? res))
-            {
-                res = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-                _cache.Set(cachedData, res, TimeSpan.FromMinutes(10));
-            }
-            return Json(res);
-        }
+        }    
 
         [HttpPost]
         [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
         public async Task<IActionResult> LikePost(int postId)
         {
-            var model = new Likes();
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery(_currentUserId));
-            if (CurrentUser != null)
-            {
-                model.Username = CurrentUser.UserName;
-                model.Lastname = CurrentUser.LastName;
-                model.UserProfilePicUrl = CurrentUser.UserProfilePicUrl;
-                model.PostId = postId;
-            }
-            var res = await _mediator.Send(new LikeCommand(model));
+            var res = await _mediator.Send(new LikeCommand(postId));
             if(res)
                 return Json(new {success = true, message = "Liked successfully"});
             return Json(new { success = false, message = $"Unsuccessfully, due to {res}" });
@@ -264,12 +234,61 @@ namespace Mvc_CRUD.Controllers
 
         [HttpPut]
         [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
         public async Task<IActionResult> UnlikePost(int postId)
         {
             var res = await _mediator.Send(new UnlikePostCommand(postId, _currentUserName));
             if(res)
                 return Json(new { success = true, message = "Unliked Successfully" });
             return Json(new { success = false, message = $"failed to unlike due to {res}" });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendComment(Comments model)
+        {
+            var res = await _mediator.Send(new SendCommentCommand(model));
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Sent Successfully" });
+
+        }
+
+        [HttpPost]
+        [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
+        public async Task<IActionResult> SendReplyComment(CommentsReply model)
+        {
+            var res = await _mediator.Send(new SendReplyCommand(model));
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Sent Successfully" });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
+        {
+            var res = await _mediator.Send(new SendReplyOfReplyCommand(model));
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Sent Successfully" });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetComments(int postId)
+        {
+            var res = await _mediator.Send(new GetCommentsQuery(postId));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var res = await _mediator.Send(new GetUserProfileQuery());
+            return Json(res);
         }
 
 
@@ -489,55 +508,8 @@ namespace Mvc_CRUD.Controllers
         }
 
 
-        [Authorize]
-        public async Task<(bool success, string error)> AddUser()
-        {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                bool existingUser = await _context.ChatUsers.AsNoTracking().AnyAsync(x => x.UserId == _currentUserId);
-                var Surname = User.FindFirst(ClaimTypes.Surname)?.Value ?? User.FindFirst("family_name")?.Value;
-                if (!existingUser)
-                {
-                    var model = new Chat_Users
-                    {
-                        UserId = _currentUserId,
-                        UserName = _currentUserName,
-                        FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value ?? User.FindFirst("given_name")?.Value!,
-                        LastName = Surname,
-                        Email = User.FindFirst(ClaimTypes.Email)?.Value!,
-                        //Roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
-                    };
-                    await _context.ChatUsers.AddAsync(model);
-                }
 
-                var existingProfile = await _context.Profile.AsNoTracking().AnyAsync(x => x.UserId == _currentUserId);
-                if (!existingProfile)
-                {
-                    var profileModel = new UserProfile()
-                    {
-                        UserId = _currentUserId,
-                        UserName = _currentUserName,
-                        LastName = Surname!
-                    };
-                    await _context.Profile.AddAsync(profileModel);
-                }
-
-                if (!existingUser || !existingProfile)
-                {
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }
-
-                return (true, "SuccessFully Saved");
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return (false, $"Unable to save User's Info due to : {ex.Message}");
-            }
-        }
-
+        //*************** old posts
         //[Authorize]
         //public async Task<IActionResult> Posts()
         //{
@@ -547,102 +519,7 @@ namespace Mvc_CRUD.Controllers
         //    ViewBag.Lastname = CurrentUser.LastName;
         //    ViewBag.UserProfilePic = CurrentUser.UserProfilePicUrl;
         //    return View(res);
-        //}
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SendComment(Comments model)
-        {
-            using var trans = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                model.UserId = _currentUserId;
-                model.UserName = _currentUserName;
-                var postInfo = await _context.Post.Where(x => x.Id == model.PostId)
-                    .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalComments, c => (c.TotalComments ?? 0) + 1));
-                await _context.Comment.AddAsync(model);
-                await _context.SaveChangesAsync();
-                await trans.CommitAsync();
-                return Json(new { success = true, message = "Sent Successfully" });
-            }
-            catch (Exception ex)
-            {
-                await trans.RollbackAsync();
-                return Json(new { success = true, message = $"Failed due to : {ex.Message}" });
-            }
-
-        }
-
-        [HttpPost]
-        [Authorize]
-        [EnableRateLimiting("CommentReplyPolicy")]
-        public async Task<IActionResult> SendReplyComment(CommentsReply model)
-        {
-            await _context.ReplyComments.AddAsync(model);
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Sent Successfully" });
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
-        {
-            await _context.Replies.AddAsync(model);
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Sent Successfully" });
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetComments(int postId)
-        {
-            var res = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            return Json(res);
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetComments2(int postId)
-        {
-            var res = await _context.Comment.Where(x => x.PostId == postId)
-                .Select(x => new CommentsDto
-                {
-                    Id = x.Id,
-                    UserName = x.UserName,
-                    LastName = x.LastName,
-                    UserImageUrl = x.UserImageUrl,
-                    Message = x.Message,
-                    PostId = x.PostId,
-                    SentOn = x.SentOn,
-                    Reply = x.Reply.Select(r => new CommentsReplyDto
-                    {
-                        Id = r.Id,
-                        UserName = r.UserName,
-                        LastName = r.LastName,
-                        UserImageUrl = r.UserImageUrl,
-                        Message = r.Message,
-                        SentOn = r.SentOn,
-                        CommentId = r.CommentId,
-                        Replies = r.Replies.Select(y => new ReplyOfReplyDto
-                        {
-                            Id = y.Id,
-                            UserName = y.UserName,
-                            LastName = y.LastName,
-                            UserImageUrl = y.UserImageUrl,
-                            Message = y.Message,
-                            ReplyId = y.ReplyId,
-                            SentOn = y.SentOn,
-                        }).OrderByDescending(y => y.SentOn).ToList(),
-                    }).OrderByDescending(r => r.SentOn).ToList()
-
-                }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            return Json(res);
-
-            //var query = await _context.Comment.Include(x => x.Reply).Where(x => x.PostId == postId)
-            //.AsSplitQuery().OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            //var res = _mapper.Map<List<CommentsDto>>(query);
-            //return Json(res);
-        }
+        //}      
 
 
         [HttpGet]
@@ -656,51 +533,14 @@ namespace Mvc_CRUD.Controllers
             return Json(res);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Authorize]
-        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
+        public async Task<IActionResult> GetUserPostComments(int postId)
         {
-            try
-            {
-                if (string.IsNullOrEmpty(content) && (postImage == null || postImage.Length == 0))
-                {
-                    return Json(new { success = false, message = "Text content and Image content cannot both be null/empty" });
-                }
-                var model = new Posts();
-                var CurrentUser = await _mediator.Send(new GetCurrentUserInfoQuery(_currentUserId));
-                model.UserId = CurrentUser.UserId;
-                model.UserName = CurrentUser.UserName!;
-                model.LastName = CurrentUser.LastName!;
-                model.UserImageUrl = CurrentUser.ProfilePicPath;
-                model.PostScope = Scope;
-                model.Content = content;
-                model.PostBgColour = selectedColor;
-                if (postImage != null && postImage.Length > 0)
-                {
-                    string folder = Path.Combine("wwwroot/images/PostPictures");
-                    Directory.CreateDirectory(folder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(postImage.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-                    ViewBag.PostPic = fileName;
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await postImage.CopyToAsync(stream);
-                    }
-
-                    model.ImageContentUrl = "/images/PostPictures/" + fileName;
-                }
-
-                _context.Post.Add(model);
-                await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "successful" });
-            }
-            catch (Exception Ex)
-            {
-                return Json(new { success = false, message = $"Unsuccessful due to : {Ex.Message}" });
-            }
+            var res = await _context.Comment.Where(x => x.PostId == postId).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
+            return Json(res);
         }
+   
 
         [HttpPut]
         [Authorize]

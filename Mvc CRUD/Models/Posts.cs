@@ -15,6 +15,5 @@
         public string? PostBgColour { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
         public ICollection<Likes> PostLikes { get; set; }
-        //public  ICollection<Comments>? Comments { get; set; }
     }
 

@@ -33,27 +33,29 @@ internal sealed class AddNewUserCommandHandler : IRequestHandler<AddNewUserComma
                     //Roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
                 };
                 await _context.ChatUsers.AddAsync(model);
-            }
 
-            var existingProfile = await _context.Profile.AsNoTracking().AnyAsync(x => x.UserId == _currentUserInfo.UserId);
-            if (!existingProfile)
-            {
-                var profileModel = new UserProfile()
+                var existingProfile = await _context.Profile.AsNoTracking().AnyAsync(x => x.UserId == _currentUserInfo.UserId);
+                if (!existingProfile)
                 {
-                    UserId = _currentUserInfo.UserId!,
-                    UserName = _currentUserInfo.UserName!,
-                    LastName = _currentUserInfo.LastName!
-                };
-                await _context.Profile.AddAsync(profileModel);
+                    var profileModel = new UserProfile()
+                    {
+                        UserId = _currentUserInfo.UserId!,
+                        UserName = _currentUserInfo.UserName!,
+                        LastName = _currentUserInfo.LastName!
+                    };
+                    await _context.Profile.AddAsync(profileModel);
+                }
+
+                if (!existingUser || !existingProfile)
+                {
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+
+                return (true, "SuccessFully Saved");
             }
 
-            if (!existingUser || !existingProfile)
-            {
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-
-            return (true, "SuccessFully Saved");
+            return (true, "User already exists");         
         }
         catch (Exception ex)
         {

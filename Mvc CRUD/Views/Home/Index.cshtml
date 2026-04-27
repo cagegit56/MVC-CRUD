@@ -1,26 +1,26 @@
-﻿@model List<Mvc_CRUD.Dto.PostsDto>
+﻿@model Mvc_CRUD.Dto.PostsViewDto
 
-@if (!TempData.ContainsKey("ErrorMessage") && !TempData.ContainsKey("Posts-ErrorMessage") && !TempData.ContainsKey("UserProfile-ErrorMessage"))
+@if (Model.Errors == null)
 {
     ViewData["Title"] = "ChatUp-Home";
-    var initial = !string.IsNullOrEmpty(ViewBag.Username) ? ViewBag.Username.Substring(0, 1).ToUpper() : "XX";
+    var initial = !string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX";
     var userAgent = Context.Request.Headers["User-Agent"].ToString();
     bool isMobile = userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase) || userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase)
                     || userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase) || userAgent.Contains("Mobile", StringComparison.OrdinalIgnoreCase)
                     || userAgent.Contains("Mobi", StringComparison.OrdinalIgnoreCase);
 
-<link href="~/css/site.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <link href="~/css/site.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+ 
 <div class="container mt-4 col-10">
     <div class="row">
         <div class="col-md-8 mx-auto">          
             <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
                 <div class="card-body">
                 <div class="d-flex align-items-center gap-1 mb-2">                    
-                    @if (!string.IsNullOrEmpty(ViewBag.UserProfilePic))
+                    @if (!string.IsNullOrEmpty(Model.currentUserProfilePic))
                     {
-                        <img src="@ViewBag.UserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
+                        <img src="@Model.currentUserProfilePic" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
                              style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
                     }
                     else
@@ -31,7 +31,7 @@
                         </div>
                     }
                     <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
-                        What's on your mind, @(char.ToUpper(ViewBag.Username![0]) + ViewBag.Username.Substring(1))?
+                        What's on your mind, @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserName.Substring(1))?
                     </button>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -50,130 +50,128 @@
             <br />            
 
             <div id="postContent"></div>
-            @if (Model != null && Model.Any())
+            @if(Model.Posts != null && Model.Posts.Any())
             {
-                foreach (var post in Model)
-                {
-                    <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0">
-                    <div class="card-body p-0">
-                        <div class="d-flex align-items-center mb-1 p-2">
-                            @if(!string.IsNullOrEmpty(post.UserImageUrl))
+                @foreach (var post in Model.Posts)
+                {           
+                        <div class="card shadow-sm border-0 rounded-4 mb-4 gap-0">
+                        <div class="card-body p-0">
+                            <div class="d-flex align-items-center mb-1 p-2">
+                                @if(!string.IsNullOrEmpty(post.UserImageUrl))
+                                {
+                                    <img src="@post.UserImageUrl" class="rounded-circle" style="width: 45px;height: 45px;object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    var usernameFirstLetter = post.UserName.Substring(0,1).ToUpper();
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 45px;height: 45px;">
+                                        @usernameFirstLetter
+                                    </div>
+                                }
+                                <div class="col ms-1">
+                                    <h6 class="mb-0 fw-bold">
+                                        @(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
+                                    </small>
+                                </div>
+                                <div class="dropdown ms-auto" id="dropdown-@post.Id">
+                                    <button class="btn fw-bolder" type="button" data-action="ToggleDropDownMenu" data-id="@post.Id">
+                                        &#8230;
+                                    </button>
+                                    <ul class="dropdown-menu custom-dropdown" id="dropDownMenu-@post.Id">
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(post.PostBgColour))
                             {
-                                <img src="@post.UserImageUrl" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" />
+                                <div class="post-bgcard" style="background-color: @post.PostBgColour">
+                                    <div class="post-bgtext p-2">@post.Content</div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(post.Content) && string.IsNullOrEmpty(post.PostBgColour) )
+                            {
+                                <span class="p-2">@post.Content</span>
+                            }
+                            @if (!string.IsNullOrEmpty(post.ImageContentUrl))
+                            {
+                                <img src="@post.ImageContentUrl" class="post-image img-fluid rounded mb-0" style="width: 100%; max-height: 450px; object-fit: cover;" alt="Post image">
+                            }
+                            <div class="d-flex justify-content-between text-muted">
+                                <div>
+                                    <span class="me-3" id="LikesContainer-@post.Id"> 
+                                        @if (@post.PostLikes?.Count > 0)
+                                        {
+                                            <span id="totalLikes-@post.Id">@post.PostLikes?.Count</span>  
+                                            <i class="bi bi-heart-fill text-danger me-1"></i>  
+                                        }                                   
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>
+                                        @if (post.TotalComments > 0)
+                                        {
+                                            <span>@post.TotalComments</span>
+                                        }
+                                        <i class="bi bi-chat me-1"></i>
+                                    </span>
+                                    <span>
+                                        @if (@post.Shares > 0)
+                                        {
+                                            <span>@post.Shares</span>
+                                        }
+                                        <i class="fa-solid fa-share"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <hr class="dropdown mt-2 mb-0">
+                            <div class="d-flex justify-content-around mb-1 p-2">
+                                @{
+                                    var likedByMe = post.PostLikes?.Any(x => x.Username == Model.currentUserName);
+                                    <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn" data-action="Like" data-id="@post.Id">
+                                            @if(likedByMe == true)
+                                            {
+                                                <i class="bi-hand-thumbs-up-fill" style="color: #0d6efd" ></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi-hand-thumbs-up"></i>
+                                            }
+                                            Like
+                                    </button>
+                                }
+                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
+                                    <i class="bi  bi-chat"></i> Comment</button>
+                                <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share" data-id="@post.Id">
+                                    <i class="bi  bi-share"></i> Share
+                                </button>
+                            </div>
+
+                            @* *************** Comments *********** *@
+                            @if (isMobile)
+                            {
+                                <div class="overlay" id="overlay-@post.Id"></div>
+                                <div class="comment-pop-up" id="commentsPopUp-@post.Id">
+                                    <div class="dragHandle" id="dragHandle-@post.Id"></div>
+                                    <div class="overflow-auto mt-4 w-100 " style="max-height: 340px;">
+                                        <div id="displayMobileComments-@post.Id"></div>
+                                         <div id="sendCommentBtn-@post.Id"></div>
+                                    </div>
+                                </div>
                             }
                             else
                             {
-                                var usernameFirstLetter = post.UserName.Substring(0,1).ToUpper();
-                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:45px;height:45px;">
-                                    @usernameFirstLetter
+                                <div class="reply-group-@post.Id collapse mt-3 mb-2" id="commentsContents-@post.Id">
+                                    <div class="overflow-auto mb-2 p-2" id="displayer-@post.Id" style="max-height: 350px"></div>
+                                        <div id="sendCommentBtn-@post.Id"></div>
                                 </div>
                             }
-                            <div class="col ms-1">
-                                <h6 class="mb-0 fw-bold">
-                                    @(char.ToUpper(@post.UserName[0]) + @post.UserName.Substring(1)) @(char.ToUpper(@post.LastName[0]) + @post.LastName.Substring(1))</h6>
-                                <small class="text-muted">
-                                    <i class="bi bi-clock me-1"></i>@post.CreatedOn.ToString("MMM dd, yyyy • h:mm tt")
-                                </small>
-                            </div>
-                            <div class="dropdown ms-auto" id="dropdown-@post.Id">
-                                <button class="btn fw-bolder" type="button" data-action="ToggleDropDownMenu" data-id="@post.Id">
-                                    &#8230;
-                                </button>
-                                <ul class="dropdown-menu custom-dropdown" id="dropDownMenu-@post.Id">
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                </ul>
-                            </div>
                         </div>
-                        @if (!string.IsNullOrEmpty(post.PostBgColour))
-                        {
-                            <div class="post-bgcard" style="background-color: @post.PostBgColour">
-                                <div class="post-bgtext p-2">@post.Content</div>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(post.Content) && string.IsNullOrEmpty(post.PostBgColour) )
-                        {
-                            <span class="p-2">@post.Content</span>
-                        }
-                        @if (!string.IsNullOrEmpty(post.ImageContentUrl))
-                        {
-                            <img src="@post.ImageContentUrl" class="post-image img-fluid rounded mb-0" style="width : 100%; max-height : 450px;  object-fit: cover;" alt="Post image">
-                        }
-                        <div class="d-flex justify-content-between text-muted">
-                            <div>
-                                <span class="me-3" id="LikesContainer-@post.Id"> 
-                                    @if (@post.PostLikes?.Count > 0)
-                                    {
-                                        <span id="totalLikes-@post.Id">@post.PostLikes?.Count</span>  
-                                        <i class="bi bi-heart-fill text-danger me-1"></i>  
-                                    }                                   
-                                </span>
-                            </div>
-                            <div>
-                                <span>
-                                    @if (@post.TotalComments != null && @post.TotalComments > 0)
-                                    {
-                                        <span>@post.TotalComments</span>
-                                    }
-                                    <i class="bi bi-chat me-1"></i>
-                                </span>
-                                <span>
-                                    @if (@post.Shares > 0)
-                                    {
-                                        <span>@post.Shares</span>
-                                    }
-                                    <i class="fa-solid fa-share"></i>
-                                </span>
-                            </div>
                         </div>
-                        <hr class="dropdown mt-2 mb-0">
-                        <div class="d-flex justify-content-around mb-1 p-2">
-                            @{
-                                var likedByMe = post.PostLikes?.Any(x => x.Username == ViewBag.Username);
-                                <button class="btn btn-link w-100 me-2 text-decoration-none text-muted like-btn"
-                                        data-action="Like" 
-                                        data-id="@post.Id">
-                                        @if(likedByMe == true)
-                                        {
-                                            <i class="bi-hand-thumbs-up-fill" style="color: #0d6efd" ></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi-hand-thumbs-up"></i>
-                                        }
-                                        Like
-                                </button>
-                            }
-                            <button class="btn btn-link w-100 me-2 text-decoration-none text-muted" data-action="CommentsToggle" data-id="@post.Id">
-                                <i class="bi  bi-chat"></i> Comment</button>
-                            <button class="btn btn-link w-100 text-decoration-none text-muted" data-action="Share" data-id="@post.Id">
-                                <i class="bi  bi-share"></i> Share
-                            </button>
-                        </div>
-
-                        @* *************** Comments *********** *@
-                        @if (isMobile)
-                        {
-                            <div class="overlay" id="overlay-@post.Id"></div>
-                            <div class="comment-pop-up" id="commentsPopUp-@post.Id">
-                                <div class="dragHandle" id="dragHandle-@post.Id"></div>
-                                <div class="overflow-auto mt-4 w-100 " style="max-height: 340px;">
-                                    <div id="displayMobileComments-@post.Id"></div>
-                                     <div id="sendCommentBtn-@post.Id"></div>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="reply-group-@post.Id collapse mt-3 mb-2" id="commentsContents-@post.Id">
-                                <div class="overflow-auto mb-2 p-2" id="displayer-@post.Id" style="max-height: 350px"></div>
-                                    <div id="sendCommentBtn-@post.Id"></div>
-                            </div>
-                        }
-                    </div>
-                    </div>  
                 }
             }
             else
@@ -193,6 +191,7 @@
     </div>    
 </div>
 
+
 @* --------Create Post Card--------- *@
 <div class="d-none create-post-overlay" id="createPostOverlay">
     <div class="overflow-auto col-md-5 mx-auto" style="max-height: 540px;">  
@@ -210,18 +209,18 @@
                                 @initial
                             </div>                        
                             <span class="fw-bolder mt-1">
-                                @(char.ToUpper(ViewBag.Username[0]) + ViewBag.Lastname.Substring(1))
-                                @(char.ToUpper(ViewBag.Username[0]) + ViewBag.Lastname.Substring(1))
+                                @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
+                                @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
                             </span> 
                         </div>  
                         <select class="form-select form-select-sm w-auto mt-1" name="Scope">
                             <option selected value="Public"><i class="bi bi-globe"></i> Public</option>
                             <option value="Friends"><i class="bi bi-people"></i> Friends</option>
-                            <option value="Myself"><i class="bi bi-lock"></i> Only me</option>
+                            <option value="Only me"><i class="bi bi-lock"></i> Only me</option>
                         </select>                    
                     </div>
 
-                    <textarea id="textAreaBackground" class="form-control text-center mb-2" rows="5" placeholder="What's on your mind?" name="content"
+                    <textarea id="textAreaBackground" name="content" class="form-control text-center mb-2" rows="5" placeholder="What's on your mind?" 
                                 style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
                     <button type="button" id="mainButton" data-action="PostColourBtn" class="btn btn-primary mb-2">Colour</button>
                     <div id="colourButton" class="d-none d-flex gap-1 mb-3">
@@ -279,11 +278,11 @@
 </div>
 
 }else{
-
-  {
-    ViewData["Title"] = "Error";
-    Layout = null;
-  }
+    {
+        ViewData["Title"] = "Error";
+        Layout = null;
+    }
+  
 
 <!DOCTYPE html>
 <html>
@@ -310,12 +309,8 @@
                 <i class="bi bi-exclamation-triangle text-danger"></i>
             </div>
             <h3 class="mb-3">Something Went Wrong!<br />We currently attending to the issue.</h3>
-            <p class="text-muted mb-4">The issue is : 
-                    @if (TempData.ContainsKey("ErrorMessage")){ @TempData["ErrorMessage"]; }
-                    @if (TempData.ContainsKey("Posts-ErrorMessage")){ @TempData["Posts-ErrorMessage"]; }
-                    @if (TempData.ContainsKey("UserProfile-ErrorMessage")){ @TempData["UserProfile-ErrorMessage"]; }
-            </p>
-            <button class="btn btn-primary btn-lg action-btn">
+            <p class="text-muted mb-4">The issue is : @Model.Errors; </p>
+            <button class="btn btn-primary btn-lg action-btn" onclick="window.location.reload();">
                 <i class="bi bi-plus-circle me-2"></i>Refresh
             </button>
         </div>
@@ -331,10 +326,10 @@
 }
 
 @section scripts{
-<script>
-    const loggedInUserName = '@ViewBag.Username';
-    const loggedInLastName = '@ViewBag.Lastname';
-    const loggedInUserProfile = '@ViewBag.UserProfilePic';
+<script> 
+    const loggedInUserName = "@Model.currentUserName";
+    const loggedInLastName = "@Model.currentUserLastName";
+    const loggedInUserProfile = "@Model.currentUserProfilePic";
 
     document.addEventListener("DOMContentLoaded", function () {
         const eventListenerClickMethods = {
@@ -344,6 +339,10 @@
                 const likeStatus = icon.classList.value;               
                 if (likeStatus === "bi-hand-thumbs-up") {
                     var results = await fetch(`Home/LikePost?postId=${postId}`, {method : "POST"})
+                    if (results.status === 429){
+                        const retryTime = parseInt(results.headers.get("Retry-After")) || 15;
+                        return rateLimitingError(retryTime);
+                    }
                     var res = await results.json();
                     if(res.success)
                     {
@@ -364,6 +363,10 @@
                     }                   
                 }else {
                     var result = await fetch(`Home/UnlikePost?postId=${postId}`, {method: "PUT"});
+                    if (result.status === 429){
+                        const retryTime = parseInt(result.headers.get("Retry-After")) || 15;
+                        return rateLimitingError(retryTime);
+                    }
                     var res = await result.json();
                     if(res.success)
                     {
@@ -402,7 +405,7 @@
                     hideBgContent.style.pointerEvents = "auto";
                     document.body.style.overflow = "hidden";
 
-                    var res = await fetch(`Home/GetComments2?postId=${postId}`, {method : "GET"});
+                    var res = await fetch(`Home/GetComments?postId=${postId}`, {method : "GET"});
                     var result = await res.json();
                     const data = document.getElementById(`displayMobileComments-${postId}`);
                     const currentUserNameFirstLetter = loggedInUserName.charAt(0).toUpperCase() ?? "?";
@@ -647,7 +650,7 @@
                         const display = document.getElementById(`displayer-${postId}`);
                         var toggleStatus = display.classList.contains("show");
                         if(!toggleStatus){
-                                var res = await fetch(`Home/GetComments2?postId=${postId}`, {method : "GET"});
+                                var res = await fetch(`Home/GetComments?postId=${postId}`, {method : "GET"});
                                 var result = await res.json();
                                 console.log(result);
                                 display.classList.add("show");
@@ -1053,15 +1056,10 @@
                                         ${bgColour}
                                         ${postMsg}
                                         <div class="p-0">${image}<div>
-                                        <div class="d-flex justify-content-between text-muted">
+                                        <div class="d-flex justify-content-between text-muted">                                       
                                         <div>
-                                            <span class="me-3"> <i class="bi bi-heart-fill text-danger me-1"></i>
-                                                <span>1</span>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span>1 <i class="bi bi-chat me-1"></i> </span>
-                                            <span>1 <i class="fa-solid fa-share"></i> </span>
+                                            <span> <i class="bi bi-chat me-1"></i> </span>
+                                            <span> <i class="fa-solid fa-share"></i> </span>
                                         </div>
                                     </div>
                                     <hr class="dropdown mt-2 mb-0">
