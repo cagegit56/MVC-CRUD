@@ -188,7 +188,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                             <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" onclick="sendFriendRequest('${friend.userId}','${friend.userName}', ${friend.id}, '${friend.email}')">
+                             <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" onclick="sendFriendRequest('${friend.userId}','${friend.userName}', '${friend.lastName}', ${friend.id}, '${friend.email}')">
                                   <i class="fa-solid fa-user-plus me-1"></i>Add Friend
                              </button>
                          
@@ -201,16 +201,18 @@
             });
         }
 
-        async function sendFriendRequest(userid,friendName,id,email)
+        async function sendFriendRequest(userid,friendName,friendLastName,id,email)
         {
             const btn = document.getElementById("sendBtn-" + id);
             const removebtn = document.getElementById("removeBtn-" + id);
             btn.disabled = true;
-            btn.textContent = "Processing...";
+            btn.textContent = "Sending...";
             try
             {
-                const res = await fetch(`/Home/request?toUserId=${encodeURIComponent(userid)}&toUserName=${encodeURIComponent(friendName)}&email=${encodeURIComponent(email)}`);
-                if(res.ok)
+                console.log(`userid: ${userid},username: ${friendName}, id:${id}`)
+                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}`);
+                const res = await results.json();
+                if(res.success)
                 {
                     toastr.success("Friend Request SuccessFully Sent.")
                     btn.textContent = "Request Sent"; 
@@ -225,7 +227,7 @@
             {
                 btn.disabled = false;
                 btn.textContent = "Add Friend";
-                toastr.error(`Failed to send a friend request due to :${res.message} ${error}`);
+                toastr.error(`Failed to send a friend request due to : ${error}`);
             }
         }
 
@@ -273,7 +275,7 @@
                 if (!response.ok) throw new Error('Failed to fetch data');
 
                 const result = await response.json();
-                renderFriendRequests(result.data);
+                renderReceivedFriendRequests(result.data);
                 setupPagination(result.totalPages);
                 updatePaginationInfo(result);
             } catch (error) {
@@ -284,7 +286,7 @@
             loadSpinner.classList.add("d-none");
         }
 
-        function renderFriendRequests(friends) {
+        function renderReceivedFriendRequests(friends) {
             const container = document.getElementById('friendsRequestContainer');
             container.innerHTML = '';
 
@@ -305,7 +307,7 @@
                                 ${(friend.userName || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <h6 class="fw-semibold mb-1">${friend.userName ?? 'Unknown User'}</h6>
+                                <h6 class="fw-semibold mb-1">${(friend.userName).charAt(0).toUpperCase() + (friend.userName).slice(1) + " " + (friend.lastName).charAt(0).toUpperCase() + (friend.lastName).slice(1) ?? 'Unknown User'}</h6>
                                 <small class="text-muted">1.3k followers</small><br />
                                 <small class="text-muted">3 Mutual Friends</small>
                             </div>
@@ -332,7 +334,7 @@
             btn.textContent = "Processing...";            
             try
             {
-                const res = await fetch(`/Home/AcceptRequest?userId=${userid}&frndName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
+                const res = await fetch(`/Home/AcceptRequest?FriendId=${userid}&FriendName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
                 const result = await res.json();
                 if(result.success)
                 {
@@ -400,7 +402,7 @@
                                 ${(friend.toUserName || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <h6 class="fw-semibold mb-1">${friend.toUserName ?? 'Unknown User'}</h6>
+                                <h6 class="fw-semibold mb-1">${(friend.toUserName).charAt(0).toUpperCase() + (friend.toUserName).slice(1)+ " " + (friend.toUser_LastName).charAt(0).toUpperCase() + (friend.toUser_LastName).slice(1) ?? 'Unknown User'}</h6>
                                 <small class="text-muted">1.3k followers</small><br />
                                 <small class="text-muted">3 Mutual Friends</small>
                             </div>

@@ -213,18 +213,18 @@
                                 @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
                             </span> 
                         </div>  
-                        <select class="form-select form-select-sm w-auto mt-1" name="Scope">
+                        <select class="form-select form-select-sm w-auto mt-1" name="PostScope">
                             <option selected value="Public"><i class="bi bi-globe"></i> Public</option>
                             <option value="Friends"><i class="bi bi-people"></i> Friends</option>
                             <option value="Only me"><i class="bi bi-lock"></i> Only me</option>
                         </select>                    
                     </div>
 
-                    <textarea id="textAreaBackground" name="content" class="form-control text-center mb-2" rows="5" placeholder="What's on your mind?" 
+                    <textarea id="textAreaBackground" name="Content" class="form-control text-center mb-2" rows="5" placeholder="What's on your mind?" 
                                 style="resize: none; font-size: 1.1rem; font-weight : bold;"></textarea>
                     <button type="button" id="mainButton" data-action="PostColourBtn" class="btn btn-primary mb-2">Colour</button>
                     <div id="colourButton" class="d-none d-flex gap-1 mb-3">
-                        <input type="hidden" id="selectedColor" name="selectedColor" />
+                        <input type="hidden" id="selectedColor" name="PostBgColour" />
                         <button type="button" class="btn btn-danger rounded-circle circle-btn" onclick="changeColor('red')"></button>
                         <button type="button" class="btn btn-success rounded-circle circle-btn" onclick="changeColor('green')"></button>
                         <button type="button" class="btn btn-primary rounded-circle circle-btn" onclick="changeColor('blue')"></button>
@@ -990,9 +990,9 @@
                 e.preventDefault();
                 const form = e.target;
                 const formData = new FormData(form);
-                const txtContent = formData.get("content");
+                const txtContent = formData.get("Content");
                 let imageContent = formData.get("postImage"); 
-                const postBgColour = formData.get("selectedColor");
+                const postBgColour = formData.get("PostBgColour");
                 if (txtContent === "" && imageContent.size === 0) 
                 {
                     e.preventDefault();
@@ -1056,7 +1056,8 @@
                                         ${bgColour}
                                         ${postMsg}
                                         <div class="p-0">${image}<div>
-                                        <div class="d-flex justify-content-between text-muted">                                       
+                                        <div class="d-flex justify-content-between text-muted">  
+                                        <div></div>
                                         <div>
                                             <span> <i class="bi bi-chat me-1"></i> </span>
                                             <span> <i class="fa-solid fa-share"></i> </span>

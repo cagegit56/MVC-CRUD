@@ -3,7 +3,7 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    internal sealed class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, string>
+    internal sealed class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, bool>
     {
         private readonly DataDbContext _context;
 
@@ -11,17 +11,17 @@ namespace Mvc_CRUD.CQRS.Commands;
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public async Task<string> Handle(SendMessageCommand command, CancellationToken cancellationToken)
+        public async Task<bool> Handle(SendMessageCommand command, CancellationToken cancellationToken)
         {
             try
             {
                 var res = await _context.Chats.AddAsync(command.model);
                 await _context.SaveChangesAsync();
-                return "Successfully Saved";
+                return true;
             }
             catch (Exception ex) 
             {
-                return $"Failed to send message due to : {ex.Message}";
+                throw new Exception($"Failed to send message due to : {ex.Message}");
             }
            
         }

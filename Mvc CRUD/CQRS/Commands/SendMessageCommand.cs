@@ -3,5 +3,5 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    public record SendMessageCommand(Chat model) : IRequest<string>;
+    public record SendMessageCommand(Chat model) : IRequest<bool>;
 

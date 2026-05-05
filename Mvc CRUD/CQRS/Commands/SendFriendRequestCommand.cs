@@ -2,4 +2,4 @@
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
-    public record SendFriendRequestCommand(FriendRequest model) : IRequest<string>;
+    public record SendFriendRequestCommand(FriendRequest model) : IRequest<bool>;
