@@ -22,11 +22,11 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            //bool exists = await _context.Friends.AnyAsync(x =>
-            //    (x.UserId == _currentUser.UserId && x.FriendId == command.model.FriendId) ||
-            //    (x.UserId == command.model.FriendId && x.FriendId == _currentUser.UserId)
-            //);
-            //if (exists) return true;
+            bool exists = await _context.Friends.AnyAsync(x =>
+                (x.UserId == _currentUser.UserId && x.FriendId == command.model.FriendId) ||
+                (x.UserId == command.model.FriendId && x.FriendId == _currentUser.UserId)
+            );
+            if (exists) return true;
 
             var frnd = new Friends()
             {
@@ -36,6 +36,7 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
                 FriendName = _currentUser.UserName!,
                 UserName = command.model.FriendName              
             };
+
             var frnd2 = new Friends()
             {
                 UserId = _currentUser.UserId!,
@@ -44,6 +45,7 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
                 FriendName = command.model.FriendName,
                 UserName = _currentUser.UserName!
             };
+
             await _context.Friends.AddRangeAsync(frnd, frnd2);
             await _context.SaveChangesAsync(cancellationToken);
 

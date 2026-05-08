@@ -136,7 +136,7 @@
             
         });
 
-        /* ********************************************** Requesting ****************************************** */
+        /************************************************All potential Friends/Requesting *****************************/
         async function loadFriends(size,pageNumber) {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
@@ -168,8 +168,6 @@
             }
 
             friends.forEach(friend => {
-                const username = friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) +" " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1);
-                const usernameFirstLetter = friend.userName.charAt(0).toUpperCase();
                 const card = document.createElement('div');
                 card.id = `row-${friend.id}`;
                 card.className = 'card h-card w-100 shadow-sm border-0 p-3';
@@ -178,10 +176,10 @@
                         <div class="d-flex">
                             <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
                                  style="width:50px; height:50px; font-size:1.5rem;">
-                                ${usernameFirstLetter}
+                                ${(friend.userName).charAt(0).toUpperCase()}
                             </div>
                             <div class="col">
-                                <div class="fw-bold">${username ?? 'XX'}</div>
+                                <div class="fw-bold">${(friend.userName).charAt(0).toUpperCase() + (friend.userName).slice(1) +" " + (friend.lastName).charAt(0).toUpperCase() + (friend.lastName).slice(1) ?? 'XX'}</div>
                                 <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
                                 <div> <small class="text-muted">3 Mutual Friends</small> </div>
                             </div>
@@ -205,66 +203,30 @@
         {
             const btn = document.getElementById("sendBtn-" + id);
             const removebtn = document.getElementById("removeBtn-" + id);
-            btn.disabled = true;
-            btn.textContent = "Sending...";
+            btn.disabled = true;            
             try
             {
-                console.log(`userid: ${userid},username: ${friendName}, id:${id}`)
-                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}`);
+                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}`, {method : "POST"});
                 const res = await results.json();
                 if(res.success)
                 {
                     toastr.success("Friend Request SuccessFully Sent.")
-                    btn.textContent = "Request Sent"; 
                     removebtn.disabled = true;
                 }else
                 {
                     btn.disabled = false;
-                    btn.textContent = "Add Friend";
-                    toastr.error(`Failed to send a friend request due to : ${res.message}`);
+                    toastr.error(res.message);
                 }
             }catch(error)
             {
                 btn.disabled = false;
                 btn.textContent = "Add Friend";
-                toastr.error(`Failed to send a friend request due to : ${error}`);
+                toastr.error(`Failed to send a friend request due to error : ${error}`);
             }
         }
 
 
-        async function removeUser(friendId,friendName,id)
-        {
-            const sendbtn = document.getElementById("sendBtn-" + id);
-            const btn = document.getElementById("removeBtn-" + id);
-            btn.disabled = true;
-            btn.textContent = "Removing...";
-            try
-            {
-                const res = await fetch(`/Home/BlockUser?blockUserId=${encodeURIComponent(friendId)}&blockUserName=${encodeURIComponent(friendName)}`,
-                                   { method: "POST", headers: { "Content-Type": "application/json" }  });
-                if(res.ok)
-                {
-                    toastr.success("User Removed")
-                    btn.textContent = "Removed";
-                    sendbtn.disabled = true;
-                }else
-                {
-                    btn.disabled = false;
-                    btn.textContent = "Add Friend";
-                    toastr.error(`Failed to remove user due to : ${res.message}`)
-                }
-            }catch(error)
-            {
-                btn.disabled = false;
-                btn.textContent = "Add Friend";
-                toastr.error(`Failed to remove user due to :${res.message}, ${error}`)
-            }
-        }
-
-        /* *********************************************************************************** */
-
-
-        /* ************************************************ Recieved Requests ******************************* */
+        /**************************************************Recieved Requests *******************************************/
          async function loadFriendRequest(size,pageNumber) {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
@@ -318,48 +280,17 @@
                                   <i class="fa-solid fa-user-plus me-1"></i>Accept Request
                              </button>
 
-                             <button id ="rejectRequestBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="cancelSentRequest('${friend.userId}', ${friend.id})">
+                             <button id ="rejectRequestBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="rejectReceivedRequest('${friend.userId}', ${friend.id})">
                                   <i class="fa-solid fa-user-minus me-1"></i>Reject Request
                              </button>
                         </div>
                     </div>`;
                 container.appendChild(card);
             });
-        }
-
-        async function acceptFriendRequest(userid,friendName,id)
-        {
-            const btn = document.getElementById("requestBtn-" + id);
-            btn.disabled = true;
-            btn.textContent = "Processing...";            
-            try
-            {
-                const res = await fetch(`/Home/AcceptRequest?FriendId=${userid}&FriendName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
-                const result = await res.json();
-                if(result.success)
-                {
-                     toastr.success("Friend Request Accepted.");
-                    const row = document.getElementById("row-" + id);
-                    if (row)
-                    row.remove();
-                }else{
-                    toastr.error(`Failed to accept friend request due to : ${result.message}`);
-                    btn.disabled = false;
-                    btn.textContent = "Accept Request";
-                }
-            }catch(error)
-            {
-                toastr.error(`Failed to accept friend Request due to : ${error}`);
-                btn.disabled = false;
-                btn.textContent = "Accept Request";
-            }
-        }
-
-        /* *********************************************************************************** */
-
-        /* ************************************************ Sent Requests ******************************* */
+        }       
 
 
+        /* ************************************************Sent Requests ***********************************************/
         async function loadSentRequest(size,pageNumber) {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
@@ -409,7 +340,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                             <button id="rejectBtn-${friend.id}" type="submit" class="btn btn-primary px-3" onclick="cancelSentRequest('${friend.toUserId}', ${friend.id})">
+                             <button id="cancelRequestBtn-${friend.id}" type="submit" class="btn btn-primary px-3" onclick="cancelSentRequest('${friend.toUserId}', ${friend.id})">
                                   <i class="fa-solid fa-user-plus me-1"></i>Cancel Request
                              </button>
 
@@ -422,43 +353,127 @@
             });
         }
 
+
+        // *********************************************Accept or reject request ***************************************
+        async function acceptFriendRequest(userid,friendName,id)
+        {
+            const btn = document.getElementById("requestBtn-" + id);
+            btn.disabled = true;           
+            try
+            {
+                const res = await fetch(`/Home/AcceptRequest?FriendId=${userid}&FriendName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
+                const result = await res.json();
+                if(result.success)
+                {
+                    toastr.success("Friend Request Accepted.");
+                    const row = document.getElementById("row-" + id);
+                    if(row)
+                       row.remove();
+                    const container = document.getElementById('friendsRequestContainer');
+                    if (container.textContent === "")
+                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                }else{
+                    toastr.error(`Failed to accept friend request due to : ${result.message}`);
+                    btn.disabled = false;
+                    btn.textContent = "Accept Request";
+                }
+            }catch(error)
+            {
+                toastr.error(`Failed to accept friend Request due to : ${error}`);
+                btn.disabled = false;
+                btn.textContent = "Accept Request";
+            }
+        }
+
         async function cancelSentRequest(friendId,id)
         {
-            const sentbtn = document.getElementById("rejectBtn-" + id);
-            const requestbtn = document.getElementById("rejectRequestBtn-" + id);
-            const btn = sentbtn || requestbtn;
-            if(!btn) 
-            {
-                return;
-            }
-            btn.disabled = true;
-            btn.textContent = "Processing...";
-
+            const cancelBtn = document.getElementById("cancelRequestBtn-" + id);
+            if(!cancelBtn) return;
+            cancelBtn.disabled = true;
             try
             {
                 const res = await fetch(`/Home/RejectRequest?friendUserId=${friendId}`, { method: "PUT", headers: { "Content-Type": "application/json" }  });
                 const result = await res.json();
                 if(result.success)
                 {
-                    toastr.success(result.message)
+                    toastr.success("Successfully Cancelled");
                     const row = document.getElementById("row-" + id);
                     if(row)
                     row.remove();
+                    const container = document.getElementById('SentRequestContainer');
+                    if (container.textContent === "")
+                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
                 }else{
                     toastr.error(`Failed to cancel friend Request due to :${result.message}`);
-                     btn.disabled = false;
-                     btn.textContent = "Cancel Request";
+                     cancelBtn.disabled = false;
                 }
 
             }catch(error)
             {
                 toastr.error(`Failed to cancel friend Request due to :${result.message}, ${error}`);
-                btn.disabled = false;
-                btn.textContent = "Cancel Request";
+                cancelBtn.disabled = false;
             }
         }
 
-        /*  ********************************************************************* */
+        async function rejectReceivedRequest(friendId,id)
+        {
+            const rejectButton = document.getElementById("rejectRequestBtn-" + id);
+            if(!rejectButton) return;
+            rejectButton.disabled = true;
+            try
+            {
+                const res = await fetch(`/Home/RejectRequest?friendUserId=${friendId}`, { method: "PUT", headers: { "Content-Type": "application/json" }  });
+                const result = await res.json();
+                if(result.success)
+                {
+                    toastr.success("Successfully Rejected");
+                    const row = document.getElementById("row-" + id);
+                    if(row)
+                    row.remove();
+                    const container = document.getElementById('friendsRequestContainer');
+                    if (container.textContent === "")
+                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                }else{
+                    toastr.error(`Failed to cancel friend Request due to :${result.message}`);
+                     rejectButton.disabled = false;
+                }
+
+            }catch(error)
+            {
+                toastr.error(`Failed to cancel friend Request due to :${result.message}, ${error}`);
+                rejectButton.disabled = false;
+            }
+        }
+
+        /************************************************Block a potential friend*****************************************/
+        async function removeUser(friendId,friendName,id)
+        {
+            const sendbtn = document.getElementById("sendBtn-" + id);
+            const btn = document.getElementById("removeBtn-" + id);
+            btn.disabled = true;
+            btn.textContent = "Removing...";
+            try
+            {
+                const res = await fetch(`/Home/BlockUser?BlockUserId=${encodeURIComponent(friendId)}&BlockUserName=${encodeURIComponent(friendName)}`,
+                                   { method: "POST", headers: { "Content-Type": "application/json" }  });
+                if(res.ok)
+                {
+                    toastr.success("User Removed")
+                    btn.textContent = "Removed";
+                    sendbtn.disabled = true;
+                }else
+                {
+                    btn.disabled = false;
+                    btn.textContent = "Add Friend";
+                    toastr.error(`Failed to remove user due to : ${res.message}`)
+                }
+            }catch(error)
+            {
+                btn.disabled = false;
+                btn.textContent = "Add Friend";
+                toastr.error(`Failed to remove user due to :${res.message}, ${error}`)
+            }
+        }
 
 
         function setupPagination(totalPages) {

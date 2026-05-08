@@ -29,8 +29,7 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
                                     .Where(x => !_context.BlockedUser
                                         .Any(v => v.UserId == _currentUser.UserId && v.BlockUserId == x.UserId))
                                     .Where(x => !_context.FriendRequests
-                                        .Any(z => z.Status == "Pending" && (z.UserId == _currentUser.UserId && z.ToUserId == x.UserId) ))
-                                    .Where(x => x.UserName != _currentUser.UserName)
+                                        .Any(z => (z.UserId == _currentUser.UserId && z.ToUserId == x.UserId) && (z.Status == "Pending" && z.isDeleted == false)))
                                     .ToListAsync();
             var paginatedRes = await _pagination.Paginate(potentialFriends, request.pgFilter);
             return paginatedRes;

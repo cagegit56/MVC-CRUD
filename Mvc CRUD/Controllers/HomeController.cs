@@ -116,12 +116,13 @@ namespace Mvc_CRUD.Controllers
             return Json(new { success = true, message = res });
         }
 
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> SendFriendRequest(FriendRequest model)
         {
             var res = await _mediator.Send(new SendFriendRequestCommand(model));
             if (!res)
-                return Json(new { success = false, message = $"Failed to send a friend request due to : {res}" });
+                return Json(new { success = false, message = "failed to send a request."});
             return Json(new { success = true, message = "Friend Request Successfully Sent" });
         }
 
@@ -188,24 +189,19 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> RejectRequest(string friendUserId)
         {
             var res = await _mediator.Send(new RejectRequestCommand(friendUserId));
-            if (res != "Request Cancelled Succesfully.")
+            if (!res)
                 return Json(new { success = false, message = res });
             return Json(new { success = true, message = res });
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> BlockUser(string blockUserId, string blockUserName)
+        public async Task<IActionResult> BlockUser(BlockedUsers model)
         {
-            BlockedUsers model = new BlockedUsers();
-            model.UserId = _currentUserId;
-            model.BlockUserId = blockUserId;
-            model.BlockUserName = blockUserName;
-            model.UserName = _currentUserName;
             var res = await _mediator.Send(new BlockUserCommand(model));
-            if (res != "Successfully Saved")
+            if (!res)
                 return Json(new { success = false, message = res });
-            return Json(new { success = true, message = res });
+            return Json(new { success = true, message = "Successfully blocked"});
         }    
 
         [HttpPost]
@@ -326,6 +322,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> DeleteData(int Id)
         {
             var rec = await _context.Chats.FirstOrDefaultAsync(x => x.Id == Id);
+            if(rec != null)
             _context.Chats.Remove(rec);
             await _context.SaveChangesAsync();
             _cache.Remove("cacheAll");
