@@ -9,26 +9,27 @@ namespace Mvc_CRUD.CQRS.Queries;
 internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQuery, PaginateResponse<List<Chat_Users>>>
 {
     private readonly DataDbContext _context;
+    private readonly IUserInfoContextService _currentUser;
     private readonly IPaginationService _pagination;
 
-    public FriendRequestQueryHandler(DataDbContext context, IPaginationService pagination)
+    public FriendRequestQueryHandler(DataDbContext context, IUserInfoContextService currentUser, IPaginationService pagination)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _pagination = pagination ?? throw new ArgumentNullException(nameof(pagination));
     }
     public async Task<PaginateResponse<List<Chat_Users>>> Handle(FriendRequestQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var potentialFriends = await _context.ChatUsers.Where(x => x.UserId != request.UserId)
+            var potentialFriends = await _context.ChatUsers.Where(x => x.UserId != _currentUser.UserId)
                                     .Where(x => !_context.Friends
-                                        .Any(y => (y.UserId == request.UserId && y.FriendId == x.UserId) ||
-                                                  (y.FriendId == request.UserId && y.UserId == x.UserId)))
+                                        .Any(y => (y.UserId == _currentUser.UserId && y.FriendId == x.UserId) ||
+                                                  (y.FriendId == _currentUser.UserId && y.UserId == x.UserId)))
                                     .Where(x => !_context.BlockedUser
-                                        .Any(v => v.UserId == request.UserId && v.BlockUserId == x.UserId))
+                                        .Any(v => v.UserId == _currentUser.UserId && v.BlockUserId == x.UserId))
                                     .Where(x => !_context.FriendRequests
-                                        .Any(z => z.Status == "Pending" && (z.UserId == request.UserId && z.ToUserId == x.UserId) ))
-                                    .Where(x => x.UserName != request.Username)
+                                        .Any(z => (z.UserId == _currentUser.UserId && z.ToUserId == x.UserId) && (z.Status == "Pending" && z.isDeleted == false)))
                                     .ToListAsync();
             var paginatedRes = await _pagination.Paginate(potentialFriends, request.pgFilter);
             return paginatedRes;

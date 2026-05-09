@@ -1,37 +1,52 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
+using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequestCommand, string>
+    internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequestCommand, bool>
     {
        private readonly DataDbContext _context;
+       private readonly IUserInfoContextService _currentUser;
+       private readonly ILogger<SendFriendRequestCommandHandler> _logger;
 
-       public SendFriendRequestCommandHandler(DataDbContext context)
+       public SendFriendRequestCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<SendFriendRequestCommandHandler> logger)
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
+           _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
+           _logger = logger;
         }   
 
-       public async Task<string> Handle(SendFriendRequestCommand command, CancellationToken cancellationToken)
+       public async Task<bool> Handle(SendFriendRequestCommand command, CancellationToken cancellationToken)
         {
-           using var DbTransaction = await _context.Database.BeginTransactionAsync();
            try
-            {              
-                var exists = await _context.FriendRequests.Where(x => x.UserId == command.model.UserId && x.ToUserId == command.model.ToUserId ||
-                              x.UserId == command.model.ToUserId && x.ToUserId == command.model.UserId).FirstOrDefaultAsync();
-                if (exists != null)
-                _context.FriendRequests.Remove(exists);
-                await _context.FriendRequests.AddAsync(command.model);
-                await _context.SaveChangesAsync();
-                await DbTransaction.CommitAsync();
-                return "SuccessFully Sent";
-            }
-            catch(Exception ex)
-            {
-                await DbTransaction.RollbackAsync();
-                return $"Failed to send a friend request due to : {ex.Message}";
-            }
+           {
+              var exists = await _context.FriendRequests.Where(x => x.UserId == _currentUser.UserId  
+                                 && x.ToUserId == command.model.ToUserId).FirstOrDefaultAsync();
+              if (exists != null)
+              {
+                 if (exists.isDeleted)
+                 {
+                    exists.isDeleted = false;
+                    _context.Update(exists);
+                    await _context.SaveChangesAsync(cancellationToken);
+                 }
+                 return true; 
+              }
+
+              command.model.UserId = _currentUser.UserId!;
+              command.model.UserName = _currentUser.UserName!;
+              command.model.LastName = _currentUser.LastName!;
+              await _context.AddAsync(command.model);
+              await _context.SaveChangesAsync(cancellationToken);
+              return true;
+           }
+           catch(Exception ex)
+           {
+              _logger.LogError($"Failed to send a friend request from {command.model.UserName} to {command.model.ToUserName} to due to : {ex.Message}");
+              return false;
+           }
         }
     }
 

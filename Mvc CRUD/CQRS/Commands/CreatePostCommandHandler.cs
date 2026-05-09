@@ -20,7 +20,7 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
     {
         try
         {
-            if (string.IsNullOrEmpty(request.content) && (request.postImage == null || request.postImage.Length == 0))
+            if (string.IsNullOrEmpty(request.model.Content) && (request.postImage == null || request.postImage.Length == 0))
             {
                 throw new Exception("Text content and Image content cannot both be null/empty");
             }
@@ -30,9 +30,9 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
             model.UserName = CurrentUser.UserName!;
             model.LastName = CurrentUser.LastName!;
             model.UserImageUrl = CurrentUser.UserProfilePicUrl;
-            model.PostScope = request.Scope;
-            model.Content = request.content;
-            model.PostBgColour = request.selectedColor;
+            model.PostScope = request.model.PostScope;
+            model.Content = request.model.Content;
+            model.PostBgColour = request.model.PostBgColour;
             if (request.postImage != null && request.postImage.Length > 0)
             {
                 string folder = Path.Combine("wwwroot/images/PostPictures");

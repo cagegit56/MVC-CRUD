@@ -23,6 +23,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Formats.Asn1.AsnWriter;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -61,10 +62,18 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            var res = await _mediator.Send(new GetAllPostsQuery());
-            //var accessToken = await HttpContext.GetTokenAsync("access_token");
-            //Console.WriteLine(accessToken);
+            var res = await _mediator.Send(new GetAllPostsQuery());          
             return View(res);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> CreatePost(Posts model, IFormFile postImage)
+        {
+            var res = await _mediator.Send(new CreatePostCommand(model,postImage));
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Successfully created a new post" });
         }
 
         [HttpGet]
@@ -86,51 +95,34 @@ namespace Mvc_CRUD.Controllers
             }
             return View(res);
         }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> CreatePost(string content, string selectedColor, IFormFile postImage, string Scope)
-        {
-            var res = await _mediator.Send(new CreatePostCommand(content, selectedColor, postImage, Scope));
-            if (!res)
-                return Json(new { success = false, message = res });
-            return Json(new { success = true, message = "Successfully created a new post" });
-        }
+    
 
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Chats(string toFriend)
         {
-            var res = await _mediator.Send(new GetChatsQuery(_currentUserId, _currentUserName, toFriend));
+            var res = await _mediator.Send(new GetChatsQuery(toFriend));
             if (!string.IsNullOrEmpty(toFriend))
                 return Json(res);
             return View(res);
         }
 
         [Authorize]
-        public async Task<IActionResult> SendMessage(string username, string friend, string message)
+        public async Task<IActionResult> SendMessage(Chat model)
         {
-            var model = new Chat();
-            model.UserName = username;
-            model.ToUser = friend;
-            model.Message = message;
             var res = await _mediator.Send(new SendMessageCommand(model));
-            return Json("Success");
+            if (!res)
+                return Json(new { success = false, message = res });
+            return Json(new { success = true, message = res });
         }
 
+        [HttpPost]
         [Authorize]
-        public async Task<IActionResult> request(string toUserId, string toUserName, string email)
+        public async Task<IActionResult> SendFriendRequest(FriendRequest model)
         {
-            var model = new FriendRequest();
-            model.UserId = _currentUserId;
-            model.UserName = _currentUserName;
-            model.ToUserId = toUserId;
-            model.ToUserName = toUserName;
-            model.ToUserEmail = email;
             var res = await _mediator.Send(new SendFriendRequestCommand(model));
-            if (res != "SuccessFully Sent")
-                return Json(new { success = false, message = $"Failed to send a friend request due to : {res}" });
-
+            if (!res)
+                return Json(new { success = false, message = "failed to send a request."});
             return Json(new { success = true, message = "Friend Request Successfully Sent" });
         }
 
@@ -138,7 +130,7 @@ namespace Mvc_CRUD.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
         {
-            var res = await _mediator.Send(new GetAllSentRequestQuery(filter, _currentUserId));
+            var res = await _mediator.Send(new GetAllSentRequestQuery(filter));
             return Json(res);
         }
 
@@ -146,7 +138,7 @@ namespace Mvc_CRUD.Controllers
         [HttpGet]
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new FriendRequestQuery(pgFilter, _currentUserId, _currentUserName));
+            var res = await _mediator.Send(new FriendRequestQuery(pgFilter));
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 Response.ContentType = "application/json";
@@ -163,9 +155,10 @@ namespace Mvc_CRUD.Controllers
         }
 
         [Authorize]
+        [HttpGet]
         public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
         {
-            var res = await _mediator.Send(new ReceivedFriendRequestQuery(filter, _currentUserId));
+            var res = await _mediator.Send(new ReceivedFriendRequestQuery(filter));
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 Response.ContentType = "application/json";
@@ -183,42 +176,32 @@ namespace Mvc_CRUD.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AcceptRequest(string userId, string frndName)
+        public async Task<IActionResult> AcceptRequest(Friends model)
         {
-            var model = new Friends();
-            model.UserId = _currentUserId;
-            model.UserName = _currentUserName;
-            model.FriendId = userId;
-            model.FriendName = frndName;
             var res = await _mediator.Send(new AddFriendCommand(model));
-            if (res != "Friend Request Accepted.")
+            if (!res)
                 return Json(new { success = false, message = $"Failed to add friend due to : {res}" });
-            return Json(new { success = true, message = res });
+            return Json(new { success = true, message = "Successfully Accepted/relationship already exists" });
         }
 
         [Authorize]
         [HttpPut]
         public async Task<IActionResult> RejectRequest(string friendUserId)
         {
-            var res = await _mediator.Send(new RejectRequestCommand(_currentUserId, friendUserId));
-            if (res != "Request Cancelled Succesfully.")
+            var res = await _mediator.Send(new RejectRequestCommand(friendUserId));
+            if (!res)
                 return Json(new { success = false, message = res });
             return Json(new { success = true, message = res });
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> BlockUser(string blockUserId, string blockUserName)
+        public async Task<IActionResult> BlockUser(BlockedUsers model)
         {
-            BlockedUsers model = new BlockedUsers();
-            model.UserId = _currentUserId;
-            model.BlockUserId = blockUserId;
-            model.BlockUserName = blockUserName;
-            model.UserName = _currentUserName;
             var res = await _mediator.Send(new BlockUserCommand(model));
-            if (res != "Successfully Saved")
+            if (!res)
                 return Json(new { success = false, message = res });
-            return Json(new { success = true, message = res });
+            return Json(new { success = true, message = "Successfully blocked"});
         }    
 
         [HttpPost]
@@ -339,6 +322,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> DeleteData(int Id)
         {
             var rec = await _context.Chats.FirstOrDefaultAsync(x => x.Id == Id);
+            if(rec != null)
             _context.Chats.Remove(rec);
             await _context.SaveChangesAsync();
             _cache.Remove("cacheAll");
@@ -615,6 +599,9 @@ namespace Mvc_CRUD.Controllers
             //await _context.SaveChangesAsync();
             return Json(new { success = true, message = "successful" });
         }
+
+        //var accessToken = await HttpContext.GetTokenAsync("access_token");
+        //Console.WriteLine(accessToken);
 
         public IActionResult Logout()
         {

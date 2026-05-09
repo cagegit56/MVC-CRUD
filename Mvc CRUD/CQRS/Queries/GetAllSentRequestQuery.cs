@@ -4,5 +4,5 @@ using Mvc_CRUD.Pagination;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-    public record GetAllSentRequestQuery(PaginationFilter pgFilter, string userId) : IRequest<PaginateResponse<List<FriendRequest>>>;
+    public record GetAllSentRequestQuery(PaginationFilter pgFilter) : IRequest<PaginateResponse<List<FriendRequest>>>;
 

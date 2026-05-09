@@ -226,7 +226,8 @@
         const UserName = currentUser;
         try 
         {
-            const res = await fetch(`/Home/SendMessage?username=${encodeURIComponent(currentUser)}&friend=${encodeURIComponent(ToUser)}&message=${encodeURIComponent(message)}`);
+            const results = await fetch(`/Home/SendMessage?UserName=${encodeURIComponent(currentUser)}&ToUser=${encodeURIComponent(ToUser)}&Message=${encodeURIComponent(message)}`);
+            const res = await results.json();
             if(res.success)
             {
                 if (!message || !currentUser) return;
