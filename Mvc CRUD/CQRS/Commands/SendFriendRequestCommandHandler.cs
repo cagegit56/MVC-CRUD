@@ -35,9 +35,15 @@ namespace Mvc_CRUD.CQRS.Commands;
                  return true; 
               }
 
-              command.model.UserId = _currentUser.UserId!;
-              command.model.UserName = _currentUser.UserName!;
-              command.model.LastName = _currentUser.LastName!;
+             if (_currentUser.UserId != null && _currentUser.UserName != null && _currentUser.LastName != null)
+             {
+                command.model.UserId = _currentUser.UserId;
+                command.model.UserName = _currentUser.UserName;
+                command.model.LastName = _currentUser.LastName;
+             }else{
+                _logger.LogError("Current user info cannot be null.");
+                return false;
+             }
               await _context.AddAsync(command.model);
               await _context.SaveChangesAsync(cancellationToken);
               return true;

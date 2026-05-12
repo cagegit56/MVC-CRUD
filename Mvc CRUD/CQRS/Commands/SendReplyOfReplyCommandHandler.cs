@@ -6,10 +6,12 @@ namespace Mvc_CRUD.CQRS.Commands;
 internal sealed class SendReplyOfReplyCommandHandler : IRequestHandler<SendReplyOfReplyCommand, bool>
 {
     private readonly DataDbContext _context;
+    private readonly ILogger<SendReplyOfReplyCommandHandler> _logger;
 
-    public SendReplyOfReplyCommandHandler(DataDbContext context)
+    public SendReplyOfReplyCommandHandler(DataDbContext context, ILogger<SendReplyOfReplyCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
     }
 
     public async Task<bool> Handle(SendReplyOfReplyCommand request, CancellationToken cancellationToken)
@@ -22,7 +24,8 @@ internal sealed class SendReplyOfReplyCommandHandler : IRequestHandler<SendReply
         }
         catch (Exception ex) 
         {
-            throw new Exception($"Failed to reply due to : {ex.Message}"); 
+            _logger.LogError($"Failed to reply due to : {ex.Message}"); 
+            return false;
         }
     }
 }

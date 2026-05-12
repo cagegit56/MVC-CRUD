@@ -1,13 +1,11 @@
-﻿@model Mvc_CRUD.Models.UserProfile;
+﻿@model Mvc_CRUD.Dto.UserProfileDTO;
 
 @{
     ViewData["Title"] = "Profile";
-    var initial = !string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX";
 }
 
 <link href="~/images" />
 <link href="~/css/site.css" rel="stylesheet"/>
-@* <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> *@
 
 <div class="container py-4">
         <div class="position-relative">
@@ -19,10 +17,9 @@
                     }
                     else
                     {
-                        <div class="border border-4 border-white bg-secondary cover-pic-phone-width text-capitalize text-white fw-bolder h1"
-                             style="width: 69rem; height: 400px; cursor : pointer; justify-content : center; text-align : center; align-content : center;">
-                            @initial <br /> <br />
-                            <small class="text-white h4">Add a Background picture</small>
+                        <div class="bg-secondary w-100" style="height: 450px; cursor : pointer; align-content : center;">
+                            <div class="text-capitalize text-white fw-bolder h1">@(char.ToUpper(@Model.UserName[0]) + @Model.UserName.Substring(1)) </div>
+                            <div> <small class="text-white h4">Add a Cover Picture</small> </div>
                         </div>                      
                     }
                 </button>
@@ -53,7 +50,7 @@
                        {
                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
                                 style='width:150px; height:150px; min-width:50px; min-height:50px;'>
-                                @initial 
+                                @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
                            </div>
                        }
                       
@@ -101,7 +98,7 @@
             </li>
         </ul>
 
-        <form asp-controller="Home" asp-action="UpdateUserProfile" method="post">
+        <form asp-controller="Home" asp-action="UpdateUserProfile" method="post" id="userInfoUpdateForm">
         <div class="tab-content mt-4">
             <div class="tab-pane fade show active" id="About">
                 <div class="card shadow-sm border-0 rounded-4 mb-1 w-100">
@@ -468,9 +465,9 @@
 
     });
     
-    var tempInfo = '@TempData["Message"]';
-    if(tempInfo != null && tempInfo.length > 0)
-    toastr.success(tempInfo);
+    // var tempInfo = '@TempData["Message"]';
+    // if(tempInfo != null && tempInfo.length > 0)
+    // toastr.success(tempInfo);
 
     document.getElementById('EducationTab').addEventListener('click', function (e) {
         e.preventDefault();
@@ -505,7 +502,7 @@
              const formImg = new FormData();
              formImg.append("profileImage", file);
              document.getElementById("profileImg").src = URL.createObjectURL(file);
-             const res = await fetch('/Home/UpdateUserProfile', {method : "PUT", body : formImg});
+             const res = await fetch('/Home/UpdateProfilePicture', {method : "PATCH", body : formImg});
              const result = await res.json();
             if(result.success)
             {
@@ -524,7 +521,7 @@
         if (file) {
                 const formImg = new FormData();
                 formImg.append("coverImage", file);
-                const res = await fetch('/Home/UpdateCoverPicture', {method : "PUT", body : formImg});
+                const res = await fetch('/Home/UpdateCoverPicture', {method : "PATCH", body : formImg});
                 const result = await res.json();
             if(result.success)
             {
@@ -537,6 +534,23 @@
         
         }
     });
+
+    // document.getElementById("userInfoUpdateForm").addEventListener("submit", async function(e){
+    //     e.preventDefault();
+    //     const form = e.target;
+    //     const formData = new FormData(form);
+    //     const bio = formData.get("Bio");
+    //     try 
+    //     {
+    //         const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+    //         if (response.ok) 
+    //         {
+    //             toastr.success("Successfully Updated.", bio);
+    //         }
+    //     }catch(Error){
+    //         toastr.error(`Failed to update user info due to : ${Error}`);
+    //     }
+    // });
 
 
 </script>

@@ -9,11 +9,13 @@ namespace Mvc_CRUD.CQRS.Commands;
     {
        private readonly DataDbContext _context;
        private readonly IUserInfoContextService _currentUser;
+       private readonly ILogger<RejectRequestCommandHandler> _logger;
 
-       public RejectRequestCommandHandler(DataDbContext context, IUserInfoContextService currentUser)
+       public RejectRequestCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<RejectRequestCommandHandler> logger)
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
+           _logger = logger;
         }
        public async Task<bool> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
        {
@@ -21,7 +23,11 @@ namespace Mvc_CRUD.CQRS.Commands;
          {
             var exists = await _context.FriendRequests.Where(x => x.UserId == _currentUser.UserId && x.ToUserId == command.toUserId ||
                             x.UserId == command.toUserId && x.ToUserId == _currentUser.UserId).FirstOrDefaultAsync();
-            if (exists == null) return false;
+            if (exists == null)
+            {
+                _logger.LogError("User already rejected/exist.");
+                return false;
+            }
             exists.isDeleted = true;
             _context.FriendRequests.Update(exists);
             await _context.SaveChangesAsync(cancellationToken);
@@ -29,7 +35,8 @@ namespace Mvc_CRUD.CQRS.Commands;
          }
          catch (Exception ex) 
          {
-            throw new Exception($"Failed To Cancel or Reject request due to : {ex.Message}");
+            _logger.LogError($"Failed To Cancel or Reject request due to : {ex.Message}");
+            return false;
          }
        }
     }

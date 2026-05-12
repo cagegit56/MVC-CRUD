@@ -52,6 +52,9 @@ public class DataDbContext : DbContext
                modelBuilder.Entity<Likes>()
                 .HasIndex(x => new {x.PostId, x.IsDeleted});
 
+               modelBuilder.Entity<UserProfile>()
+                .HasIndex(x => x.UserId);
+
 
         //modelBuilder.Entity<Comments>()
         // .HasOne<Posts>()
