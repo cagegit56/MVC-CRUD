@@ -408,7 +408,6 @@
                     var res = await fetch(`Home/GetComments?postId=${postId}`, {method : "GET"});
                     var result = await res.json();
                     const data = document.getElementById(`displayMobileComments-${postId}`);
-                    const currentUserNameFirstLetter = loggedInUserName.charAt(0).toUpperCase() ?? "?";
                     if(!result || result.length !== 0)
                     {
                         html = result.map(comment => {
@@ -419,28 +418,22 @@
                             {
                             viewRepliesBtn = `<div class="view-data-btn small" data-action="ViewRepliesToggle" data-id="${comment.id}"  id="replyBtn-${comment.id}">View ${commentsCount} Replies</div>`;
                             comment.reply.forEach(res => {
-                                const replyUserNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
-                                const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
                                 const repliesTime = dateProcessing(res.sentOn);
-
                                 let viewRepliesOfBtn = "";
                                 let displayReplyOfReply = "";
                                 const replyOfReplyCount = res.replies.length;
                                 if(replyOfReplyCount > 0 )
                                 {
                                     res.replies.forEach(replyOf => {
-                                        const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
-                                        const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
                                         const replyOfReplyTime = dateProcessing(replyOf.sentOn);
-
                                         viewRepliesOfBtn = `<div class="view-data-btn small" data-action="ViewReplyOfReplyToggle" data-id="${res.id}" id="replyOfBtn-${res.id}">View ${replyOfReplyCount} Replies</div>`;
                                         displayReplyOfReply += `<div class="d-flex mb-2">
                                                                     ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOf.userName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                     <ul class="list-unstyled overflow-hidden px-1">
                                                                         <li>
                                                                             <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                            <small class="fw-bold">${replyOfRepyFullUserName}</small>
+                                                                            <small class="fw-bold">${replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1)}</small>
                                                                             <p class="mb-1 small">${replyOf.message}</p>
                                                                             </div>
                                                                                <div class="d-flex justify-content-between align-items-center mb-1">
@@ -458,11 +451,11 @@
 
                                 repliesDisplayer += `<div class="d-flex mb-2">
                                                         ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                         <ul class="list-unstyled overflow-hidden px-1">
                                                             <li>
                                                                 <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                <small class="fw-bold">${replyFullUserName}</small>
+                                                                <small class="fw-bold">${res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1)}</small>
                                                                 <p class="mb-1 small">${res.message}</p>
                                                                 </div>
                                                                 <div class="d-flex justify-content-between align-items-center mb-1">
@@ -482,7 +475,7 @@
                                                                             <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                                             <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${currentUserNameFirstLetter}</div>`}
+                                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                             <div class="input-group" data-post-id="${res.id}">
                                                                                 <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill"
                                                                                         placeholder="Write a reply..." autocomplete="off">
@@ -507,16 +500,14 @@
                             });
                             }
 
-                            const commentUserNameletter = comment.userName.charAt(0).toUpperCase();
-                            const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) +" "+ comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
                             const commentTime = dateProcessing(comment.sentOn);
                             return `<div class="d-flex">
                                         ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
+                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${comment.userName.charAt(0).toUpperCase()}</div>`}
                                         <ul class="list-unstyled overflow-hidden">
                                             <li>
                                                 <div class="bg-light rounded p-2 flex-grow-1 text-break">
-                                                <small class="fw-bold">${fullUserName}</small>
+                                                <small class="fw-bold">${comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) +" "+ comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1)}</small>
                                                 <p class="mb-1 small">${comment.message}</p>
                                                 </div>
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -538,7 +529,7 @@
                                                                 <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                             <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${currentUserNameFirstLetter}</div>`}
+                                                                    : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                             <div class="input-group me-2" data-post-id="${comment.id}">
                                                                 <input type="text" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" 
                                                                        class="form-control form-control-sm rounded-pill" placeholder="Write a reply..." autocomplete="off">
@@ -569,14 +560,13 @@
                     }
 
                     const sendCommentBtn = document.getElementById(`sendCommentBtn-${postId}`);
-                    const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
                     sendCommentBtn.innerHTML = `<form  id="commentForm-${postId}" action="Home/SendComment" method="post" data-action="CommentForm" data-id="${postId}" enctype="multipart/form-data">
                                                     <div class="d-flex px-1 mb-1 fixed-btn" style="width: 95%; height: 35px;">
                                                         <input type="hidden" name="PostId" value="${postId}" />
                                                         <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                         <div class="input-group" data-post-id="${postId}">
                                                             <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
                                                                     placeholder="Write a comment..." autocomplete="off">
@@ -658,11 +648,7 @@
                             if(!result || result.length !== 0)
                             {
                                     html = result.map(comment => {
-                                    const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
-                                    const commentUserNameletter =  comment.userName.charAt(0).toUpperCase() ?? "?";
-                                    const fullUserName = comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) + ' ' + comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1);
                                     const commentTime = dateProcessing(comment.sentOn);
-
                                     let repliesDisplayer = "";
                                     let viewRepliesBtn = "";
                                     const commentsCount = comment.reply.length; 
@@ -670,28 +656,22 @@
                                     {
                                     viewRepliesBtn = `<div class="view-data-btn small" data-action="ViewRepliesToggle" data-id="${comment.id}" id="replyBtn-${comment.id}">View ${commentsCount} Replies</div>`;
                                     comment.reply.forEach(res => {
-                                        const replyUserNameletter =  res.userName.charAt(0).toUpperCase() ?? "?";
-                                        const replyFullUserName = res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1);
                                         const repliesTime = dateProcessing(res.sentOn);
-
                                         let viewRepliesOfBtn = "";
                                         let displayReplyOfReply = "";
                                         const replyOfReplyCount = res.replies.length;
                                         if(replyOfReplyCount > 0 )
                                         {
                                             res.replies.forEach(replyOf => {
-                                                const replyOfReplyUserNameletter =  replyOf.userName?.charAt(0).toUpperCase() ?? "?";
-                                                const replyOfRepyFullUserName = replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1);
                                                 const replyOfReplyTime = dateProcessing(replyOf.sentOn);
-
                                                 viewRepliesOfBtn = `<div class="view-data-btn small" data-action="ViewReplyOfReplyToggle" data-id="${res.id}" id="replyOfBtn-${res.id}">View ${replyOfReplyCount} Replies</div>`;
                                                 displayReplyOfReply += `<div class="d-flex mb-2">
                                                                             ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOfReplyUserNameletter}</div>`}
+                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOf.userName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                             <ul class="list-unstyled overflow-hidden px-1">
                                                                                 <li>
                                                                                     <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                                        <small class="fw-bold">${replyOfRepyFullUserName}</small>
+                                                                                        <small class="fw-bold">${replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1)}</small>
                                                                                         <p class="mb-1 small">${replyOf.message}</p>
                                                                                     </div>
                                                                                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -709,11 +689,11 @@
 
                                         repliesDisplayer += `<div class="d-flex mb-2">
                                                                 ${res.userImageUrl ? `<img src="${res.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyUserNameletter}</div>`}
+                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                 <ul class="list-unstyled overflow-hidden">
                                                                     <li>
                                                                         <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                                        <small class="fw-bold">${replyFullUserName}</small>
+                                                                        <small class="fw-bold">${res.userName.charAt(0).toUpperCase() + res.userName.slice(1) + ' ' + res.lastName.charAt(0).toUpperCase() + res.lastName.slice(1)}</small>
                                                                         <p class="mb-1 small">${res.message}</p>
                                                                         </div>
                                                                         <div class="d-flex justify-content-between align-items-center mb-1">
@@ -733,7 +713,7 @@
                                                                                         <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                                         <div class="input-group me-2" data-post-id="${res.id}">
                                                                                             <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
                                                                                                     placeholder="Write a reply..." autocomplete="off">
@@ -760,11 +740,11 @@
 
                                     return  `<div class="d-flex">
                                                ${comment.userImageUrl ? `<img src="${comment.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${commentUserNameletter}</div>`}
+                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${comment.userName.charAt(0).toUpperCase()}</div>`}
                                                 <ul class="list-unstyled overflow-hidden">
                                                    <li>
                                                       <div class="bg-light rounded p-2 flex-grow-1 text-break">
-                                                        <small class="fw-bold">${fullUserName}</small>
+                                                        <small class="fw-bold">${comment.userName.charAt(0).toUpperCase() + comment.userName.slice(1) +" "+ comment.lastName.charAt(0).toUpperCase() + comment.lastName.slice(1)}</small>
                                                         <p class="mb-1 small">${comment.message}</p>
                                                       </div>
                                                       <div class="d-flex justify-content-between align-items-center mb-1">
@@ -784,7 +764,7 @@
                                                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                                     <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                                     ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                     <div class="input-group me-2" data-post-id="${comment.id}">
                                                                         <input type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
                                                                                 placeholder="Write a reply..." autocomplete="off">
@@ -815,14 +795,13 @@
                                 </div>`;
                             }
                             const sendCommentBtn = document.getElementById(`sendCommentBtn-${postId}`);
-                            const userNameletter =  loggedInUserName.charAt(0).toUpperCase() ?? "?";
                             sendCommentBtn.innerHTML = `<form  id="commentForm-${postId}" action="Home/SendComment" data-action="CommentForm" data-id="${postId}" method="post" enctype="multipart/form-data">
                                                             <div class="d-flex px-1" style="width : 95%; height : 35px;">
                                                                 <input type="hidden" name="PostId" value="${postId}" />
                                                                 <input type="hidden" name="UserImageUrl" value="${loggedInUserProfile}" />
                                                                 <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                                                 ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
-                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${userNameletter}</div>`}
+                                                                        : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                 <div class="input-group" data-post-id="${postId}">
                                                                     <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
                                                                             placeholder="Write a comment..." autocomplete="off">
@@ -1005,8 +984,6 @@
                         if (res.success) 
                         {                           
                             document.getElementById("createPostOverlay").classList.toggle("d-none", true);
-                            const usernameLetter = loggedInUserName.charAt(0).toUpperCase();
-                            const fullName = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + " " + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
                             let image = "";
                             let bgColour = "";
                             let postMsg = "";
@@ -1033,10 +1010,10 @@
                                         <div class="d-flex align-items-center p-2">
                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle" style="width:45px;height:45px;object-fit:cover;" />` :
                                                     `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width:45px;height:45px;">
-                                                    ${usernameLetter}
+                                                    ${loggedInUserName.charAt(0).toUpperCase() ?? "?"}
                                                     </div>`}                                      
                                             <div class="col ms-1">
-                                                <h6 class="mb-0 fw-bold">${fullName}</h6>
+                                                <h6 class="mb-0 fw-bold">${loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + " " + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1)}</h6>
                                                 <small class="text-muted">
                                                     <i class="bi bi-clock me-1"></i>Just now
                                                 </small>
@@ -1100,14 +1077,11 @@
                     const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
                     if (response.ok) {
                         let imageContent = '';
-                        const initial = loggedInUserName.charAt(0).toUpperCase();
-                        const fullUsernameComment = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' +
-                                            loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
                         } else {
                             imageContent = `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
-                                                ${initial}
+                                                ${loggedInUserName.charAt(0).toUpperCase()}
                                             </div>`;
                         }
                         const noCommentDefaultMessage = document.getElementById(`noComment-${id}`);
@@ -1123,7 +1097,7 @@
                                 <ul class="list-unstyled">
                                     <li>
                                         <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                            <small class="fw-bold">${fullUsernameComment}</small>
+                                            <small class="fw-bold">${loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1)}</small>
                                             <p class="mb-1 small">${message}</p>
                                         </div>
                                     </li>
@@ -1166,14 +1140,11 @@
                     }                   
                     if (response.ok) {
                         let imageContent = '';
-                        const initial = loggedInUserName.charAt(0).toUpperCase();
-                        const fullUsernameComment = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' +
-                                        loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
                         } else {
                             imageContent = `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
-                                                ${initial}
+                                                ${loggedInUserName.charAt(0).toUpperCase()}
                                             </div>`;
                         }
                         const visibilityCheck = document.getElementById(`replyBtn-${id}`);
@@ -1189,7 +1160,7 @@
                                 <ul class="list-unstyled">
                                     <li>
                                         <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                            <small class="fw-bold">${fullUsernameComment}</small>
+                                            <small class="fw-bold">${loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1)}</small>
                                             <p class="mb-1 small">${message}</p>
                                         </div>
                                     </li>
@@ -1227,14 +1198,11 @@
                     const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
                     if (response.ok) {
                         let imageContent = '';
-                        const initial = loggedInUserName.charAt(0).toUpperCase();
-                        const fullUsernameComment = loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' +
-                                            loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1);
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
                         } else {
                             imageContent = `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">
-                                                ${initial}
+                                                ${loggedInUserName.charAt(0).toUpperCase()}
                                             </div>`;
                         }
 
@@ -1252,7 +1220,7 @@
                                 <ul class="list-unstyled">
                                     <li>
                                         <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                            <small class="fw-bold">${fullUsernameComment}</small>
+                                            <small class="fw-bold">${loggedInUserName.charAt(0).toUpperCase() + loggedInUserName.slice(1) + ' ' + loggedInLastName.charAt(0).toUpperCase() + loggedInLastName.slice(1)}</small>
                                             <p class="mb-1 small">${message}</p>
                                         </div>
                                     </li>
