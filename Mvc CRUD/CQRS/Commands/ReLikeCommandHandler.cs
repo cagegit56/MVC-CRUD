@@ -7,10 +7,12 @@ namespace Mvc_CRUD.CQRS.Commands;
 internal sealed class ReLikeCommandHandler : IRequestHandler<ReLikeCommand, bool>
 {
     private readonly DataDbContext _context;
+    private readonly ILogger<ReLikeCommandHandler> _logger;
 
-    public ReLikeCommandHandler(DataDbContext context)
+    public ReLikeCommandHandler(DataDbContext context, ILogger<ReLikeCommandHandler> logger)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context)); 
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
     }
 
     public async Task<bool> Handle(ReLikeCommand request, CancellationToken cancellationToken)
@@ -27,11 +29,13 @@ internal sealed class ReLikeCommandHandler : IRequestHandler<ReLikeCommand, bool
             }
             else
             {
+                _logger.LogError("Cannot re-like a like that does not exist");
                 return false;
             }
         }catch(Exception ex)
         {
-            throw new Exception($"Falied to re-like due to : {ex.Message} ");
+            _logger.LogError($"Falied to re-like due to : {ex.Message} ");
+            return false;
         }
     
        

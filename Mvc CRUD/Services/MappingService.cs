@@ -6,9 +6,11 @@ namespace Mvc_CRUD.Services;
 
     public class MappingService : Profile
     {
-          public MappingService(){
-            CreateMap<Comments, CommentsDto>()
-            .ForMember(x => x.UserName, k => k.MapFrom(s => s.UserName));
-          }
+        public MappingService(){
+
+          CreateMap<Comments, CommentsDto>().ForMember(x => x.UserName, k => k.MapFrom(s => s.UserName));
+          CreateMap<UserProfile, UserProfileDTO>();
+            
+        }
     }
 

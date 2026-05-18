@@ -411,6 +411,15 @@ td.message-cell {
 }
 
 
+/* ***********************************friend request css******************************/
+@media (max-width: 768px) {
+    .recieved-request-pic{
+        width: 32px !important; 
+        height: 32px !important;
+    }
+}
+
+
 
 
 

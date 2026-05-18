@@ -9,11 +9,13 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
 {
     private readonly DataDbContext _context;
     private readonly IMediator _mediator;
+    private readonly ILogger<CreatePostCommandHandler> _logger;
 
-    public CreatePostCommandHandler(DataDbContext context, IMediator mediator)
+    public CreatePostCommandHandler(DataDbContext context, IMediator mediator, ILogger<CreatePostCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _mediator = mediator;
+        _logger = logger;
     }
 
     public async Task<bool> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -22,14 +24,23 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
         {
             if (string.IsNullOrEmpty(request.model.Content) && (request.postImage == null || request.postImage.Length == 0))
             {
-                throw new Exception("Text content and Image content cannot both be null/empty");
+                _logger.LogError("Text content and Image content cannot both be null/empty");
+                return false;
             }
             var model = new Posts();
             var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
-            model.UserId = CurrentUser.UserId;
-            model.UserName = CurrentUser.UserName!;
-            model.LastName = CurrentUser.LastName!;
-            model.UserImageUrl = CurrentUser.UserProfilePicUrl;
+            if (CurrentUser.UserId != null && CurrentUser.UserName != null && CurrentUser.LastName != null)
+            {
+                model.UserId = CurrentUser.UserId;
+                model.UserName = CurrentUser.UserName;
+                model.LastName = CurrentUser.LastName;
+                model.UserImageUrl = CurrentUser.UserProfilePicUrl;
+            }
+            else
+            {
+                _logger.LogError("Current user info cannot be null");
+                return false;
+            }
             model.PostScope = request.model.PostScope;
             model.Content = request.model.Content;
             model.PostBgColour = request.model.PostBgColour;
@@ -55,7 +66,8 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
         }
         catch (Exception Ex)
         {
-           throw new Exception($"Failed to create a new post due to : {Ex.Message}");
+           _logger.LogError($"Failed to create a new post due to : {Ex.Message}");
+            return false;
         }
     }
 }

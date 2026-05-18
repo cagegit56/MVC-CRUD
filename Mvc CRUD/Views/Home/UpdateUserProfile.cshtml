@@ -1,38 +1,36 @@
-﻿@model Mvc_CRUD.Models.UserProfile;
+﻿@model Mvc_CRUD.Dto.UserProfileDTO;
 
 @{
     ViewData["Title"] = "Profile";
-    var initial = !string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX";
 }
 
 <link href="~/images" />
 <link href="~/css/site.css" rel="stylesheet"/>
-@* <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> *@
 
 <div class="container py-4">
         <div class="position-relative">
             <div class="dropdown">
-                <button id="toggleDropDown" type="button" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
-                    @if(Model.UserProfilePicUrl != null || Model.UserProfilePicUrl?.Length > 0)
+                <button type="button" id="toggleCoverPicOptions" style="background:none; border:none; padding:0; cursor:pointer; display:block; width:100%;">
+                    @if(Model.UserCoverPicUrl != null || Model.UserCoverPicUrl?.Length > 0)
                     {
                         <img src="@Model.UserCoverPicUrl" id="bgImage" class="img-fluid w-100" style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">
                     }
                     else
                     {
-                        <div class="border border-4 border-white bg-secondary cover-pic-phone-width text-capitalize text-white fw-bolder h1"
-                             style="width: 69rem; height: 400px; cursor : pointer; justify-content : center; text-align : center; align-content : center;">
-                            @initial <br /> <br />
-                            <small class="text-white h4">Add a Background picture</small>
-                        </div>                      
+                        <div class="bg-secondary w-100" id="letterCoverPic" style="height: 450px; cursor : pointer; align-content : center;">
+                            <div class="text-capitalize text-white fw-bolder h1">@(char.ToUpper(@Model.UserName[0]) + @Model.UserName.Substring(1)) </div>
+                            <div> <small class="text-white h4">Add a Cover Picture</small> </div>
+                        </div>   
+                        <div id="updatedCoverPic"></div>
                     }
                 </button>
-                <button class="btn btn-primary position-absolute end-0" type="button" id="btnToggleDropDown" style="bottom: 0; right: 0;">
+                <button class="btn btn-primary position-absolute end-0" type="button" id="btnToggleCoverPicOptions" style="bottom: 0; right: 0;">
                     <i class="bi bi-camera"></i> Edit Cover Photo
                 </button>
-                <ul class="custom-menu" id="dropDownMenu">
-                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a> </li>
+                <ul class="custom-menu" id="coverPicDropDownMenu">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a> </li>
                     <li><label class="dropdown-item" style="cursor : pointer">Change Cover Photo
-                        <input type="file" id="bgInput" accept="image/*" class="d-none"></label>   
+                        <input type="file" id="coverPicInput" data-action="UpdateCoverPic" accept="image/*" class="d-none"></label>   
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="#">Remove Cover Photo</a></li>
@@ -51,12 +49,12 @@
                        }
                        else
                        {
-                           <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                           <div id="letterProfilePic" class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
                                 style='width:150px; height:150px; min-width:50px; min-height:50px;'>
-                                @initial 
+                                @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
                            </div>
-                       }
-                      
+                           <div id="updatedProfilePic"></div>
+                       }                      
                        <div class="camera-icon">
                            <i class="bi bi-camera-fill"></i>
                        </div>
@@ -64,7 +62,7 @@
                     <ul class="custom-profile-pic-dropdown" id="profileDropDownMenu">
                         <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewProfilePic">View Profile Picture</a> </li>
                         <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
-                            <input type="file" id="picInput" accept="image/*" class="d-none"></label>
+                            <input type="file" id="profilePicInput" data-action="UpdateProfilePic" accept="image/*" class="d-none"></label>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="#">Remove Profile Picture</a></li>
@@ -101,23 +99,23 @@
             </li>
         </ul>
 
-        <form asp-controller="Home" asp-action="UpdateUserProfile" method="post">
+        <form asp-controller="Home" asp-action="UpdateUserProfile" method="post" data-action="UpdateUserProfileForm">
         <div class="tab-content mt-4">
             <div class="tab-pane fade show active" id="About">
                 <div class="card shadow-sm border-0 rounded-4 mb-1 w-100">
                     <div class="card-body gap-2">
                         <h5 class="fw-bold">About</h5>
                         <div class="d-flex justify-content-between align-items-center">
-                            <p class="mt-2 mb-1"> <strong>Bio:</strong> <br />
-                               <span class="text-muted fw-bold" data-group="hideInfo">@Model.Bio</span>
+                            <p class="mt-4 mb-1"> <strong>Bio:</strong> <br />
+                               <span class="text-muted fw-bold" data-group="labelAboutInfo" id="labelBio">@Model.Bio</span>
                             </p>
-                            <a class="nav-link fw-bolder h5" id="edit" style="cursor: pointer;">Edit</a>
+                            <a class="nav-link fw-bolder h5" data-action="EditBio" style="cursor: pointer;">Edit</a>
                         </div>
-                        <textarea class="form-control d-none" name="Bio" rows="3" id="bioTxt">@Model.Bio</textarea>
+                        <textarea class="form-control d-none" name="Bio" data-group="aboutInfo" rows="3" id="bioTxt">@Model.Bio</textarea>
                         <p class="mt-2 mb-1"> <strong>RelationShip Status:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="hideInfo">@Model.RelationShipStatus</span>
+                            <span class="text-muted fw-bold" data-group="labelAboutInfo" id="labelRelationStatus">@Model.RelationShipStatus</span>
                         </p>
-                        <input id="combobox" type="text" class="form-control d-none" list="comboboxOptions" name="RelationShipStatus" value="@Model.RelationShipStatus" maxlength="30" autocomplete="off">
+                        <input id="combobox" type="text" class="form-control d-none" list="comboboxOptions" name="RelationShipStatus" value="@Model.RelationShipStatus" maxlength="30" data-group="aboutInfo" autocomplete="off">
                         <datalist id="comboboxOptions">
                             <option value="In a RelationShip">In a RelationShip</option>
                             <option value="Single">Single</option>
@@ -126,13 +124,13 @@
                             <option value="Complicated">Complicated</option>
                         </datalist>
                         <p class="mt-2 mb-1"> <strong>Location:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="hideInfo">@Model.Location</span>
+                            <span class="text-muted fw-bold" data-group="labelAboutInfo" id="labelLocation">@Model.Location</span>
                         </p>
-                        <input type="text" class="form-control d-none" name="Location" value="@Model.Location" id="locationTxt" />
+                        <input type="text" class="form-control d-none" name="Location" value="@Model.Location" id="locationTxt" data-group="aboutInfo" />
                         <div class="d-flex align-items-center mt-2 gap-1">
-                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="cancelBtn"> Cancel</button>
-                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="saveBtn">Save Changes</button>
-                            <a id="EducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="cancelBtn" data-group="aboutInfo"> Cancel</button>
+                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="saveBtn" data-group="aboutInfo">Save Changes</button>
+                            <a id="EducationTab" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
                                 <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>
                             </a>
                         </div>
@@ -145,39 +143,38 @@
                 <div class="card-body">
                     <h5 class="fw-bold">Education</h5>
                     <div class="d-flex justify-content-between">
-                        <p class="mt-2 mb-1"><strong>University/College:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="educationInfo">@Model.CollegeName</span>
+                        <p class="mt-4 mb-1"><strong>University/College:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelCollegeName">@Model.CollegeName</span>
                         </p>
-                        <a class="nav-link fw-bolder h5" id="toggleEducation" style="cursor : pointer;">Edit</a>
+                        <a class="nav-link fw-bolder h5" id="editEducationBtn" data-action="EditEducation" style="cursor : pointer;">Edit</a>
                     </div>
-                    <input type="text" class="form-control d-none" id="txtCollgeName" name="CollegeName" value="@Model.CollegeName" />
+                    <input type="text" class="form-control d-none" id="txtCollgeName" name="CollegeName" value="@Model.CollegeName" data-group="educationInfo" />
                     <p class="mt-2 mb-1"><strong>Course:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.Course</span>
+                        <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelCourse">@Model.Course</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtCourse" name="Course" value="@Model.Course" />
+                    <input type="text" class="form-control d-none" id="txtCourse" name="Course" value="@Model.Course" data-group="educationInfo" />
                     <p class="mt-2 mb-1"><strong>Period:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.CollegePeriod</span>
+                        <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelCollegePeriod">@Model.CollegePeriod</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtCollegePeriod" name="CollegePeriod" value="@Model.CollegePeriod"  placeholder="Example-(2025-2025)"/>
+                    <input type="text" class="form-control d-none" id="txtCollegePeriod" name="CollegePeriod" value="@Model.CollegePeriod" data-group="educationInfo" placeholder="Example-(2025-2025)"/>
                     <p class="mt-2 mb-1"><strong>High School Name:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.HighSchoolName</span>
+                        <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelHighSchoolName">@Model.HighSchoolName</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtSchoolName" name="HighSchoolName" value="@Model.HighSchoolName" />
+                    <input type="text" class="form-control d-none" id="txtSchoolName" name="HighSchoolName" value="@Model.HighSchoolName" data-group="educationInfo" />
                     <p class="mt-2 mb-1"><strong>Subject:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.Subject</span>
+                        <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelSubject">@Model.Subject</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtSubject" name="Subject" value="@Model.Subject" />
+                    <input type="text" class="form-control d-none" id="txtSubject" name="Subject" value="@Model.Subject" data-group="educationInfo"/>
                     <p class="mt-2 mb-1"><strong>Period:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="educationInfo">@Model.SchoolPeriod</span>
+                        <span class="text-muted fw-bold" data-group="labelEducationInfo" id="labelSchoolPeriod">@Model.SchoolPeriod</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtSchoolPeriod" name="SchoolPeriod" value="@Model.SchoolPeriod" placeholder="Example-(2025-2025)" />
+                    <input type="text" class="form-control d-none" id="txtSchoolPeriod" name="SchoolPeriod" value="@Model.SchoolPeriod" data-group="educationInfo" placeholder="Example-(2025-2025)" />
                     <div class="d-flex align-items-center mt-2 gap-1">
-                        <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="educationCancel">Cancel</button>
-                        <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="educationSave">Save Changes</button>
-                        <a id="CareerTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                            <i class="bi bi-arrow-right fs-1"></i>
-                            <small>Continue</small>   
-                        </a> 
+                        <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="educationCancel" data-group="educationInfo">Cancel</button>
+                        <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="educationSave" data-group="educationInfo">Save Changes</button>
+                        <a id="CareerTab" data-action="CareerToEducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                            <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>
+                        </a>
                     </div> 
                 </div>
                 </div>
@@ -188,26 +185,25 @@
                     <div class="card-body">
                         <h5 class="fw-bold">Career</h5>
                         <div class="d-flex justify-content-between">
-                            <p class="mt-2 mb-1"><strong>Job Title:</strong> <br />
-                                <span class="text-muted fw-bold" data-group="careerInfo">@Model.JobTitle</span>
+                            <p class="mt-4 mb-1"><strong>Job Title:</strong> <br />
+                                <span class="text-muted fw-bold" data-group="labelCareerInfo" id="labelJobTitle">@Model.JobTitle</span>
                             </p>
-                            <a class="nav-link fw-bolder h5" id="careerEdit" style="cursor: pointer;">Edit</a>
+                            <a class="nav-link fw-bolder h5" data-action="EditCareer" style="cursor: pointer;">Edit</a>
                         </div>
-                        <input type="text" class="form-control d-none" id="txtJobTitle" name="JobTitle" value="@Model.JobTitle" />
+                        <input type="text" class="form-control d-none" id="txtJobTitle" name="JobTitle" value="@Model.JobTitle" data-group="careerInfo"/>
                         <p class="mt-2 mb-1"><strong>Industry:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="careerInfo">@Model.Industry</span>
+                            <span class="text-muted fw-bold" data-group="labelCareerInfo" id="labelIndustry">@Model.Industry</span>
                         </p>
-                        <input type="text" class="form-control d-none" id="txtIndustry" name="Industry" value="@Model.Industry" />
+                        <input type="text" class="form-control d-none" id="txtIndustry" name="Industry" value="@Model.Industry" data-group="careerInfo"/>
                         <p class="mt-2 mb-1"><strong>Period:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="careerInfo">@Model.JobPeriod</span>
+                            <span class="text-muted fw-bold" data-group="labelCareerInfo" id="labelJobPeriod">@Model.JobPeriod</span>
                         </p>
-                        <input type="text" class="form-control d-none" id="txtJobPeriod" name="JobPeriod" value="@Model.JobPeriod" placeholder="Example-(2025-2025)" />
+                        <input type="text" class="form-control d-none" id="txtJobPeriod" name="JobPeriod" value="@Model.JobPeriod" data-group="careerInfo" placeholder="Example-(2025-2025)"/>
                         <div class="d-flex align-items-center mt-2 gap-1">
-                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="careerCancel">Cancel</button>
-                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="careerSave">Save Changes</button>
-                            <a id="LocationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
-                                <i class="bi bi-arrow-right fs-1"></i>
-                                <small>Continue</small>
+                            <button type="button" class="btn btn-secondary mt-2 mb-1 d-none" id="careerCancel" data-group="careerInfo">Cancel</button>
+                            <button type="submit" class="btn btn-primary mt-2 mb-1 d-none" id="careerSave" data-group="careerInfo">Save Changes</button>
+                            <a id="LocationTab" data-action="LocationToEducationTab" href="#" class="ms-auto text-decoration-none d-flex flex-column align-items-center lh-1">
+                                <i class="bi bi-arrow-right fs-1"></i> <small>Continue</small>
                             </a>
                         </div>    
                     </div>
@@ -219,18 +215,18 @@
                   <div class="card-body">
                      <h5 class="fw-bold">Location</h5>
                     <div class="d-flex justify-content-between">
-                        <p class="mt-2 mb-1"><strong>Originally From:</strong> <br />
-                            <span class="text-muted fw-bold" data-group="locationInfo">@Model.FromLocation</span>
+                        <p class="mt-4 mb-1"><strong>Originally From:</strong> <br />
+                            <span class="text-muted fw-bold" data-group="labelLocationInfo" id="labelFromLocation">@Model.FromLocation</span>
                         </p>
-                        <a class="nav-link fw-bolder h5" id="locationEdit" style="cursor: pointer;">Edit</a>
+                        <a class="nav-link fw-bolder h5" data-action="EditLocation" style="cursor: pointer;">Edit</a>
                     </div>  
-                    <input type="text" class="form-control d-none" id="txtLocation" name="FromLocation" value="@Model.FromLocation"  />
+                    <input type="text" class="form-control d-none" id="txtLocation" name="FromLocation" value="@Model.FromLocation"  data-group="locationInfo"/>
                     <p class="mt-2 mb-1"><strong>Website:</strong> <br />
-                        <span class="text-muted fw-bold" data-group="locationInfo">@Model.Website</span>
+                        <span class="text-muted fw-bold" data-group="labelLocationInfo" id="labelWebsite">@Model.Website</span>
                     </p>
-                    <input type="text" class="form-control d-none" id="txtWebsite" name="Website" value="@Model.Website" />
-                    <button type="button" class="btn btn-secondary mt-3 mb-1 d-none" id="locationCancel" >Cancel</button>
-                    <button type="submit" class="btn btn-primary mt-3 mb-1 d-none" id="locationSave">Save Changes</button>
+                    <input type="text" class="form-control d-none" id="txtWebsite" name="Website" value="@Model.Website" data-group="locationInfo"/>
+                    <button type="button" class="btn btn-secondary mt-3 mb-1 d-none" id="locationCancel" data-group="locationInfo">Cancel</button>
+                    <button type="submit" class="btn btn-primary mt-3 mb-1 d-none" id="locationSave" data-group="locationInfo">Save Changes</button>
                   </div>
                </div>
             </div>
@@ -277,187 +273,339 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function(){
-        // toggle Text input for updating user bio info
-        const edit = document.getElementById("edit");
-        edit.addEventListener("click", function(){
-            const bioInput = document.getElementById("bioTxt");
-            const relationShipStatus = document.getElementById("combobox");
-            const location = document.getElementById("locationTxt");
-            const cancelBtn = document.getElementById("cancelBtn");
-            const saveBtn = document.getElementById("saveBtn");
-            document.querySelectorAll('[data-group="hideInfo"]').forEach(data =>{
-                data.classList.add("d-none");
-            });
+    document.addEventListener("DOMContentLoaded", function(){     
+        let clearForm = [];
+        clearForm.push("first array data");
+        const clickEventListenerMethod = 
+        {
+            // ********Only works at first click then it stops working *******
+            // async ToggleCoverPicOptions(e){
+            //     toastr.success("hiiiiiiiii");
+            //     e.stopPropagation();
+            //     const menu = document.getElementById("coverPicDropDownMenu");
+            //     if(!menu) return;
+            //     const isHidden = window.getComputedStyle(menu).display === "none";
+            //     menu.style.display = isHidden ? "block" : "none";
+            //     if(isHidden)
+            //     {
+            //         const firstItem = menu.querySelector("a");
+            //         if (firstItem) firstItem.focus();
 
-            bioInput.classList.remove("d-none");
-            relationShipStatus.classList.remove("d-none");
-            location.classList.remove("d-none");
-            cancelBtn.classList.remove("d-none");
-            saveBtn.classList.remove("d-none");
+            //         document.addEventListener("click", function(){
+            //             menu.style.display = "none";
+            //         }, {once: true});
+            //     } 
+            // },
 
-            cancelBtn.addEventListener("click", function(){
-                document.querySelectorAll('[data-group="hideInfo"]').forEach(data =>{
+            async EditBio(e){
+                document.querySelectorAll('[data-group="labelAboutInfo"]').forEach(data =>{
+                    data.classList.add("d-none");
+                });
+                document.querySelectorAll('[data-group="aboutInfo"]').forEach(data =>{
                     data.classList.remove("d-none");
                 });
-                bioInput.classList.add("d-none");
-                relationShipStatus.classList.add("d-none");
-                location.classList.add("d-none");
-                cancelBtn.classList.add("d-none");
-                saveBtn.classList.add("d-none");
-            });
-        });
 
-        // toggle Text input for updating user education info
-        const educationEdit = document.getElementById("toggleEducation");
-        educationEdit.addEventListener("click", function(){
-            const college = document.getElementById("txtCollgeName");
-            const course = document.getElementById("txtCourse");
-            const collegePeriod = document.getElementById("txtCollegePeriod");
-            const school = document.getElementById("txtSchoolName");
-            const subject = document.getElementById("txtSubject");
-            const schoolPeriod = document.getElementById("txtSchoolPeriod");
-            const cancelBtn = document.getElementById("educationCancel");
-            const saveBtn = document.getElementById("educationSave");
-            document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
-                data.classList.add("d-none");
-            });
+                document.getElementById("cancelBtn").addEventListener("click", function(){
+                    document.querySelectorAll('[data-group="labelAboutInfo"]').forEach(data =>{
+                        data.classList.remove("d-none");
+                    });
+                    document.querySelectorAll('[data-group="aboutInfo"]').forEach(data =>{
+                        data.classList.add("d-none");
+                    });                  
+                });
+            },
 
-            college.classList.remove("d-none");
-            course.classList.remove("d-none");
-            collegePeriod.classList.remove("d-none");
-            school.classList.remove("d-none");
-            subject.classList.remove("d-none");
-            schoolPeriod.classList.remove("d-none");
-            cancelBtn.classList.remove("d-none");
-            saveBtn.classList.remove("d-none");
-
-            cancelBtn.addEventListener("click", function(){
-                college.classList.add("d-none");
-                course.classList.add("d-none");
-                collegePeriod.classList.add("d-none");
-                school.classList.add("d-none");
-                subject.classList.add("d-none");
-                schoolPeriod.classList.add("d-none");
-                cancelBtn.classList.add("d-none");
-                saveBtn.classList.add("d-none");
+            async EditEducation(e){
+                document.querySelectorAll('[data-group="labelEducationInfo"]').forEach(data =>{
+                    data.classList.add("d-none");
+                });
                 document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
                     data.classList.remove("d-none");
                 });
-            });
-        });
 
-        // toggle Text input for updating user career info
-        const editCareer = document.getElementById("careerEdit");
-        editCareer.addEventListener("click", function(){
-            const title = document.getElementById("txtJobTitle");
-            const period = document.getElementById("txtJobPeriod");
-            const industry = document.getElementById("txtIndustry");
-            const cancelBtn = document.getElementById("careerCancel");
-            const saveBtn = document.getElementById("careerSave");
-            document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
-                data.classList.add("d-none");
-            });
+                document.getElementById("educationCancel").addEventListener("click", function(){
+                    document.querySelectorAll('[data-group="labelEducationInfo"]').forEach(data =>{
+                        data.classList.remove("d-none");
+                    });
+                    document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
+                        data.classList.add("d-none");
+                    });
+                });
+            },
 
-            title.classList.remove("d-none");
-            period.classList.remove("d-none");
-            industry.classList.remove("d-none");
-            cancelBtn.classList.remove("d-none");
-            saveBtn.classList.remove("d-none");
-
-            cancelBtn.addEventListener("click", function(){
-                title.classList.add("d-none");
-                period.classList.add("d-none");
-                industry.classList.add("d-none");
-                cancelBtn.classList.add("d-none");
-                saveBtn.classList.add("d-none");
+            async EditCareer(e){
+                document.querySelectorAll('[data-group="labelCareerInfo"]').forEach(data =>{
+                    data.classList.add("d-none");
+                });
                 document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
                     data.classList.remove("d-none");
                 });
 
-            });
-        });
+                document.getElementById("careerCancel").addEventListener("click", function(){
+                    document.querySelectorAll('[data-group="labelCareerInfo"]').forEach(data =>{
+                        data.classList.remove("d-none");
+                    });
+                    document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
+                        data.classList.add("d-none");
+                    });
+                });
+            },
 
-
-        const editLocation = document.getElementById("locationEdit");
-        editLocation.addEventListener("click", function(){
-            const location = document.getElementById("txtLocation");
-            const website = document.getElementById("txtWebsite");
-            const cancelBtn = document.getElementById("locationCancel")
-            const saveBtn = document.getElementById("locationSave");
-            document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
-                data.classList.add("d-none");
-            });
-
-            location.classList.remove("d-none");
-            website.classList.remove("d-none");
-            cancelBtn.classList.remove("d-none");
-            saveBtn.classList.remove("d-none");
-
-            cancelBtn.addEventListener("click", function(){
-                location.classList.add("d-none");
-                website.classList.add("d-none");
-                cancelBtn.classList.add("d-none");
-                saveBtn.classList.add("d-none");
+            async EditLocation(e){
+                document.querySelectorAll('[data-group="labelLocationInfo"]').forEach(data =>{
+                    data.classList.add("d-none");
+                });
                 document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
                     data.classList.remove("d-none");
                 });
-            });
-        });
+
+                document.getElementById("locationCancel").addEventListener("click", function(){
+                    document.querySelectorAll('[data-group="labelLocationInfo"]').forEach(data =>{
+                        data.classList.remove("d-none");
+                    });
+                    document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
+                        data.classList.add("d-none");
+                    });
+                });
+            },
+       
+        };
 
 
-        const toggle = document.getElementById("toggleDropDown");
-        const menu = document.getElementById("dropDownMenu");
-        toggle.addEventListener("click", function(e){
-            e.stopPropagation();
-            if(menu)
-            {
-                const menuDisplayState = window.getComputedStyle(menu).display === "none";
-                menu.style.display = menuDisplayState ? "block" : "none";
-                const firstItem = menu.querySelector("a");
-                if (firstItem) {
-                    firstItem.focus();
+        const submitEventListenerMethod = 
+        {
+            async UpdateUserProfileForm(e){
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+                const bio = formData.get("Bio");
+                const relationshipStatus = formData.get("RelationShipStatus");
+                const location = formData.get("Location");
+                const collegeName = formData.get("CollegeName");
+                const course = formData.get("Course");
+                const collegePeriod = formData.get("CollegePeriod");
+                const highSchoolName = formData.get("HighSchoolName");
+                const subject = formData.get("Subject");
+                const schoolPeriod = formData.get("SchoolPeriod");
+                const jobTitle = formData.get("JobTitle");
+                const industry = formData.get("Industry");
+                const jobPeriod = formData.get("JobPeriod");
+                const fromLocatiom = formData.get("FromLocation");
+                const website = formData.get("Website");
+                try 
+                {
+                    const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                    const res = await response.json();
+                    if (res.success) 
+                    {
+                        form.reset();                      
+                        document.getElementById("labelBio").textContent = bio;
+                        document.getElementById("labelRelationStatus").textContent = relationshipStatus;
+                        document.getElementById("labelLocation").textContent = location;
+                        document.getElementById("labelCollegeName").textContent = collegeName;
+                        document.getElementById("labelCourse").textContent = course;
+                        document.getElementById("labelCollegePeriod").textContent = collegePeriod;
+                        document.getElementById("labelHighSchoolName").textContent = highSchoolName;
+                        document.getElementById("labelSubject").textContent = subject;
+                        document.getElementById("labelSchoolPeriod").textContent = schoolPeriod;
+                        document.getElementById("labelJobTitle").textContent = jobTitle;
+                        document.getElementById("labelIndustry").textContent = industry;
+                        document.getElementById("labelJobPeriod").textContent = jobPeriod;
+                        document.getElementById("labelFromLocation").textContent = fromLocatiom;
+                        document.getElementById("labelWebsite").textContent = website;
+
+                        document.querySelectorAll('[data-group="labelAboutInfo"]').forEach(data =>{
+                            data.classList.remove("d-none");
+                        });
+                        document.querySelectorAll('[data-group="aboutInfo"]').forEach(info => {
+                            info.classList.add("d-none");
+                        });
+
+                        document.querySelectorAll('[data-group="labelEducationInfo"]').forEach(data =>{
+                            data.classList.remove("d-none");
+                        });
+                        document.querySelectorAll('[data-group="educationInfo"]').forEach(data => {
+                            data.classList.add("d-none");
+                        });
+
+                        document.querySelectorAll('[data-group="labelCareerInfo"]').forEach(data =>{
+                            data.classList.remove("d-none");
+                        });
+                        document.querySelectorAll('[data-group="careerInfo"]').forEach(data => {
+                            data.classList.add("d-none");
+                        });
+
+                        document.querySelectorAll('[data-group="labelLocationInfo"]').forEach(data =>{
+                            data.classList.remove("d-none");
+                        });
+                        document.querySelectorAll('[data-group="locationInfo"]').forEach(data => {
+                            data.classList.add("d-none");
+                        });
+
+                        toastr.success("Successfully Updated.");
+                    }else{
+                        toastr.error("Failed to update user info, Please try again later.");
+                    }
+                }catch(Error){
+                    toastr.error(`Failed to update user info due to : ${Error}`);
                 }
-            }         
+            }
+    
+        };
+
+
+        const onChangeEventListenerMethod = 
+        {
+            async UpdateCoverPic(e)
+            {
+                const file = e.target.files[0];
+                if (file) 
+                {
+                    const formImg = new FormData();
+                    formImg.append("coverImage", file);
+                    const res = await fetch('/Home/UpdateCoverPicture', {method : "PATCH", body : formImg});
+                    const result = await res.json();
+                    if(result.success)
+                    {
+                        const isImage = document.getElementById("bgImage");
+                        if(isImage)
+                        {
+                            isImage.src = URL.createObjectURL(file);
+                        }else
+                        {
+                            document.getElementById("letterCoverPic").classList.add("d-none");
+                            document.getElementById("updatedCoverPic").innerHTML = `<img src="${URL.createObjectURL(file)}" id="bgImage" class="img-fluid w-100" style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">`;                         
+                        }   
+                    }else
+                    {
+                        toastr.error("Failed to change cover picture");
+                    }        
+                }
+            },
+
+            async UpdateProfilePic(e)
+            {
+                const file = e.target.files[0];
+                const formImg = new FormData();
+                formImg.append("profileImage", file);
+                const res = await fetch('/Home/UpdateProfilePicture', {method : "PATCH", body : formImg});
+                const result = await res.json();
+                if(result.success)
+                { 
+                    const isImage = document.getElementById("profileImg");
+                    if(isImage)
+                    {
+                         isImage.src = URL.createObjectURL(file);
+                    }else
+                    {
+                        document.getElementById("letterProfilePic").classList.add("d-none");
+                        document.getElementById("updatedProfilePic").innerHTML = 
+                        `<img src="${URL.createObjectURL(file)}" id="profileImg" class="rounded-circle border border-4 border-white profile-pic-phone-width"
+                                    style="width: 150px; height: 150px; min-width : 110px; min-height : 110px; object-fit: cover; cursor : pointer" />`;
+                    }
+                }else
+                {
+                    toastr.error(`Failed to change profile picture due to : ${result.message}`);
+                }
+            }
+
+          
+        };
+
+
+
+        document.addEventListener("click", async function(e){
+            const action = e.target.dataset.action;
+            if(!action) return;
+            const handler = await clickEventListenerMethod[action];
+            if(handler) handler(e);
         });
+
+        document.addEventListener("submit", async function(e){
+            const submit = e.target.dataset.action;
+            if(!submit) return;
+            const handler = await submitEventListenerMethod[submit];
+            if(handler) handler(e);
+        });
+
+        document.addEventListener("change" , async function(e){
+            const onChange = e.target.dataset.action;
+            if(!onChange) return;
+            const handler = onChangeEventListenerMethod[onChange];
+            if(handler) handler(e);
+        });
+
+
+
+        const toggle = document.getElementById("toggleCoverPicOptions");
+        const menu = document.getElementById("coverPicDropDownMenu");
+        const isImage = document.getElementById("bgImage");
+        if(isImage)
+        {
+            toggle.addEventListener("click", function(e){
+                e.stopPropagation();
+                if(menu)
+                {
+                    const menuDisplayState = window.getComputedStyle(menu).display === "none";
+                    menu.style.display = menuDisplayState ? "block" : "none";
+                    menu.querySelector("a").focus();
+                }         
+            });
+        }else
+        {
+            const triggerImageInput = document.getElementById("coverPicInput");
+            toggle.addEventListener("click", function(e){
+                triggerImageInput.click();
+            });
+        }       
         document.addEventListener("click", function(){
             menu.style.display = "none";
         });
 
 
-        const btnToggle = document.getElementById("btnToggleDropDown");
-        const btnMenu = document.getElementById("dropDownMenu");
-        btnToggle.addEventListener("click", function(e){
-            e.stopPropagation();
-            if(btnMenu)
-            {
-                const menuDisplayState = window.getComputedStyle(btnMenu).display === "none";
-                btnMenu.style.display = menuDisplayState ? "block" : "none";
-                const firstItem = btnMenu.querySelector("a");
-                if (firstItem) {
-                    firstItem.focus();
+        const btnToggle = document.getElementById("btnToggleCoverPicOptions");
+        const btnMenu = document.getElementById("coverPicDropDownMenu");
+        if(isImage)
+        {
+            btnToggle.addEventListener("click", function(e){
+                e.stopPropagation();
+                if(btnMenu)
+                {
+                    const isHidden = window.getComputedStyle(btnMenu).display === "none";
+                    btnMenu.style.display = isHidden ? "block" : "none";
+                    btnMenu.querySelector("a").focus();
                 }
-            }
-        });
+            });
+        }else
+        {
+            const triggerImageInput = document.getElementById("coverPicInput");
+            btnToggle.addEventListener("click", function(e){
+                triggerImageInput.click();
+            });
+        }    
         document.addEventListener("click", function(){
             btnMenu.style.display = "none";
         });
 
-
         const profileToggle = document.getElementById("toggleProfileDropDown");
         const profileMenu = document.getElementById("profileDropDownMenu");
-        profileToggle.addEventListener("click", function(e){
-            e.stopPropagation();
-            if(profileMenu)
-            {
-                const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
-                profileMenu.style.display = menuDisplayState ? "block" : "none";
-                const firstItem = profileMenu.querySelector("a");
-                if (firstItem) {
-                    firstItem.focus();
+        const isProfileImg = document.getElementById("profileImg");
+        if(isProfileImg){
+            profileToggle.addEventListener("click", function(e){
+                e.stopPropagation();
+                if(profileMenu)
+                {
+                    const isHidden = window.getComputedStyle(profileMenu).display === "none";
+                    profileMenu.style.display = isHidden ? "block" : "none";
+                    if(isHidden) profileMenu.querySelector("a").focus();              
                 }
-            }
-        });
+            });
+        }else{
+            const triggerProfile_ImgInput = document.getElementById("profilePicInput");
+            profileToggle.addEventListener("click", function(e){
+                triggerProfile_ImgInput.click();
+            });
+        }      
         document.addEventListener("click", function(){
             profileMenu.style.display = "none";
         });
@@ -466,92 +614,42 @@
 
 
 
+
     });
     
-    var tempInfo = '@TempData["Message"]';
-    if(tempInfo != null && tempInfo.length > 0)
-    toastr.success(tempInfo);
+    // var tempInfo = '@TempData["Message"]';
+    // if(tempInfo != null && tempInfo.length > 0)
+    // toastr.success(tempInfo); 
+    
 
     document.getElementById('EducationTab').addEventListener('click', function (e) {
         e.preventDefault();
-        const tabTrigger = document.querySelector(
-            'button[data-bs-target="#Education"]'
-        );
+        const tabTrigger = document.querySelector('button[data-bs-target="#Education"]');
         const tab = new bootstrap.Tab(tabTrigger);
         tab.show();
     });
 
-          document.getElementById('CareerTab').addEventListener('click', function (e) {
+    document.getElementById('CareerTab').addEventListener('click', function (e) {
         e.preventDefault();
-        const tabTrigger = document.querySelector(
-            'button[data-bs-target="#Career"]'
-        );
+        const tabTrigger = document.querySelector('button[data-bs-target="#Career"]');
         const tab = new bootstrap.Tab(tabTrigger);
         tab.show();
     });
 
-      document.getElementById('LocationTab').addEventListener('click', function (e) {
-        e.preventDefault();
-        const tabTrigger = document.querySelector(
-            'button[data-bs-target="#Location"]'
-        );
+    document.getElementById('LocationTab').addEventListener('click', function (e) {
+        e.preventDefault();        
+        const tabTrigger = document.querySelector('button[data-bs-target="#Location"]');
         const tab = new bootstrap.Tab(tabTrigger);
         tab.show();
-    });
-    
-    document.getElementById("picInput").addEventListener("change", async function (event) {
-        const file = event.target.files[0];
-        if (file) {
-             const formImg = new FormData();
-             formImg.append("profileImage", file);
-             document.getElementById("profileImg").src = URL.createObjectURL(file);
-             const res = await fetch('/Home/UpdateUserProfile', {method : "PUT", body : formImg});
-             const result = await res.json();
-            if(result.success)
-            {
-                document.getElementById("profileImg").src = URL.createObjectURL(file);
-                toastr.success("SuccessFully changed your profile pic");
-            }else
-            {
-                toastr.error(`Failed to change profile picture due to : ${result.message}`);
-            }
-        }
-    });
-
-
-    document.getElementById("bgInput").addEventListener("change", async function (event) {
-        const file = event.target.files[0];
-        if (file) {
-                const formImg = new FormData();
-                formImg.append("coverImage", file);
-                const res = await fetch('/Home/UpdateCoverPicture', {method : "PUT", body : formImg});
-                const result = await res.json();
-            if(result.success)
-            {
-                document.getElementById("bgImage").src = URL.createObjectURL(file);
-                toastr.success("SuccessFully changed your profile pic");
-            }else
-            {
-                toastr.error(`Failed to change profile picture due to : ${result.message}`);
-            }
-        
-        }
-    });
-
+        // after displaying this below code does not run
+        // tabTrigger.addEventListener('shown.bs.tab', function () {
+        //     const test = document.getElementById("editEducationBtn");
+        //     test.click();
+        //     alert("hi")
+        // });        
+    });   
 
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

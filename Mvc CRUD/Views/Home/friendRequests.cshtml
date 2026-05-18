@@ -1,6 +1,6 @@
 ﻿@using Newtonsoft.Json
 @using Mvc_CRUD.Pagination
-@model PaginateResponse<List<Mvc_CRUD.Models.Chat_Users>>
+@model PaginateResponse<List<Mvc_CRUD.Models.UserProfile>>
 
 @{
     ViewData["Title"] = "Find Friends";
@@ -174,19 +174,22 @@
                 card.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between flex-wrap">
                         <div class="d-flex">
-                            <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                 style="width:50px; height:50px; font-size:1.5rem;">
-                                ${(friend.userName).charAt(0).toUpperCase()}
-                            </div>
+                            ${friend.userProfilePicUrl ? `<img src="${friend.userProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                              style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                         : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                 style="width:50px; height:50px; font-size:1.5rem;">
+                                                 ${(friend.userName).charAt(0).toUpperCase()}
+                                         </div>`
+                            }                           
                             <div class="col">
-                                <div class="fw-bold">${(friend.userName).charAt(0).toUpperCase() + (friend.userName).slice(1) +" " + (friend.lastName).charAt(0).toUpperCase() + (friend.lastName).slice(1) ?? 'XX'}</div>
+                                <div class="fw-bold">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) +" " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</div>
                                 <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
                                 <div> <small class="text-muted">3 Mutual Friends</small> </div>
                             </div>
                         </div>
 
                         <div class="d-flex gap-2">
-                             <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" onclick="sendFriendRequest('${friend.userId}','${friend.userName}', '${friend.lastName}', ${friend.id}, '${friend.email}')">
+                             <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" onclick="sendFriendRequest('${friend.userId}','${friend.userName}', '${friend.lastName}', '${friend.userProfilePicUrl}', ${friend.id}, '${friend.email}')">
                                   <i class="fa-solid fa-user-plus me-1"></i>Add Friend
                              </button>
                          
@@ -199,14 +202,16 @@
             });
         }
 
-        async function sendFriendRequest(userid,friendName,friendLastName,id,email)
+        async function sendFriendRequest(userid,friendName,friendLastName,friendProfilePic,id,email)
         {
             const btn = document.getElementById("sendBtn-" + id);
             const removebtn = document.getElementById("removeBtn-" + id);
-            btn.disabled = true;            
+            btn.disabled = true; 
+            let profilePic = null;
+            if(friendProfilePic) profilePic = friendProfilePic;
             try
             {
-                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}`, {method : "POST"});
+                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}&ToUser_ProfilePicUrl=${encodeURIComponent(profilePic)}`, {method : "POST"});
                 const res = await results.json();
                 if(res.success)
                 {
@@ -264,12 +269,15 @@
                 card.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between flex-wrap">
                         <div class="d-flex align-items-center mb-2 mb-sm-0">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width:50px; height:50px; font-size:1.5rem;">
-                                ${(friend.userName || '?').charAt(0).toUpperCase()}
-                            </div>
+                            ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                            style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                        : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                style="width:50px; height:50px; font-size:1.5rem;">
+                                                ${(friend.userName).charAt(0).toUpperCase()}
+                                        </div>`
+                            }
                             <div>
-                                <h6 class="fw-semibold mb-1">${(friend.userName).charAt(0).toUpperCase() + (friend.userName).slice(1) + " " + (friend.lastName).charAt(0).toUpperCase() + (friend.lastName).slice(1) ?? 'Unknown User'}</h6>
+                                <h6 class="fw-semibold mb-1">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) + " " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</h6>
                                 <small class="text-muted">1.3k followers</small><br />
                                 <small class="text-muted">3 Mutual Friends</small>
                             </div>
@@ -299,7 +307,6 @@
                     headers: { "X-Requested-With": "XMLHttpRequest" }
                 });
                 if (!response.ok) throw new Error('Failed to fetch data');
-
                 const result = await response.json();
                 renderSentRequests(result.data);
                 setupPagination(result.totalPages);
@@ -315,12 +322,10 @@
         function renderSentRequests(friends) {
             const container = document.getElementById('SentRequestContainer');
             container.innerHTML = '';
-
             if (!friends || friends.length === 0) {
                 container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending sent friend request.</div>`;
                 return;
             }
-
             friends.forEach(friend => {
                 const card = document.createElement('div');
                 card.id = `row-${friend.id}`;
@@ -328,12 +333,15 @@
                 card.innerHTML = `
                     <div class="d-flex align-items-center justify-content-between flex-wrap">
                         <div class="d-flex align-items-center mb-2 mb-sm-0">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width:50px; height:50px; font-size:1.5rem;">
-                                ${(friend.toUserName || '?').charAt(0).toUpperCase()}
-                            </div>
+                            ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                            style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                        : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                style="width:50px; height:50px; font-size:1.5rem;">
+                                                ${(friend.userName).charAt(0).toUpperCase()}
+                                        </div>`
+                            }
                             <div>
-                                <h6 class="fw-semibold mb-1">${(friend.toUserName).charAt(0).toUpperCase() + (friend.toUserName).slice(1)+ " " + (friend.toUser_LastName).charAt(0).toUpperCase() + (friend.toUser_LastName).slice(1) ?? 'Unknown User'}</h6>
+                                <h6 class="fw-semibold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
                                 <small class="text-muted">1.3k followers</small><br />
                                 <small class="text-muted">3 Mutual Friends</small>
                             </div>

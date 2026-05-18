@@ -6,10 +6,12 @@ namespace Mvc_CRUD.CQRS.Commands;
     internal sealed class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, bool>
     {
         private readonly DataDbContext _context;
+        private readonly ILogger<SendMessageCommandHandler> _logger;
 
-        public SendMessageCommandHandler(DataDbContext context)
+        public SendMessageCommandHandler(DataDbContext context, ILogger<SendMessageCommandHandler> logger)
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
+           _logger = logger;
         }
         public async Task<bool> Handle(SendMessageCommand command, CancellationToken cancellationToken)
         {
@@ -21,7 +23,8 @@ namespace Mvc_CRUD.CQRS.Commands;
             }
             catch (Exception ex) 
             {
-                throw new Exception($"Failed to send message due to : {ex.Message}");
+                _logger.LogError($"Failed to send message due to : {ex.Message}");
+                return false;
             }
            
         }
