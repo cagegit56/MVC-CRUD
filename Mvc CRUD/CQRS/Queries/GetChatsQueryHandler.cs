@@ -27,8 +27,8 @@ namespace Mvc_CRUD.CQRS.Queries;
                                 ( (x.UserName == _currentUser.UserName && x.ToUser == f.FriendName) ||
                                 (x.ToUser == _currentUser.UserName && x.UserName == f.FriendName)) )).ToListAsync();
                 var chatFrnd = chats.Select(x => x.UserName == _currentUser.UserName ? x.ToUser : x.UserName).ToList();
-                var noChat = await _context.Friends.Where(x => x.UserId == _currentUser.UserId &&
-                                  !chatFrnd.Contains(x.FriendName)).ToListAsync();
+                var noChat = await _context.Friends.Where(x => x.UserId == _currentUser.UserId 
+                                   && !chatFrnd.Contains(x.FriendName)).ToListAsync();
                 var res = new List<Chat>();
                     if (noChat.Count() != 0)
                     {

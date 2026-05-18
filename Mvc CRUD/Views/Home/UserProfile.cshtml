@@ -223,32 +223,44 @@
     document.addEventListener("DOMContentLoaded", function(){
         const dropdown = document.getElementById("toggleDropDown");
         const menu = document.getElementById("dropDownMenu");
-        dropdown.addEventListener("click", function(e){
-            e.stopPropagation();
-            const menuDisplayState = window.getComputedStyle(menu).display === "none";
-            menu.style.display = menuDisplayState ? "block" : "none";
-            const firstItem = menu.querySelector("a");
-            if (firstItem) {
-                firstItem.focus();
-            }
-        });
-
+        const isCoverImage = document.getElementById("coverImage");
+        if(isCoverImage)
+        {
+            dropdown.addEventListener("click", function(e){
+                e.stopPropagation();
+                const menuDisplayState = window.getComputedStyle(menu).display === "none";
+                menu.style.display = menuDisplayState ? "block" : "none";
+                menu.querySelector("a").focus();
+            });
+        }else
+        {
+            const triggerCoverInput = document.getElementById("coverInput");
+            dropdown.addEventListener("click", function(e){
+                triggerCoverInput.click();
+            });
+        }  
         document.addEventListener("click", function () {
             menu.style.display = "none";
         });
 
         const profileDropdown = document.getElementById("toggleProfileDropDown");
         const profileMenu = document.getElementById("profileDropdownMenu");
-        profileDropdown.addEventListener("click", function(e){
-            e.stopPropagation();
-            const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
-            profileMenu.style.display = menuDisplayState ? "block" : "none";
-            const firstItem = profileMenu.querySelector("a");
-            if (firstItem) {
-                firstItem.focus();
-            }
-        });
-
+        const isProfileImg = document.getElementById("profileImage");
+        if(isProfileImg)
+        {
+            profileDropdown.addEventListener("click", function(e){
+                e.stopPropagation();
+                const menuDisplayState = window.getComputedStyle(profileMenu).display === "none";
+                profileMenu.style.display = menuDisplayState ? "block" : "none";
+                profileMenu.querySelector("a").focus();
+            });
+        }else
+        {
+            const triggerProfileimgInput = document.getElementById("picInput");
+            profileDropdown.addEventListener("click", function(e){
+                 triggerProfileimgInput.click();
+            });           
+        }
         document.addEventListener("click", function () {
             profileMenu.style.display = "none";
         });
@@ -340,7 +352,7 @@
                 if(img){
                     img.src = event;
                 }else{
-                    document.getElementById("letterCoverImage").style.display = "none"; 
+                    document.getElementById("letterCoverImage").classList.add("d-none");
                     document.getElementById("updatedCoverImage").innerHTML = 
                        `<img src="${event}" id="coverImage" class="img-fluid w-100" 
                         style="height: 450px; object-fit: cover; cursor : pointer;" alt="Cover Image">`; 

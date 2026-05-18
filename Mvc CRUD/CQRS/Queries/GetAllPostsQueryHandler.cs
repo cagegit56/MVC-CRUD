@@ -25,10 +25,8 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
                 throw new Exception($"Unable to add a user due to {newUser.error}");
 
             var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
-
             var friends = _context.Friends.Where(x => x.UserName == CurrentUser.UserName || x.FriendName == CurrentUser.UserName)
                           .Select(f => f.UserName == CurrentUser.UserName ? f.FriendName : f.UserName).Distinct();
-
             var results = await _context.Post.Where(x => x.PostScope == "Public"
                     || (x.PostScope == "Friends" && (x.UserName == CurrentUser.UserName || friends.Contains(x.UserName))
                     || (x.PostScope == "Only me" && x.UserName == CurrentUser.UserName)))
@@ -60,8 +58,8 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
             var res = new PostsViewDto
             {
                 Posts = results,
-                currentUserName = CurrentUser.UserName!,
-                currentUserLastName = CurrentUser.LastName!,
+                currentUserName = CurrentUser.UserName,
+                currentUserLastName = CurrentUser.LastName,
                 currentUserProfilePic = CurrentUser.UserProfilePicUrl,
             };      
             return res;
@@ -76,12 +74,12 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
 }
 
 
- //|| _context.Friends.Any(f => (f.UserName == x.UserName && f.FriendName == _currentUserInfo.UserName)))
+
 
 
 //***********************it works but (it does not return all the post with a public scope) *********************************************************
 //******************** another reason is that we don't need any data from friends table we just checking if a friend exist or not,
-//*****************so this is not totally a good idea, it would work provided we need data from friends table. ************************************** 
+//*****************so this is not totally a good idea, it would work provided we need data from friends table or we need more control. ************************************** 
 
 //var res = await (from p in _context.Post
 //                 join f in _context.Friends on
@@ -114,6 +112,8 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
 //                         IsDeleted = k.IsDeleted
 //                     }).ToList(),
 //                 }).OrderByDescending(r => r.CreatedOn).AsNoTracking().ToListAsync();
+
+//|| _context.Friends.Any(f => (f.UserName == x.UserName && f.FriendName == _currentUserInfo.UserName)))
 
 
 

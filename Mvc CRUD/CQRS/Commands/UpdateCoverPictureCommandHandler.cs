@@ -44,7 +44,7 @@ internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateC
                     res.UserCoverPicUrl = "/images/CoverPictures/" + fileName;
                     _context.Update(res);
                     await _context.SaveChangesAsync(cancellationToken);
-                } 
+                }
                 _cache.Remove($"UserInfo-{_currentUser.UserId}");
                 return true;
             }

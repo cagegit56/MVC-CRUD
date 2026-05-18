@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.CQRS.Commands;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
@@ -16,15 +15,11 @@ namespace Mvc_CRUD.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly DataDbContext _context;
         private readonly IMediator _mediator;
-
-        public HomeController(ILogger<HomeController> logger, DataDbContext context, IMediator mediator)
+        public HomeController(ILogger<HomeController> logger, IMediator mediator)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediator = mediator;
         }
-
 
         [HttpGet]
         [Authorize]
@@ -48,18 +43,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> AdminPortal([FromQuery] PaginationFilter pgFilter, string filter)
         {
             var res = await _mediator.Send(new GetAllQuery(pgFilter, filter));
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                Response.ContentType = "application/json";
-                return Json(new
-                {
-                    data = res.Data,
-                    totalRecords = res.TotalRecords,
-                    totalPages = res.TotalPages,
-                    CurrentPage = pgFilter.PageNumber,
-                    pageSize = pgFilter.PageSize
-                });
-            }
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
             return View(res);
         }
     
@@ -81,6 +65,15 @@ namespace Mvc_CRUD.Controllers
             return Json(new { success = true, message = "Successfully Sent." });
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new FriendRequestQuery(pgFilter));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
+            return View(res);
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> SendFriendRequest(FriendRequest model)
@@ -96,46 +89,14 @@ namespace Mvc_CRUD.Controllers
         {
             var res = await _mediator.Send(new GetAllSentRequestQuery(filter));
             return Json(res);
-        }
-
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
-        {
-            var res = await _mediator.Send(new FriendRequestQuery(pgFilter));
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                Response.ContentType = "application/json";
-                return Json(new
-                {
-                    data = res.Data,
-                    totalRecords = res.TotalRecords,
-                    totalPages = res.TotalPages,
-                    CurrentPage = pgFilter.PageNumber,
-                    pageSize = pgFilter.PageSize
-                });
-            }
-            return View(res);
-        }
+        }  
 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
         {
             var res = await _mediator.Send(new ReceivedFriendRequestQuery(filter));
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                Response.ContentType = "application/json";
-                return Json(new
-                {
-                    data = res.Data,
-                    totalRecords = res.TotalRecords,
-                    totalPages = res.TotalPages,
-                    CurrentPage = filter.PageNumber,
-                    pageSize = filter.PageSize
-                });
-            }
-            return View(res);
+            return Json(res);
         }
 
         [HttpPost]
@@ -192,7 +153,6 @@ namespace Mvc_CRUD.Controllers
             var res = await _mediator.Send(new SendCommentCommand(model));
             if (!res) return Json(new { success = false, message = "Failed to send a comment."});
             return Json(new { success = true, message = "Sent Successfully."});
-
         }
 
         [HttpPost]
@@ -260,11 +220,8 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateUserProfile(UserProfile model)
         {
             var res = await _mediator.Send(new UpdateUserProfileCommand(model));
-            if (!res) return RedirectToAction("UpdateUserProfile");
-            //TempData["Message"] = "SuccessFully Updated";                
-            //TempData["Message"] = $"Failed to update user info due to : {Ex.Message} ";
-            return RedirectToAction("UpdateUserProfile");
-            
+            if (!res) return Json(new { success = false, messsage = "Failed to update user profile info." });
+            return Json(new { success = true, message = "Successfully updated user info." });
         }
 
         [HttpPatch]
@@ -273,9 +230,7 @@ namespace Mvc_CRUD.Controllers
         {
             var res = await _mediator.Send(new UpdateProfilePictureCommand(profileImage));
             if (!res) return Json(new { success = false, message = "Failed to update profile picture."});
-            return Json(new { success = true, message = "Successful updated profile picture"});
-                
-
+            return Json(new { success = true, message = "Successful updated profile picture"}); 
         }
 
         [HttpPatch]
@@ -285,7 +240,6 @@ namespace Mvc_CRUD.Controllers
             var res = await _mediator.Send(new UpdateCoverPictureCommand(coverImage));
             if (!res) return Json(new { success = true, message = "Failed to update cover image."});
             return Json(new { success = true, message = "Sucessfully updated cover image."});
-
         } 
 
         [HttpGet]
@@ -304,59 +258,53 @@ namespace Mvc_CRUD.Controllers
             return Json(res);
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> AddData(int? Id)
-        {
-            if (Id.HasValue && Id.Value > 0)
-            {
-                var res = await _context.Chats.SingleOrDefaultAsync(x => x.Id == Id);
-                return View(res);
-            }
+        // ********Move this to cqrs so admin can send/delete a message to anyone *************
+        //[HttpGet]
+        //[Authorize]
+        //public async Task<IActionResult> AddData(int? Id)
+        //{
+        //    if (Id.HasValue && Id.Value > 0)
+        //    {
+        //        var res = await _context.Chats.SingleOrDefaultAsync(x => x.Id == Id);
+        //        return View(res);
+        //    }
+        //    return View(new Chat());
+        //}
 
-            return View(new Chat());
-        }
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<IActionResult> AddData(Chat model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        if (model.Id == 0)
+        //        {
+        //            await _context.Chats.AddAsync(model);
+        //        }
+        //        else
+        //        {
+        //            _context.Chats.Update(model);
+        //        }
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction("Index");
+        //    }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> AddData(Chat model)
-        {
-            Console.WriteLine(model);
-            if (ModelState.IsValid)
-            {
+        //    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(model);
+        //    return View(model);
+        //}
 
-                if (model.Id == 0)
-                {
-                    await _context.Chats.AddAsync(model);
-                }
-                else
-                {
-                    _context.Chats.Update(model);
-                }
+        //[Authorize]
+        //public async Task<IActionResult> DeleteData(int Id)
+        //{
+        //    var rec = await _context.Chats.FirstOrDefaultAsync(x => x.Id == Id);
+        //    if (rec != null)
+        //        _context.Chats.Remove(rec);
+        //    await _context.SaveChangesAsync();
+        //    TempData["Message"] = "Deleted record Successfully!";
+        //    return Json(new { success = true, message = "Deleted successfully", id = Id });
+        //}
 
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                return Json(model);
-            }
-
-            return View(model);
-        }
-
-        [Authorize]
-        public async Task<IActionResult> DeleteData(int Id)
-        {
-            var rec = await _context.Chats.FirstOrDefaultAsync(x => x.Id == Id);
-            if (rec != null)
-                _context.Chats.Remove(rec);
-            await _context.SaveChangesAsync();
-            TempData["Message"] = "Deleted record Successfully!";
-            return Json(new { success = true, message = "Deleted successfully", id = Id });
-        }
-
+        // *************Get current user's token************
         //var accessToken = await HttpContext.GetTokenAsync("access_token");
         //Console.WriteLine(accessToken);
 

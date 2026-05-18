@@ -41,10 +41,16 @@ public class DataDbContext : DbContext
                 //  *********** Database Indexes **************
 
                modelBuilder.Entity<Friends>()
+                .HasIndex(f => f.UserId);
+
+               modelBuilder.Entity<Friends>()
                  .HasIndex(f => new {f.UserName, f.FriendName});
 
                modelBuilder.Entity<Friends>()
                 .HasIndex(f => new { f.FriendName, f.UserName});
+
+               modelBuilder.Entity<Friends>()
+                .HasIndex(f => new { f.UserId, f.FriendName});
 
                modelBuilder.Entity<Posts>()
                 .HasIndex(p => new {p.PostScope, p.UserName });
@@ -55,39 +61,14 @@ public class DataDbContext : DbContext
                modelBuilder.Entity<UserProfile>()
                 .HasIndex(x => x.UserId);
 
+               modelBuilder.Entity<Chat>()
+                .HasIndex(f => new {f.UserName, f.ToUser});
+          
+               modelBuilder.Entity<Chat>()
+                .HasIndex(f => new {f.ToUser, f.UserName});
 
-        //modelBuilder.Entity<Comments>()
-        // .HasOne<Posts>()
-        // .WithMany(p => p.Comments)
-        // .HasForeignKey(c => c.PostId);
 
-        //modelBuilder.Entity<CommentsReply>()
-        //  .HasOne<Comments>()
-        //  .WithMany(p => p.Reply)
-        //  .HasForeignKey(c => c.CommentId);
-
-        //modelBuilder.Entity<Friends>()
-        //    .HasOne(c => c.AllUsers)
-        //    .WithMany()
-        //    .HasForeignKey(c => c.FriendId)
-        //    .HasPrincipalKey(u => u.UserId);
-
-        //modelBuilder.Entity<Friends>()
-        //    .HasMany(c => c.FriendRequests)
-        //    .WithOne()
-        //    .HasForeignKey(c => c.UserId)
-        //    .HasPrincipalKey(u => u.UserId)
-        //    .IsRequired(false);
-
-        //modelBuilder.Entity<Friends>()
-        //    .HasOne(c => c.BlockedUser)
-        //    .WithMany()
-        //    .HasForeignKey(c => c.UserId)
-        //    .HasPrincipalKey(u => u.UserId)
-        //    .IsRequired(false);
-
-    }
-
+        }
 
 }
 

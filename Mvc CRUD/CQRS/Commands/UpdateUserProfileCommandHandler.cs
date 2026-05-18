@@ -54,8 +54,8 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
                 if (string.IsNullOrWhiteSpace(request.model.Website))
                     request.model.Website = res.Website;
 
-                //_context.Profile.Update(res);
-                //await _context.SaveChangesAsync();
+                _context.Profile.Update(res);
+                await _context.SaveChangesAsync();
                 return true;
             }
             _logger.LogError("User not found.");

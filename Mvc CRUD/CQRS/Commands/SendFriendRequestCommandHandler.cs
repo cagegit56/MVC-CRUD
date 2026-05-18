@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 
@@ -8,13 +9,13 @@ namespace Mvc_CRUD.CQRS.Commands;
     internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequestCommand, bool>
     {
        private readonly DataDbContext _context;
-       private readonly IUserInfoContextService _currentUser;
+       private readonly IMediator _mediator;
        private readonly ILogger<SendFriendRequestCommandHandler> _logger;
 
-       public SendFriendRequestCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<SendFriendRequestCommandHandler> logger)
+       public SendFriendRequestCommandHandler(DataDbContext context, IMediator mediator, ILogger<SendFriendRequestCommandHandler> logger)
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
-           _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
+           _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
            _logger = logger;
         }   
 
@@ -22,28 +23,30 @@ namespace Mvc_CRUD.CQRS.Commands;
         {
            try
            {
-              var exists = await _context.FriendRequests.Where(x => x.UserId == _currentUser.UserId  
-                                 && x.ToUserId == command.model.ToUserId).FirstOrDefaultAsync();
+              var currentUser = await _mediator.Send(new GetUserProfileQuery());
+              var exists = await _context.FriendRequests.Where(x => x.UserId == currentUser.UserId  
+                                  && x.ToUserId == command.model.ToUserId).FirstOrDefaultAsync();
               if (exists != null)
               {
-                 if (exists.isDeleted)
-                 {
+                  if (exists.isDeleted)
+                  {
                     exists.isDeleted = false;
                     _context.Update(exists);
                     await _context.SaveChangesAsync(cancellationToken);
-                 }
-                 return true; 
+                  }
+                  return true; 
               }
 
-             if (_currentUser.UserId != null && _currentUser.UserName != null && _currentUser.LastName != null)
-             {
-                command.model.UserId = _currentUser.UserId;
-                command.model.UserName = _currentUser.UserName;
-                command.model.LastName = _currentUser.LastName;
-             }else{
+              if (currentUser.UserId != null && currentUser.UserName != null && currentUser.LastName != null)
+              {
+                command.model.UserId = currentUser.UserId;
+                command.model.UserName = currentUser.UserName;
+                command.model.LastName = currentUser.LastName;
+                command.model.ProfilePicUrl = currentUser.UserProfilePicUrl;
+              }else{
                 _logger.LogError("Current user info cannot be null.");
                 return false;
-             }
+              }
               await _context.AddAsync(command.model);
               await _context.SaveChangesAsync(cancellationToken);
               return true;

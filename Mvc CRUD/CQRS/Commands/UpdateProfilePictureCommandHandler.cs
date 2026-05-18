@@ -47,10 +47,13 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
                     _context.Update(res);
 
                     var posts = await _context.Post.Where(x => x.UserId == _currentUser.UserId).ToListAsync();
-                    foreach (var postInfo in posts)
+                    if (posts != null)
                     {
-                        postInfo.UserImageUrl = "/images/CoverPictures/" + fileName;
-                        _context.Post.Update(postInfo);
+                        foreach (var postInfo in posts)
+                        {
+                            postInfo.UserImageUrl = "/images/ProfilePictures/" + fileName;
+                            _context.Post.Update(postInfo);
+                        }
                     }
 
                     await _context.SaveChangesAsync(cancellationToken);
