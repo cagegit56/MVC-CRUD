@@ -51,12 +51,6 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
 
                }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
             return res;
-
-            //var query = await _context.Comment.Include(x => x.Reply).Where(x => x.PostId == postId)
-            //.AsSplitQuery().OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            //var res = _mapper.Map<List<CommentsDto>>(query);
-            //return Json(res);
-
         }
         catch (Exception ex)
         {

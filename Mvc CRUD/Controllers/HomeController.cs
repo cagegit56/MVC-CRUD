@@ -217,9 +217,9 @@ namespace Mvc_CRUD.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> UpdateUserProfile(UserProfile model)
+        public async Task<IActionResult> UpdateUserProfile(UserProfile model, string tabInfo)
         {
-            var res = await _mediator.Send(new UpdateUserProfileCommand(model));
+            var res = await _mediator.Send(new UpdateUserProfileCommand(model, tabInfo));
             if (!res) return Json(new { success = false, messsage = "Failed to update user profile info." });
             return Json(new { success = true, message = "Successfully updated user info." });
         }

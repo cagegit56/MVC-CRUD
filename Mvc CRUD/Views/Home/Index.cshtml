@@ -3,7 +3,6 @@
 @if (Model.Errors == null)
 {
     ViewData["Title"] = "ChatUp-Home";
-    var initial = !string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX";
     var userAgent = Context.Request.Headers["User-Agent"].ToString();
     bool isMobile = userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase) || userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase)
                     || userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase) || userAgent.Contains("Mobile", StringComparison.OrdinalIgnoreCase)
@@ -27,7 +26,7 @@
                     {
                         <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
                              style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
-                            @initial
+                            @(!string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX")
                         </div>
                     }
                     <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
@@ -206,7 +205,7 @@
                     <div class="col align-items-center gap-2 mb-2">
                         <div class="d-flex gap-1">
                             <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center' style='width:40px; height:40px; min-width:40px; min-height:40px;'>
-                                @initial
+                                @(!string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX")
                             </div>                        
                             <span class="fw-bolder mt-1">
                                 @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
