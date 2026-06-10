@@ -2,11 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
-using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, bool>
+internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool success, string error)>
 {
     private readonly DataDbContext _context;
     private readonly IMediator _mediator;
@@ -18,8 +17,9 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, bool>
         _logger = logger;
     }
 
-    public async Task<bool> Handle(LikeCommand request, CancellationToken cancellationToken)
+    public async Task<(bool success, string error)> Handle(LikeCommand request, CancellationToken cancellationToken)
     {
+        if (request.postId <= 0) return (false, "Post id is missing or null..");
         try
         {
             var model = new Likes();
@@ -32,7 +32,7 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, bool>
             else
             {
                 _logger.LogError("Current user info cannot be null.");
-                return false;
+                return (false, "Current user info missing.");
             }
             
             model.UserProfilePicUrl = currentUser?.UserProfilePicUrl;
@@ -41,18 +41,20 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, bool>
                                   x.Username == currentUser!.UserName).FirstOrDefaultAsync();
             if (checkExistence != null)
             {
-                return await _mediator.Send(new ReLikeCommand(checkExistence.PostId, checkExistence.Username));
+                var res = await _mediator.Send(new ReLikeCommand(checkExistence.PostId, checkExistence.Username));
+                if (res) return (true, "");
+                return (false, "Failed to re-like");
             }
             else
             {
                 await _context.AddAsync(model, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
-                return true;
+                return (true, "");
             }           
         }
         catch (Exception ex) {
             _logger.LogError($"Failed to add a like due to : {ex.Message}");
-            return false;
+            return (false, "Failed to like check logger message.");
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Mvc_CRUD.Controllers
     public class HomeController : Controller
     {
         private readonly IMediator _mediator;
-        public HomeController(ILogger<HomeController> logger, IMediator mediator)
+        public HomeController( IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -38,6 +38,62 @@ namespace Mvc_CRUD.Controllers
             return Json(new { success = true, message = "Successfully created a new post." });
         }
 
+        [HttpPost]
+        [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
+        public async Task<IActionResult> LikePost(int postId)
+        {
+            var res = await _mediator.Send(new LikeCommand(postId));
+            if (!res.success) return Json(new { success = false, message = res.error });
+            return Json(new { success = true, message = "Successfully Liked" });
+        }
+
+        [HttpPut]
+        [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
+        public async Task<IActionResult> UnlikePost(int postId)
+        {
+            var res = await _mediator.Send(new UnlikePostCommand(postId));
+            if (!res) return Json(new { success = false, message = "Failed to unlike." });
+            return Json(new { success = true, message = "Successfully unliked." });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetComments(int postId)
+        {
+            var res = await _mediator.Send(new GetCommentsQuery(postId));
+            return Json(res);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendComment(Comments model)
+        {
+            var res = await _mediator.Send(new SendCommentCommand(model));
+            if (!res) return Json(new { success = false, message = "Failed to send a comment." });
+            return Json(new { success = true, message = "Sent Successfully." });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [EnableRateLimiting("RateLimitPolicy")]
+        public async Task<IActionResult> SendReplyComment(CommentsReply model)
+        {
+            var res = await _mediator.Send(new SendReplyCommand(model));
+            if (!res) return Json(new { success = false, message = "Failed to send a reply." });
+            return Json(new { success = true, message = "Sent Successfully." });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
+        {
+            var res = await _mediator.Send(new SendReplyOfReplyCommand(model));
+            if (!res) return Json(new { success = false, message = "Failed to send a reply of reply." });
+            return Json(new { success = true, message = "Sent Successfully." });
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> AdminPortal([FromQuery] PaginationFilter pgFilter, string filter)
@@ -45,8 +101,7 @@ namespace Mvc_CRUD.Controllers
             var res = await _mediator.Send(new GetAllQuery(pgFilter, filter));
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
             return View(res);
-        }
-    
+        }    
 
         [HttpGet]
         [Authorize]
@@ -70,8 +125,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
             var res = await _mediator.Send(new FriendRequestQuery(pgFilter));
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
-            return View(res);
+            return View(res.Value);
         }
 
         [HttpPost]
@@ -88,7 +142,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> GetAllSentRequest(PaginationFilter filter)
         {
             var res = await _mediator.Send(new GetAllSentRequestQuery(filter));
-            return Json(res);
+            return Json(res.Value);
         }  
 
         [Authorize]
@@ -96,7 +150,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> RecievedFriendRequest(PaginationFilter filter)
         {
             var res = await _mediator.Send(new ReceivedFriendRequestQuery(filter));
-            return Json(res);
+            return Json(res.Value);
         }
 
         [HttpPost]
@@ -124,63 +178,7 @@ namespace Mvc_CRUD.Controllers
             var res = await _mediator.Send(new BlockUserCommand(model));
             if (!res) return Json(new { success = false, message = "Failed to Block user." });
             return Json(new { success = true, message = "Successfully blocked."});
-        }    
-
-        [HttpPost]
-        [Authorize]
-        [EnableRateLimiting("RateLimitPolicy")]
-        public async Task<IActionResult> LikePost(int postId)
-        {
-            var res = await _mediator.Send(new LikeCommand(postId));
-            if (!res) return Json(new {success = false, message = "Failed to Like"});
-            return Json(new { success = true, message = "Successfully Liked"});
-        }
-
-        [HttpPut]
-        [Authorize]
-        [EnableRateLimiting("RateLimitPolicy")]
-        public async Task<IActionResult> UnlikePost(int postId)
-        {
-            var res = await _mediator.Send(new UnlikePostCommand(postId));
-            if (!res) return Json(new { success = false, message = "Failed to unlike."});
-            return Json(new { success = true, message = "Successfully unliked."});
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SendComment(Comments model)
-        {
-            var res = await _mediator.Send(new SendCommentCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a comment."});
-            return Json(new { success = true, message = "Sent Successfully."});
-        }
-
-        [HttpPost]
-        [Authorize]
-        [EnableRateLimiting("RateLimitPolicy")]
-        public async Task<IActionResult> SendReplyComment(CommentsReply model)
-        {
-            var res = await _mediator.Send(new SendReplyCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a reply."});
-            return Json(new { success = true, message = "Sent Successfully."});
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
-        {
-            var res = await _mediator.Send(new SendReplyOfReplyCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a reply of reply."});
-            return Json(new { success = true, message = "Sent Successfully."});
-        }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetComments(int postId)
-        {
-            var res = await _mediator.Send(new GetCommentsQuery(postId));
-            return Json(res);
-        }
+        }               
 
         [HttpPost]
         [Authorize]

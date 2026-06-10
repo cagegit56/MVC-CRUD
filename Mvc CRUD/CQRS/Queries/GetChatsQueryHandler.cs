@@ -24,7 +24,7 @@ namespace Mvc_CRUD.CQRS.Queries;
             {
                 var chats = await _context.Chats.Where(x => _context.Friends.Any(f => f.UserId == _currentUser.UserId 
                                 && ( (x.UserName == _currentUser.UserName && x.ToUser == f.FriendName) 
-                                || (x.ToUser == _currentUser.UserName && x.UserName == f.FriendName)) )).AsNoTracking().ToListAsync();
+                                || (x.ToUser == _currentUser.UserName && x.UserName == f.FriendName)) )).AsSplitQuery().AsNoTracking().ToListAsync();
                 var chatFrnd = chats.Select(x => x.UserName == _currentUser.UserName ? x.ToUser : x.UserName).ToList();
                 var noChat = await _context.Friends.Where(x => x.UserId == _currentUser.UserId 
                                    && !chatFrnd.Contains(x.FriendName)).ToListAsync();

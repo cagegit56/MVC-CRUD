@@ -95,7 +95,7 @@
                     const response = await fetch(`/Home/AdminPortal?pageNumber=${page}&pageSize=${size}&filter=${encodeURIComponent(filter)}`, {
                         headers: { "X-Requested-With": "XMLHttpRequest" }
                     });
-
+                   
                     const result = response.headers.get("content-type")?.includes("application/json")
                      ? await response.json() : { data: [], totalPages: 0, totalRecords: 0 };
                     filteredData = result.data || [];

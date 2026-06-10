@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Mvc_CRUD.Common.Helpers;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 using System.Security.Claims;
@@ -121,7 +122,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseMiddleware<CustomExceptionMiddleware>();
+
 app.MapHub<Mvc_CRUD.Services.SignalRHub>("/signalRHub");
+app.MapControllers();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -159,7 +163,7 @@ app.Use(async (context, next) =>
                     <p>for further assistance/help please visit: www.bepatientcalmdownrelax.com or contact : 076 987 6543</p>
                 </body>
                 </html>
-            """);
+             """);
         }
         else
         {

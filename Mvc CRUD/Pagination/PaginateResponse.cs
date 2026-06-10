@@ -11,6 +11,7 @@
         public bool NextPage => PageNumber < TotalPages;
         public string? FirstPage { get; set; }
         public string? LastPage { get; set; }
+        public string? Error { get; set; }
 
         public PaginateResponse() { }
 
