@@ -1,11 +1,12 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    internal sealed class RejectRequestCommandHandler : IRequestHandler<RejectRequestCommand, bool>
+    internal sealed class RejectRequestCommandHandler : IRequestHandler<RejectRequestCommand, Result>
     {
        private readonly DataDbContext _context;
        private readonly IUserInfoContextService _currentUser;
@@ -17,27 +18,28 @@ namespace Mvc_CRUD.CQRS.Commands;
            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
            _logger = logger;
         }
-       public async Task<bool> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
+       public async Task<Result> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
        {
-         try
-         {
-            var exists = await _context.FriendRequests.Where(x => x.UserId == _currentUser.UserId && x.ToUserId == command.toUserId ||
-                            x.UserId == command.toUserId && x.ToUserId == _currentUser.UserId).FirstOrDefaultAsync();
-            if (exists == null)
-            {
-                _logger.LogError("User already rejected/exist.");
-                return false;
-            }
-            exists.isDeleted = true;
-            _context.FriendRequests.Update(exists);
+          if (string.IsNullOrEmpty(command.toUserId))
+              return Result.Fail("ToUserId cannot be null.");
+          try
+          {
+            var res = await _context.FriendRequests.Where(x => 
+                            ((x.UserId == _currentUser.UserId && x.ToUserId == command.toUserId) 
+                            || (x.UserId == command.toUserId && x.ToUserId == _currentUser.UserId)) 
+                            && !x.isDeleted )
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.isDeleted, true));
+
+            if (res == 0) return Result.Fail("No friend request found.");
+
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
-         }
-         catch (Exception ex) 
-         {
-            _logger.LogError($"Failed To Cancel or Reject request due to : {ex.Message}");
-            return false;
-         }
+            return Result.Ok();
+          }
+          catch (Exception ex) 
+          {
+            _logger.LogError($"Failed to reject friend request due to : {ex.Message}");
+            return Result.Fail("Failed to reject friend request, Please see the inner exception for more info.");
+          }
        }
     }
 

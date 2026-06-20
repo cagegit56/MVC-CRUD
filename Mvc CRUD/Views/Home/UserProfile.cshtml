@@ -188,7 +188,7 @@
                     <h5 class="modal-title">Profile Picture</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                    <div class="modal-body">
+                    <div class="modal-body">                        
                         <img src="@Model.UserProfilePicUrl" class="post-image img-fluid " alt="Post image"
                              style="height : 450px; width : 500px">
                     </div>
@@ -205,9 +205,10 @@
                     <h5 class="modal-title">Profile Picture</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <img src="@Model.UserCoverPicUrl" class="post-image img-fluid " alt="Post image"
-                         style="height : 450px; width : 850px">
+                <div class="modal-body" style="height: 470px;">
+                    <div class="overflow-auto" style="max-height: 430px;">
+                       <img src="@Model.UserCoverPicUrl" class="w-100 rounded" />
+                    </div>                    
                 </div>
             </div>
         </div>

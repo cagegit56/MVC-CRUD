@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    public record RejectRequestCommand(string toUserId) : IRequest<bool>;
+    public record RejectRequestCommand(string toUserId) : IRequest<Result>;
 

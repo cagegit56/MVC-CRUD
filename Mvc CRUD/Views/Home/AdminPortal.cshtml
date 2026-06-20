@@ -209,12 +209,10 @@
             });
         }
 
-            function updatePaginationInfo(totalRecords) {
+            function updatePaginationInfo(totalRecords)
+            {
                 const shown = filteredData.length;
-                const info = totalRecords === 0
-                    ? "Showing 0 of 0 records"
-                    : `Showing ${shown} of ${totalRecords} records`;
-
+                const info = totalRecords === 0 ? "Showing 0 of 0 records" : `Showing ${shown} of ${totalRecords} records`;
                 document.getElementById('paginationInfo').textContent = info;
             }
 

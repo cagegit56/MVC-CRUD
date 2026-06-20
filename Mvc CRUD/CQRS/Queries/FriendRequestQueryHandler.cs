@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using FluentResults;
+﻿using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
@@ -37,20 +36,17 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
                                     .Where(p => !_context.FriendRequests
                                         .Any(r => (r.UserId == _currentUser.UserId && r.ToUserId == p.UserId) && (r.Status == "Pending" && r.isDeleted == false)))
                                     .AsSplitQuery().AsNoTracking().ToListAsync();
-            request.pgFilter.PageNumber = 1;
-            request.pgFilter.PageSize = 5;
+            if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
             var paginatedRes = await _pagination.Paginate(potentialFriends, request.pgFilter);
             return Result.Ok(paginatedRes);
         }
         catch (Exception ex) 
         {
-            var res = new PaginateResponse<List<UserProfile>>()
-            {
-                Error = "Failed to return all potential friends."
-            };
-
             _logger.LogError($"Failed Due to {ex.Message}");
-            return Result.Ok(res);
+            return Result.Ok(new PaginateResponse<List<UserProfile>>()
+            {
+                 Error = "Failed to return all potential friends."
+            });            
         }
     }
 }

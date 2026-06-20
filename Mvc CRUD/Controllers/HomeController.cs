@@ -125,6 +125,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
             var res = await _mediator.Send(new FriendRequestQuery(pgFilter));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res.Value);
             return View(res.Value);
         }
 
@@ -157,9 +158,10 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> AcceptRequest(Friends model)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var res = await _mediator.Send(new AddFriendCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to add friend" });
-            return Json(new { success = true, message = "Successfully Accepted/relationship already exists" });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Successfully Accepted" });
         }
 
         [Authorize]
@@ -167,7 +169,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> RejectRequest(string friendUserId)
         {
             var res = await _mediator.Send(new RejectRequestCommand(friendUserId));
-            if (!res) return Json(new { success = false, message = "Failed to reject." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "SuccessFully rejected." });
         }
 
@@ -176,7 +178,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> BlockUser(BlockedUsers model)
         {
             var res = await _mediator.Send(new BlockUserCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to Block user." });
+            if (!res.IsSuccess) return Json(new { success = false, message = $"{res}" });
             return Json(new { success = true, message = "Successfully blocked."});
         }               
 

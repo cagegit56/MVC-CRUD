@@ -1,13 +1,15 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand, bool>
+internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand, Result<string>>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
@@ -20,8 +22,10 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
         _logger = logger;
     }
 
-    public async Task<bool> Handle(AddFriendCommand command, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(AddFriendCommand command, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(_currentUser.UserId) && string.IsNullOrEmpty(_currentUser.UserName))
+            return Result.Fail("Current user userid or username cannot be null.");
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -29,55 +33,39 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
                 (x.UserId == _currentUser.UserId && x.FriendId == command.model.FriendId) ||
                 (x.UserId == command.model.FriendId && x.FriendId == _currentUser.UserId)
             );
-            if (exists) return true;
+            if (exists) return Result.Ok();
 
-            var sender = new Friends();
-            var reciever = new Friends();
-            if (_currentUser.UserId != null && _currentUser.UserName != null)
-            {
-                sender.UserId = _currentUser.UserId;
-                sender.FriendId = command.model.FriendId;
-                sender.Status = "online";
-                sender.FriendName = command.model.FriendName;
-                sender.UserName = _currentUser.UserName;
-
-                reciever.UserId = command.model.FriendId;
-                reciever.FriendId = _currentUser.UserId;
-                reciever.Status = "online";
-                reciever.FriendName = _currentUser.UserName;
-                reciever.UserName = command.model.FriendName;
-            }
-            else
-            {
-                _logger.LogError("Current user info cannot be null.");
-                return false;
-            }
-
-            await _context.Friends.AddRangeAsync(reciever, sender);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            var accepted = await _context.FriendRequests.Where(x => (x.UserId == command.model.FriendId && x.ToUserId == _currentUser.UserId)
-                                 || (x.UserId == _currentUser.UserId && x.ToUserId == command.model.FriendId) && x.Status == "Pending").ToListAsync();
-            if (accepted.Any())
-            {
-                foreach (var data in accepted)
+            await _context.Friends.AddRangeAsync(new Friends
                 {
-                    data.Status = "Accepted";
-                    _context.FriendRequests.Update(data);
-                    await _context.SaveChangesAsync(cancellationToken);
-                }               
-            }
+                    UserId = _currentUser.UserId,
+                    FriendId = command.model.FriendId,
+                    FriendName = command.model.FriendName,
+                    UserName = _currentUser.UserName
+                }, new Friends
+                {
+                    UserId = command.model.FriendId,
+                    FriendId = _currentUser.UserId!,
+                    FriendName = _currentUser.UserName!,
+                    UserName = command.model.FriendName
+                }
+            );
 
+            var res = await _context.FriendRequests.Where(x => 
+                                    ( (x.UserId == command.model.FriendId && x.ToUserId == _currentUser.UserId)
+                                    || (x.UserId == _currentUser.UserId && x.ToUserId == command.model.FriendId) ) 
+                                    && x.Status == "Pending")
+                    .ExecuteUpdateAsync(g => g.SetProperty(y => y.Status, "Accepted"), cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return true;
-
+            return Result.Ok();
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
             _logger.LogError($"Failed to accept friend request due to: {ex.Message}");
-            return false;
+            return Result.Fail("Failed to accept friend request, Please see inner exception for more info.");
         }
-    }
+    }  
 }
 

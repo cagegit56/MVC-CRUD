@@ -32,12 +32,11 @@ namespace Mvc_CRUD.CQRS.Queries;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to get all sent friend request data due to : {ex.Message}");
-                var err = new PaginateResponse<List<FriendRequest>>()
+                _logger.LogError($"Failed to get all sent friend request data due to : {ex.Message}");               
+                return Result.Ok(new PaginateResponse<List<FriendRequest>>()
                 {
                     Error = "Failed to get all sent friend request check inner exception for more details."
-                };                
-                return Result.Ok(err);
+                });
             }
         }
     }

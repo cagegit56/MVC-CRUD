@@ -33,11 +33,10 @@ internal sealed class ReceivedFriendRequestQueryHandler : IRequestHandler<Receiv
         catch (Exception ex) 
         {
             _logger.LogError($"Failed to return all sent friend request due to {ex.Message}");
-            var err = new PaginateResponse<List<FriendRequest>>()
+            return Result.Ok(new PaginateResponse<List<FriendRequest>>()
             {
                 Error = "Failed to return all sent friend request see inner exception for more info."
-            };
-            return Result.Ok(err);
+            });
         }      
     }
 }

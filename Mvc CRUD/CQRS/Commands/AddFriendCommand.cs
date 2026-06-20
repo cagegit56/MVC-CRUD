@@ -1,5 +1,6 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
-    public record AddFriendCommand(Friends model) : IRequest<bool>;
+    public record AddFriendCommand(Friends model) : IRequest<Result<string>>;

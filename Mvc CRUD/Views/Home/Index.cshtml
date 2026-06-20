@@ -216,12 +216,17 @@
                 <form asp-controller="Home" asp-action="CreatePost" method="post" data-action="PostForm" id="postForm" enctype="multipart/form-data">
                     <div class="col align-items-center gap-2 mb-2">
                         <div class="d-flex gap-1">
-                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center' style='width:40px; height:40px; min-width:40px; min-height:40px;'>
-                                @(!string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX")
-                            </div>                        
+                            @if(!string.IsNullOrEmpty(Model.currentUserProfilePic))
+                            {
+                                <img src="@Model.currentUserProfilePic" class="rounded-circle" style="width: 40px;height: 40px;object-fit: cover;" />                                     
+                            }else{
+                                <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center' style='width:40px; height:40px; min-width:40px; min-height:40px;'>
+                                    @(!string.IsNullOrEmpty(Model.currentUserName) ? Model.currentUserName.Substring(0, 1).ToUpper() : "XX")
+                                </div>
+                            }                                                  
                             <span class="fw-bolder mt-1">
-                                @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
-                                @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserLastName.Substring(1))
+                                @(char.ToUpper(Model.currentUserName[0]) + Model.currentUserName.Substring(1))
+                                @(char.ToUpper(Model.currentUserLastName[0]) + Model.currentUserLastName.Substring(1))
                             </span> 
                         </div>  
                         <select class="form-select form-select-sm w-auto mt-1" name="PostScope">

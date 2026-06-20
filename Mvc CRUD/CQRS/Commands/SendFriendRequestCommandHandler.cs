@@ -23,33 +23,33 @@ namespace Mvc_CRUD.CQRS.Commands;
         {
            try
            {
-              var currentUser = await _mediator.Send(new GetUserProfileQuery());
-              var exists = await _context.FriendRequests.Where(x => x.UserId == currentUser.UserId  
-                                  && x.ToUserId == command.model.ToUserId).FirstOrDefaultAsync();
-              if (exists != null)
-              {
-                  if (exists.isDeleted)
-                  {
+                var currentUser = await _mediator.Send(new GetUserProfileQuery());
+                var exists = await _context.FriendRequests.Where(x => x.UserId == currentUser.UserId  
+                                    && x.ToUserId == command.model.ToUserId).FirstOrDefaultAsync();
+                if (exists != null)
+                {
+                    if (exists.isDeleted)
+                    {
                     exists.isDeleted = false;
                     _context.Update(exists);
                     await _context.SaveChangesAsync(cancellationToken);
-                  }
-                  return true; 
-              }
+                    }
+                    return true; 
+                }
 
-              if (currentUser.UserId != null && currentUser.UserName != null && currentUser.LastName != null)
-              {
-                command.model.UserId = currentUser.UserId;
-                command.model.UserName = currentUser.UserName;
-                command.model.LastName = currentUser.LastName;
-                command.model.ProfilePicUrl = currentUser.UserProfilePicUrl;
-              }else{
-                _logger.LogError("Current user info cannot be null.");
-                return false;
-              }
-              await _context.AddAsync(command.model);
-              await _context.SaveChangesAsync(cancellationToken);
-              return true;
+                if (currentUser.UserId != null && currentUser.UserName != null && currentUser.LastName != null)
+                {
+                    command.model.UserId = currentUser.UserId;
+                    command.model.UserName = currentUser.UserName;
+                    command.model.LastName = currentUser.LastName;
+                    command.model.ProfilePicUrl = currentUser.UserProfilePicUrl;
+                }else{
+                    _logger.LogError("Current user info cannot be null.");
+                    return false;
+                }
+                await _context.AddAsync(command.model);
+                await _context.SaveChangesAsync(cancellationToken);
+                return true;
            }
            catch(Exception ex)
            {
