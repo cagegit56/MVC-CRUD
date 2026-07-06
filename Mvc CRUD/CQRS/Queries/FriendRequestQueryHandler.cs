@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
@@ -7,19 +7,23 @@ using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQuery, PaginateResponse<List<UserProfile>>>
+internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQuery, Result<PaginateResponse<List<UserProfile>>>>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
     private readonly IPaginationService _pagination;
+    private readonly ILogger<FriendRequestQueryHandler> _logger;
 
-    public FriendRequestQueryHandler(DataDbContext context, IUserInfoContextService currentUser, IPaginationService pagination)
+    public FriendRequestQueryHandler(DataDbContext context, IUserInfoContextService currentUser, 
+        IPaginationService pagination, 
+        ILogger<FriendRequestQueryHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _pagination = pagination ?? throw new ArgumentNullException(nameof(pagination));
+        _logger = logger;
     }
-    public async Task<PaginateResponse<List<UserProfile>>> Handle(FriendRequestQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginateResponse<List<UserProfile>>>> Handle(FriendRequestQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -31,13 +35,18 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
                                         .Any(b => b.UserId == _currentUser.UserId && b.BlockUserId == p.UserId))
                                     .Where(p => !_context.FriendRequests
                                         .Any(r => (r.UserId == _currentUser.UserId && r.ToUserId == p.UserId) && (r.Status == "Pending" && r.isDeleted == false)))
-                                    .ToListAsync();
+                                    .AsSplitQuery().AsNoTracking().ToListAsync();
+            if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
             var paginatedRes = await _pagination.Paginate(potentialFriends, request.pgFilter);
-            return paginatedRes;
+            return Result.Ok(paginatedRes);
         }
         catch (Exception ex) 
         {
-            throw new Exception($"Failed Due to {ex.Message}");
+            _logger.LogError($"Failed Due to {ex.Message}");
+            return Result.Ok(new PaginateResponse<List<UserProfile>>()
+            {
+                 Error = "Failed to return all potential friends."
+            });            
         }
     }
 }

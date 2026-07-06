@@ -31,7 +31,7 @@ internal sealed class GetUserProfileQueryHandler : IRequestHandler<GetUserProfil
         var res = new UserProfileDTO();
         try
         {
-            string cacheInfo = $"UserInfo-{_currentUser.UserId}";            
+            string cacheInfo = "UserProfile-Info";            
             if(!_cache.TryGetValue(cacheInfo, out UserProfile? results))
             {
                 results = await _context.Profile.Where(x => x.UserId == _currentUser.UserId).AsNoTracking().FirstOrDefaultAsync();

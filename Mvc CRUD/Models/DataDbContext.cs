@@ -50,7 +50,7 @@ public class DataDbContext : DbContext
                 .HasIndex(f => new { f.FriendName, f.UserName});
 
                modelBuilder.Entity<Friends>()
-                .HasIndex(f => new { f.UserId, f.FriendName});
+                .HasIndex(f => new { f.UserId, f.FriendId});
 
                modelBuilder.Entity<Posts>()
                 .HasIndex(p => new {p.PostScope, p.UserName });
@@ -66,9 +66,26 @@ public class DataDbContext : DbContext
           
                modelBuilder.Entity<Chat>()
                 .HasIndex(f => new {f.ToUser, f.UserName});
+             
+               modelBuilder.Entity<Comments>()
+                .HasIndex(f => f.PostId);
 
+               modelBuilder.Entity<CommentsReply>()
+                .HasIndex(f => f.CommentId);
+
+               // ******Index not created remove this run db update then try to add it again **********
+               //modelBuilder.Entity<ReplyOfReply>()
+               // .HasIndex(f => f.ReplyId);
+
+               modelBuilder.Entity<FriendRequest>()
+                .HasIndex(f => new {f.UserId, f.Status, f.isDeleted});
+
+               modelBuilder.Entity<FriendRequest>()
+                .HasIndex(f => new {f.UserId, f.ToUserId, f.Status, f.isDeleted});              
+
+               modelBuilder.Entity<BlockedUsers>()
+                .HasIndex(f => new {f.UserId, f.BlockUserId });
 
         }
-
 }
 

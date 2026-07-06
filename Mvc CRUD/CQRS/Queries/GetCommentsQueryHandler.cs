@@ -8,10 +8,12 @@ namespace Mvc_CRUD.CQRS.Queries;
 internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery, List<CommentsDto>>
 {
     private readonly DataDbContext _context;
+    private readonly ILogger<GetCommentsQueryHandler> _logger;
 
-    public GetCommentsQueryHandler(DataDbContext context)
+    public GetCommentsQueryHandler(DataDbContext context, ILogger<GetCommentsQueryHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger;
     }
 
     public async Task<List<CommentsDto>> Handle(GetCommentsQuery request, CancellationToken cancellationToken)
@@ -51,16 +53,15 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
 
                }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
             return res;
-
-            //var query = await _context.Comment.Include(x => x.Reply).Where(x => x.PostId == postId)
-            //.AsSplitQuery().OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            //var res = _mapper.Map<List<CommentsDto>>(query);
-            //return Json(res);
-
         }
         catch (Exception ex)
         {
-            throw new Exception($"Failed to return all comments due to : {ex.Message}");
+            _logger.LogError($"Failed to retrieve comments for post id {request.postId} due to {ex.Message}");
+            var error = new List<CommentsDto>()
+            {
+                new CommentsDto {Error = "Failed to retrieve comments."}
+            };
+            return error;
         }
     }
 }

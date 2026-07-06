@@ -36,9 +36,7 @@ internal sealed class ReLikeCommandHandler : IRequestHandler<ReLikeCommand, bool
         {
             _logger.LogError($"Falied to re-like due to : {ex.Message} ");
             return false;
-        }
-    
-       
+        }       
     }
 }
 

@@ -3,4 +3,4 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-public record UpdateUserProfileCommand(UserProfile model) : IRequest<bool>;
+public record UpdateUserProfileCommand(UserProfile model, string tab) : IRequest<bool>;

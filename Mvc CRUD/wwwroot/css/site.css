@@ -349,6 +349,76 @@ td.message-cell {
 
                                              /* ********************** Update UserInfo */
 
+.floating-input {
+    position: relative;
+}
+
+.floating-input input {
+    padding: 18px 12px 8px;
+    outline: none;
+    font-size: 16px;
+}
+
+.floating-input label {
+    position: absolute;
+    left: 12px;
+    top: 16px;
+    color: #777;
+    background: white;
+    padding: 0 5px;
+    transition: 0.2s ease;
+    pointer-events: none;
+}
+
+.floating-input input:focus + label,
+.floating-input input:not(:placeholder-shown) + label {
+    top: -10px;
+    font-size: 13px;
+    color: #0d6efd;
+}
+
+.floating-textArea {
+    position: relative;
+}
+
+.floating-textArea textarea {
+    padding: 18px 12px 8px;
+    outline: none;
+    font-size: 16px;
+}
+
+.floating-textArea label {
+    position: absolute;
+    left: 12px;
+    top: 16px;
+    color: #777;
+    background: white;
+    padding: 0 5px;
+    transition: 0.2s ease;
+    pointer-events: none;
+}
+
+.floating-textArea textarea:focus + label,
+.floating-textArea textarea:not(:placeholder-shown) + label {
+    top: -10px;
+    font-size: 13px;
+    color: #0d6efd;
+}
+
+.preserve-lines{
+    white-space: pre-line;
+    display: block;
+}
+
+.edit-label-ending{
+    position:absolute; 
+    right:0;
+}
+
+.model-data-label{
+    padding-left : 6px;
+}
+
 @media (max-width: 768px) {
     .update-profile-img {
         width: 110px !important;
@@ -362,6 +432,7 @@ td.message-cell {
         height: 110px !important;
     }
 }
+
 
 
                                          /*   Comments pop up view for mobile devices*/

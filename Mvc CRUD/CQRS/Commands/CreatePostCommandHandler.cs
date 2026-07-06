@@ -36,11 +36,7 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
                 model.LastName = CurrentUser.LastName;
                 model.UserImageUrl = CurrentUser.UserProfilePicUrl;
             }
-            else
-            {
-                _logger.LogError("Current user info cannot be null");
-                return false;
-            }
+
             model.PostScope = request.model.PostScope;
             model.Content = request.model.Content;
             model.PostBgColour = request.model.PostBgColour;

@@ -1,4 +1,4 @@
-﻿@using Newtonsoft.Json
+﻿@using System.Text.Json
 @using Mvc_CRUD.Pagination
 @model PaginateResponse<List<Mvc_CRUD.Models.UserProfile>>
 
@@ -16,106 +16,164 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <div class="container py-5">
-        <h3 class="text-center text-primary mb-4">
-            <i class="fa-solid fa-users me-2"></i>Find Friends
-        </h3>
+    <h3 class="text-center text-primary">
+        <i class="fa-solid fa-users me-2"></i>Find Friends
+    </h3>
+    <div class="container mt-5">
+        <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist" style="font-weight:500">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="friend-tab" data-bs-toggle="tab" style="color: #0d6efd"
+                        data-bs-target="#friend" type="button" role="tab" aria-controls="friend"
+                        aria-selected="true">
+                    Add Friends
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="request-tab" data-bs-toggle="tab" style="color: #0d6efd"
+                        data-bs-target="#request" type="button" role="tab" aria-controls="request"
+                        aria-selected="false">
+                    View Friend Request
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="sentRequest-tab" data-bs-toggle="tab" style="color: #0d6efd"
+                        data-bs-target="#sentReq" type="button" role="tab" aria-controls="sentReq"
+                        aria-selected="false">
+                    Sent Friend Request
+                </button>
+            </li>
+        </ul>
 
-        @{
-            ViewData["Title"] = "Friend Requests";
-        }
-
-        <div class="container mt-5">
-            <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist" style="font-weight:500">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="friend-tab" data-bs-toggle="tab" style="color: #0d6efd"
-                            data-bs-target="#friend" type="button" role="tab" aria-controls="friend"
-                            aria-selected="true">
-                        Add Friends
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="request-tab" data-bs-toggle="tab" style="color: #0d6efd"
-                            data-bs-target="#request" type="button" role="tab" aria-controls="request"
-                            aria-selected="false">
-                        View Friend Request
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="sentRequest-tab" data-bs-toggle="tab" style="color: #0d6efd"
-                            data-bs-target="#sentReq" type="button" role="tab" aria-controls="sentReq"
-                            aria-selected="false">
-                        Sent Friend Request
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content mt-4" id="myTabContent">
-                <div class="tab-pane fade show active" id="friend" role="tabpanel" aria-labelledby="friend-tab">
-                    <div class="card friend-card w-100 p-3">
-                        <div id="friendsContainer" class="d-flex flex-column align-items-center gap-3"></div>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="request" role="tabpanel" aria-labelledby="request-tab">
-                    <div class="card friend-card w-100 p-3">
-                        <div id="friendsRequestContainer" class="d-flex flex-column align-items-center gap-3"></div>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="sentReq" role="tabpanel" aria-labelledby="sentRequest-tab">
-                    <div class="card friend-card w-100 p-3">
-                        <div id="SentRequestContainer" class="d-flex flex-column align-items-center gap-3"></div>
-                    </div>
-                </div>
+        <div class="tab-content mt-4" id="myTabContent">
+            <div class="tab-pane fade show active" id="friend" role="tabpanel" aria-labelledby="friend-tab">
+                <div class="card friend-card w-100 p-3">
+                    @if(Model.Data != null && Model.Data.Any())
+                    {                            
+                        foreach(var potentialFriend in Model.Data)
+                        {
+                            <div class="card h-card w-100 shadow-sm border-0 p-3 mb-2" id="row-@potentialFriend.Id">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <div class="d-flex">
+                                        @if (!string.IsNullOrEmpty(potentialFriend.UserProfilePicUrl))
+                                        {
+                                            <img src="@potentialFriend.UserProfilePicUrl" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                    style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />                                             
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                style="width:50px; height:50px; font-size:1.5rem;"> @potentialFriend.UserName.Substring(0,1).ToUpper()                                        
+                                            </div>
+                                        }                                   
+                                        <div class="col">
+                                            <div class="fw-bold"> @(char.ToUpper(@potentialFriend.UserName[0]) + @potentialFriend.UserName.Substring(1)) @(char.ToUpper(@potentialFriend.LastName[0]) + @potentialFriend.LastName.Substring(1))</div>
+                                            <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
+                                            <div> <small class="text-muted">3 Mutual Friends</small> </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" id="sendBtn-@potentialFriend.Id" class="btn btn-primary px-3" 
+                                            data-action="SendFriendRequest" 
+                                            data-userinfo='{"userid": "@potentialFriend.UserId", "username": "@potentialFriend.UserName", "lastname": "@potentialFriend.LastName", "profilepic": "@potentialFriend.UserProfilePicUrl", "id": @potentialFriend.Id, "email": "@potentialFriend.Email" }' )">
+                                            <i class="fa-solid fa-user-plus me-1"></i>Add Friend
+                                        </button>      
+                                        <button id="removeBtn-@potentialFriend.Id" type="submit" class="btn btn-outline-danger px-3" 
+                                            data-action="RemoveUser"
+                                            data-id="@potentialFriend.Id"
+                                            data-userid="@potentialFriend.UserId"
+                                            data-username="@potentialFriend.UserName">
+                                            <i class="fa-solid fa-user-minus me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }                            
+                    }else if (Model.Error != null)
+                    {
+                        <div class="container mb-1 mt-1">
+                            <div class="text-center">
+                                <div class="display-1 text-muted mb-1">
+                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                </div>
+                                <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                                <p class="text-muted mb-4">Please refresh or try again later...</p>
+                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center w-100">No new potential friends found.</div>
+                    }
+                </div> 
             </div>
-        </div>
-
-        <div id="loadingSpinner" class="d-flex justify-content-center my-4" style="display:none;">
-            <div class="spinner-border text-primary" role="status">
-            </div>
-        </div>
-
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
-            <form id="pageSizeForm" class="d-flex align-items-center gap-2 flex-wrap">
-                <label for="pageSize" class="mb-0">Rows per page:</label>
-                <select id="pageSize" class="form-select form-select-sm w-auto">
-                    <option value="5" selected>5</option>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                </select>
-            </form>
-
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <div id="paginationInfo" class="text-muted small"></div>
-                <ul class="pagination mb-0 flex-wrap" id="pagination"></ul>
-            </div>
+            <div class="tab-pane fade" id="request" role="tabpanel" aria-labelledby="request-tab"></div>
+            <div class="tab-pane fade" id="sentReq" role="tabpanel" aria-labelledby="sentRequest-tab"></div>
         </div>
     </div>
 
+    <div id="loadingSpinner" class="d-flex justify-content-center my-4 mb-3" style="display:none;">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <label for="pageSize" class="mb-0">Rows per page:</label>
+            <select id="pageSize" class="form-select form-select-sm w-auto">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="49">50</option>
+            </select>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div id="paginationInfo" class="text-muted small"></div>
+            <ul class="pagination mb-0 flex-wrap" id="pagination"></ul>
+        </div>
+    </div>
+</div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script type="module">
+        import {friendRequestApi} from '/js/API/ApiCalls.js';
+        
         let currentPage = 1;
         let pageSize = 5;
-        let selectedTab = "";       
+        let selectedTab = ""; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('pageSize').addEventListener('change', handlePageSizeChange);   
+            document.getElementById('pageSize').addEventListener('change', handlePageSizeChange);
+            
             const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
-
             tabElements.forEach(tab => {
                 tab.addEventListener('shown.bs.tab', function (event) {
                     const activeTabId = event.target.id;
 
-                    if (activeTabId === "friend-tab") {
+                    if (activeTabId === "friend-tab") 
+                    {
                         selectedTab = "friend";
+                        currentPage = 1;
+                        pageSize = 5;
+                        document.getElementById("pageSize").value = 5;
                         loadFriends(pageSize, currentPage);
-                    } else if (activeTabId === "request-tab") {
+                    }else if (activeTabId === "request-tab") 
+                    {
                         selectedTab = "request";
-                         loadFriendRequest(pageSize, currentPage);
-                    } else if (activeTabId === "sentRequest-tab") {
+                        currentPage = 1;
+                        pageSize = 5;
+                        document.getElementById("pageSize").value = 5;
+                        loadFriendRequest(pageSize, currentPage);
+                    }else {
                         selectedTab = "sentRequest";
+                        currentPage = 1;
+                        pageSize = 5;
+                        document.getElementById("pageSize").value = 5;
                         loadSentRequest(pageSize, currentPage);
                     }
-
                 });
             });
 
@@ -130,361 +188,482 @@
                 case 'sentRequest' :
                 loadSentRequest(pageSize, currentPage);
                 break;
-                default :
-                loadFriends(pageSize, currentPage);
-            }
-            
+                default:
+                defaultLoad();
+            }  
+
         });
 
         /************************************************All potential Friends/Requesting *****************************/
-        async function loadFriends(size,pageNumber) {
+
+        async function defaultLoad()
+        {
+            const model = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, 
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                })
+            )
+            document.getElementById("loadingSpinner").classList.add("d-none");
+            setupPagination(model.totalPages);
+            updatePaginationInfo(model);
+        }
+        
+        async function loadFriends(size,pageNumber) 
+        {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
-            try {
-                 const response = await fetch(`/Home/friendRequests?pageSize=${size}&pageNumber=${pageNumber}`, {
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                });
-                if (!response.ok) throw new Error('Failed to fetch data');
-
-                const result = await response.json(); 
+            try 
+            {
+                const result = await friendRequestApi.getAllPotentialFriends(size,pageNumber);
+                if (result.error) 
+                {
+                    loadSpinner.classList.add("d-none");
+                    setupPagination(result.totalPages);
+                    updatePaginationInfo(result);
+                    return document.getElementById('friend').innerHTML = `
+                        <div class="container mb-1 mt-1">
+                            <div class="text-center">
+                                <div class="display-1 text-muted mb-1">
+                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                </div>
+                                <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                                <p class="text-muted mb-4">Please refresh or try again later...</p>
+                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                </button>
+                            </div>
+                    </div> `;
+                }
                 renderFriends(result.data);
                 setupPagination(result.totalPages);
                 updatePaginationInfo(result);
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('friendsContainer').innerHTML =
-                    `<div class="alert alert-danger text-center w-100">Error loading friends. Please try again later.</div>`;
+                document.getElementById('friend').innerHTML = `
+                        <div class="container mb-1 mt-1">
+                            <div class="text-center">
+                                <div class="display-1 text-muted mb-1">
+                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                </div>
+                                <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                                <p class="text-muted mb-4">Please refresh or try again later...</p>
+                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                </button>
+                            </div>
+                    </div>`;
             }
             loadSpinner.classList.add("d-none");
         }
 
-        function renderFriends(friends) {
-            const container = document.getElementById('friendsContainer');
+        function renderFriends(friends) 
+        {
+            const container = document.getElementById('friend');
+            container.innerHTML = "";
+            container.classList.remove("d-none");
             container.innerHTML = '';
+            if (!friends || friends.length === 0) return container.innerHTML = `<div class="alert alert-info text-center w-100">No friends found.</div>`;
 
-            if (!friends || friends.length === 0) {
-                container.innerHTML = `<div class="alert alert-info text-center w-100">No friends found.</div>`;
-                return;
-            }
+            const card = document.createElement('div');
+            card.className = 'card friend-card w-100 p-3';
+            const div = document.createElement('div');
+            div.className = 'd-flex flex-column align-items-center gap-2';
+            friends.forEach(friend => {               
+                div.innerHTML += `
+                    <div class="card h-card w-100 shadow-sm border-0 p-3" id="row-${friend.id}">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <div class="d-flex">
+                                ${friend.userProfilePicUrl ? `<img src="${friend.userProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                                    style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                                : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                        style="width:50px; height:50px; font-size:1.5rem;">
+                                                        ${(friend.userName).charAt(0).toUpperCase()}
+                                                </div>`
+                                }                           
+                                <div class="col">
+                                    <div class="fw-bold">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) +" " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</div>
+                                    <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
+                                    <div> <small class="text-muted">3 Mutual Friends</small> </div>
+                                </div>
+                            </div>
 
-            friends.forEach(friend => {
-                const card = document.createElement('div');
-                card.id = `row-${friend.id}`;
-                card.className = 'card h-card w-100 shadow-sm border-0 p-3';
-                card.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between flex-wrap">
-                        <div class="d-flex">
-                            ${friend.userProfilePicUrl ? `<img src="${friend.userProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
-                                                              style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                         : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                                 style="width:50px; height:50px; font-size:1.5rem;">
-                                                 ${(friend.userName).charAt(0).toUpperCase()}
-                                         </div>`
-                            }                           
-                            <div class="col">
-                                <div class="fw-bold">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) +" " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</div>
-                                <div class="mb-0"> <small class="text-muted">1.3k followers</small> </div>
-                                <div> <small class="text-muted">3 Mutual Friends</small> </div>
+                            <div class="d-flex gap-2">
+                                    <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" 
+                                        data-action="SendFriendRequest"
+                                        data-userinfo='{"userid": "${friend.userId}", "username": "${friend.userName}", "lastname": "${friend.lastName}", "profilepic": "${friend.userProfilePicUrl}", "id": ${friend.id}, "email": "${friend.email}" }'>
+                                        <i class="fa-solid fa-user-plus me-1"></i>Add Friend
+                                    </button>
+                         
+                                    <button id="removeBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3"
+                                        data-action="RemoveUser"
+                                        data-id="${friend.id}"
+                                        data-userid="${friend.userId}"
+                                        data-username="${friend.userName}">
+                                        <i class="fa-solid fa-user-minus me-1"></i>Remove
+                                    </button>
                             </div>
                         </div>
-
-                        <div class="d-flex gap-2">
-                             <button type="submit" id="sendBtn-${friend.id}" class="btn btn-primary px-3" onclick="sendFriendRequest('${friend.userId}','${friend.userName}', '${friend.lastName}', '${friend.userProfilePicUrl}', ${friend.id}, '${friend.email}')">
-                                  <i class="fa-solid fa-user-plus me-1"></i>Add Friend
-                             </button>
-                         
-                             <button id="removeBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="removeUser('${friend.userId}','${friend.userName}', ${friend.id})">
-                                  <i class="fa-solid fa-user-minus me-1"></i>Remove
-                             </button>
-                        </div>
                     </div>`;
+                card.appendChild(div);
                 container.appendChild(card);
             });
-        }
 
-        async function sendFriendRequest(userid,friendName,friendLastName,friendProfilePic,id,email)
-        {
-            const btn = document.getElementById("sendBtn-" + id);
-            const removebtn = document.getElementById("removeBtn-" + id);
-            btn.disabled = true; 
-            let profilePic = null;
-            if(friendProfilePic) profilePic = friendProfilePic;
-            try
-            {
-                const results = await fetch(`/Home/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(friendName)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(friendLastName)}&ToUser_ProfilePicUrl=${encodeURIComponent(profilePic)}`, {method : "POST"});
-                const res = await results.json();
-                if(res.success)
-                {
-                    toastr.success("Friend Request SuccessFully Sent.")
-                    removebtn.disabled = true;
-                }else
-                {
-                    btn.disabled = false;
-                    toastr.error(res.message);
-                }
-            }catch(error)
-            {
-                btn.disabled = false;
-                btn.textContent = "Add Friend";
-                toastr.error(`Failed to send a friend request due to error : ${error}`);
-            }
         }
-
+        
 
         /**************************************************Recieved Requests *******************************************/
-         async function loadFriendRequest(size,pageNumber) {
+        async function loadFriendRequest(size,pageNumber) 
+        {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
-            try {
-                 const response = await fetch(`/Home/RecievedFriendRequest?pageSize=${size}&pageNumber=${pageNumber}`, {
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                });
-                if (!response.ok) throw new Error('Failed to fetch data');
-
-                const result = await response.json();
+            try 
+            {
+                const result = await friendRequestApi.getRecievedRequest(size,pageNumber);
+                if (result.error) 
+                {
+                    loadSpinner.classList.add("d-none");
+                    setupPagination(result.totalPages);
+                    updatePaginationInfo(result);
+                    return document.getElementById('request').innerHTML = `
+                        <div class="container mb-1 mt-1">
+                            <div class="text-center">
+                                <div class="display-1 text-muted mb-1">
+                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                </div>
+                                <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                                <p class="text-muted mb-4">Please refresh or try again later... </p>
+                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                </button>
+                            </div>
+                    </div> `;
+                }
                 renderReceivedFriendRequests(result.data);
                 setupPagination(result.totalPages);
                 updatePaginationInfo(result);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('friendsRequestContainer').innerHTML =
-                    `<div class="alert alert-danger text-center w-100">Error loading friends. Please try again later.</div>`;
+            }catch (error) {
+                document.getElementById('request').innerHTML = `
+                        <div class="container mb-1 mt-1">
+                        <div class="text-center">
+                            <div class="display-1 text-muted mb-1">
+                                <i class="bi bi-exclamation-triangle text-danger"></i>
+                            </div>
+                            <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                            <p class="text-muted mb-4">Please refresh or try again later... </p>
+                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                            </button>
+                        </div>
+                </div>`;
             }
             loadSpinner.classList.add("d-none");
         }
 
-        function renderReceivedFriendRequests(friends) {
-            const container = document.getElementById('friendsRequestContainer');
+        function renderReceivedFriendRequests(friends) 
+        {
+            const container = document.getElementById('request');
             container.innerHTML = '';
+            if (!friends || friends.length === 0) return container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
 
-            if (!friends || friends.length === 0) {
-                container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
-                return;
-            }
-
+            const card = document.createElement('div');
+            card.className = 'card friend-card w-100 p-3';
+            const div = document.createElement('div');
+            div.className = 'd-flex flex-column align-items-center gap-3';
             friends.forEach(friend => {
-                const card = document.createElement('div');
-                card.id = `row-${friend.id}`;
-                card.className = 'card h-card w-100 shadow-sm border-0 p-3';
-                card.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between flex-wrap">
-                        <div class="d-flex align-items-center mb-2 mb-sm-0">
-                            ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
-                                                            style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                        : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                                style="width:50px; height:50px; font-size:1.5rem;">
-                                                ${(friend.userName).charAt(0).toUpperCase()}
-                                        </div>`
-                            }
-                            <div>
-                                <h6 class="fw-semibold mb-1">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) + " " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</h6>
-                                <small class="text-muted">1.3k followers</small><br />
-                                <small class="text-muted">3 Mutual Friends</small>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                             <button id="requestBtn-${friend.id}" type="submit" class="btn btn-primary px-3" onclick="acceptFriendRequest('${friend.userId}','${friend.userName}', ${friend.id})">
-                                  <i class="fa-solid fa-user-plus me-1"></i>Accept Request
-                             </button>
-
-                             <button id ="rejectRequestBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" onclick="rejectReceivedRequest('${friend.userId}', ${friend.id})">
-                                  <i class="fa-solid fa-user-minus me-1"></i>Reject Request
-                             </button>
-                        </div>
-                    </div>`;
+                div.innerHTML += `                   
+                           <div id="row-${friend.id}" class="card h-card w-100 shadow-sm border-0 p-3">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <div class="d-flex">
+                                        ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                                                        style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                                    : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                            style="width:50px; height:50px; font-size:1.5rem;">
+                                                            ${(friend.userName).charAt(0).toUpperCase()}
+                                                    </div>`
+                                        }
+                                        <div>
+                                            <h6 class="fw-bold mb-1">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) + " " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</h6>
+                                            <small class="text-muted">1.3k followers</small><br />
+                                            <small class="text-muted">3 Mutual Friends</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button id="requestBtn-${friend.id}" type="submit" class="btn btn-primary px-3" 
+                                            data-action="AcceptFriendRequest"
+                                            data-id="${friend.id}"
+                                            data-userid="${friend.userId}"
+                                            data-username="${friend.userName}">
+                                            <i class="fa-solid fa-user-plus me-1"></i>Accept Request
+                                        </button>
+                                        <button id ="rejectRequestBtn-${friend.id}" type="submit" class="btn btn-outline-danger px-3" 
+                                            data-action="RejectRecievedRequest"
+                                            data-id="${friend.id}"
+                                            data-userid="${friend.userId}">
+                                            <i class="fa-solid fa-user-minus me-1"></i>Reject Request
+                                        </button>
+                                    </div>
+                                </div>
+                           <div/>
+                       </div>`;
+                card.appendChild(div);
                 container.appendChild(card);
             });
+            
         }       
 
 
         /* ************************************************Sent Requests ***********************************************/
-        async function loadSentRequest(size,pageNumber) {
+        async function loadSentRequest(size,pageNumber) 
+        {
             const loadSpinner = document.getElementById("loadingSpinner");
             loadSpinner.classList.remove("d-none");
-            try {
-                 const response = await fetch(`/Home/GetAllSentRequest?pageSize=${size}&pageNumber=${pageNumber}`, {
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                });
-                if (!response.ok) throw new Error('Failed to fetch data');
-                const result = await response.json();
+            try 
+            {
+                const result = await friendRequestApi.getSentFriendRequest(size,pageNumber);
+                if (result.error) 
+                {
+                    loadSpinner.classList.add("d-none");
+                    setupPagination(result.totalPages);
+                    updatePaginationInfo(result);
+                    return document.getElementById('sentReq').innerHTML = `
+                        <div class="container mb-1 mt-1">
+                            <div class="text-center">
+                                <div class="display-1 text-muted mb-1">
+                                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                                </div>
+                                <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                                <p class="text-muted mb-4">Please refresh or try again later... </p>
+                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                </button>
+                            </div>
+                    </div> `;
+                }
                 renderSentRequests(result.data);
                 setupPagination(result.totalPages);
                 updatePaginationInfo(result);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('SentRequestContainer').innerHTML =
-                    `<div class="alert alert-danger text-center w-100">Error loading Sent Requests. Please try again later.</div>`;
+            }catch (error) {
+                document.getElementById('sentReq').innerHTML = `
+                    <div class="container mb-1 mt-1">
+                        <div class="text-center">
+                            <div class="display-1 text-muted mb-1">
+                                <i class="bi bi-exclamation-triangle text-danger"></i>
+                            </div>
+                            <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
+                            <p class="text-muted mb-4">Please refresh or try again later... </p>
+                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                            </button>
+                        </div>
+                </div>`;
             }
             loadSpinner.classList.add("d-none");
         }
 
-        function renderSentRequests(friends) {
-            const container = document.getElementById('SentRequestContainer');
+        function renderSentRequests(friends) 
+        {
+            const container = document.getElementById('sentReq');
             container.innerHTML = '';
-            if (!friends || friends.length === 0) {
-                container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending sent friend request.</div>`;
-                return;
-            }
-            friends.forEach(friend => {
-                const card = document.createElement('div');
-                card.id = `row-${friend.id}`;
-                card.className = 'card h-card w-100 shadow-sm border-0 p-3';
-                card.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between flex-wrap">
-                        <div class="d-flex align-items-center mb-2 mb-sm-0">
-                            ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
-                                                            style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                        : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                                style="width:50px; height:50px; font-size:1.5rem;">
-                                                ${(friend.userName).charAt(0).toUpperCase()}
-                                        </div>`
-                            }
-                            <div>
-                                <h6 class="fw-semibold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
-                                <small class="text-muted">1.3k followers</small><br />
-                                <small class="text-muted">3 Mutual Friends</small>
+            if (!friends || friends.length === 0) return container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending sent friend request.</div>`;
+              
+            const card = document.createElement('div');
+            card.className = 'card friend-card w-100 p-3';
+            const div = document.createElement('div');
+            div.className = 'd-flex flex-column align-items-center gap-3';
+            friends.forEach(friend => {  
+                div.innerHTML += `
+                    <div class="card h-card w-100 shadow-sm border-0 p-3" id="row-${friend.id}">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <div class="d-flex">
+                                ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"                                                        style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                            : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                    style="width:50px; height:50px; font-size:1.5rem;">
+                                                    ${(friend.toUserName).charAt(0).toUpperCase()}
+                                            </div>`
+                                }
+                                <div>
+                                    <h6 class="fw-bold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
+                                    <small class="text-muted">1.3k followers</small><br />
+                                    <small class="text-muted">3 Mutual Friends</small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                    <button id="cancelRequestBtn-${friend.id}" type="submit" class="btn btn-primary px-3" 
+                                        data-action="CancelSentRequest"
+                                        data-id="${friend.id}"
+                                        data-userid="${friend.toUserId}">
+                                        <i class="fa-solid fa-user-plus me-1"></i>Cancel Request
+                                    </button>
+
+                                    <button type="submit" class="btn btn-outline-danger px-3">
+                                        <i class="fa-solid fa-user-minus me-1"></i>Message
+                                    </button>
                             </div>
                         </div>
-
-                        <div class="d-flex gap-2">
-                             <button id="cancelRequestBtn-${friend.id}" type="submit" class="btn btn-primary px-3" onclick="cancelSentRequest('${friend.toUserId}', ${friend.id})">
-                                  <i class="fa-solid fa-user-plus me-1"></i>Cancel Request
-                             </button>
-
-                             <button type="submit" class="btn btn-outline-danger px-3">
-                                  <i class="fa-solid fa-user-minus me-1"></i>Message
-                             </button>
-                        </div>
                     </div>`;
+                card.appendChild(div);
                 container.appendChild(card);
             });
         }
 
-
-        // *********************************************Accept or reject request ***************************************
-        async function acceptFriendRequest(userid,friendName,id)
+        const clickEventListeners = 
         {
-            const btn = document.getElementById("requestBtn-" + id);
-            btn.disabled = true;           
-            try
-            {
-                const res = await fetch(`/Home/AcceptRequest?FriendId=${userid}&FriendName=${friendName}`, { method: "POST", headers: { "Content-Type": "application/json" }  });
-                const result = await res.json();
-                if(result.success)
+            async SendFriendRequest(e)
+            { 
+                const info = JSON.parse(e.target.dataset.userinfo);                
+                const btn = document.getElementById("sendBtn-" + info.id);
+                const removebtn = document.getElementById("removeBtn-" + info.id);
+                btn.disabled = true; 
+                let profilePic = "";
+                let friendEmail = "";
+                if (info.profilepic != "null") profilePic = info.profilepic;
+                if (info.email != "null") friendEmail = info.email
+                try
                 {
-                    toastr.success("Friend Request Accepted.");
-                    const row = document.getElementById("row-" + id);
-                    if(row)
-                       row.remove();
-                    const container = document.getElementById('friendsRequestContainer');
-                    if (container.textContent === "")
-                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
-                }else{
-                    toastr.error(`Failed to accept friend request due to : ${result.message}`);
-                    btn.disabled = false;
-                    btn.textContent = "Accept Request";
-                }
-            }catch(error)
-            {
-                toastr.error(`Failed to accept friend Request due to : ${error}`);
-                btn.disabled = false;
-                btn.textContent = "Accept Request";
-            }
-        }
-
-        async function cancelSentRequest(friendId,id)
-        {
-            const cancelBtn = document.getElementById("cancelRequestBtn-" + id);
-            if(!cancelBtn) return;
-            cancelBtn.disabled = true;
-            try
-            {
-                const res = await fetch(`/Home/RejectRequest?friendUserId=${friendId}`, { method: "PUT", headers: { "Content-Type": "application/json" }  });
-                const result = await res.json();
-                if(result.success)
-                {
-                    toastr.success("Successfully Cancelled");
-                    const row = document.getElementById("row-" + id);
-                    if(row)
-                    row.remove();
-                    const container = document.getElementById('SentRequestContainer');
-                    if (container.textContent === "")
-                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
-                }else{
-                    toastr.error(`Failed to cancel friend Request due to :${result.message}`);
-                     cancelBtn.disabled = false;
-                }
-
-            }catch(error)
-            {
-                toastr.error(`Failed to cancel friend Request due to :${result.message}, ${error}`);
-                cancelBtn.disabled = false;
-            }
-        }
-
-        async function rejectReceivedRequest(friendId,id)
-        {
-            const rejectButton = document.getElementById("rejectRequestBtn-" + id);
-            if(!rejectButton) return;
-            rejectButton.disabled = true;
-            try
-            {
-                const res = await fetch(`/Home/RejectRequest?friendUserId=${friendId}`, { method: "PUT", headers: { "Content-Type": "application/json" }  });
-                const result = await res.json();
-                if(result.success)
-                {
-                    toastr.success("Successfully Rejected");
-                    const row = document.getElementById("row-" + id);
-                    if(row)
-                    row.remove();
-                    const container = document.getElementById('friendsRequestContainer');
-                    if (container.textContent === "")
-                      container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
-                }else{
-                    toastr.error(`Failed to cancel friend Request due to :${result.message}`);
-                     rejectButton.disabled = false;
-                }
-
-            }catch(error)
-            {
-                toastr.error(`Failed to cancel friend Request due to :${result.message}, ${error}`);
-                rejectButton.disabled = false;
-            }
-        }
-
-        /************************************************Block a potential friend*****************************************/
-        async function removeUser(friendId,friendName,id)
-        {
-            const sendbtn = document.getElementById("sendBtn-" + id);
-            const btn = document.getElementById("removeBtn-" + id);
-            btn.disabled = true;
-            btn.textContent = "Removing...";
-            try
-            {
-                const res = await fetch(`/Home/BlockUser?BlockUserId=${encodeURIComponent(friendId)}&BlockUserName=${encodeURIComponent(friendName)}`,
-                                   { method: "POST", headers: { "Content-Type": "application/json" }  });
-                if(res.ok)
-                {
-                    toastr.success("User Removed")
-                    btn.textContent = "Removed";
-                    sendbtn.disabled = true;
-                }else
+                    const res = await friendRequestApi.sendfriendRequest(info.userid, info.username, info.lastname, profilePic, friendEmail);
+                    if(res.success)
+                    {
+                        toastr.success("Friend Request SuccessFully Sent.")
+                        removebtn.disabled = true;
+                    }else
+                    {
+                        btn.disabled = false;
+                        toastr.error(res.message);
+                    }
+                }catch(error)
                 {
                     btn.disabled = false;
-                    btn.textContent = "Add Friend";
-                    toastr.error(`Failed to remove user due to : ${res.message}`)
+                    toastr.error("Failed to send a friend request, please try again later.");
                 }
-            }catch(error)
+            },
+
+            async AcceptFriendRequest(e)
             {
-                btn.disabled = false;
-                btn.textContent = "Add Friend";
-                toastr.error(`Failed to remove user due to :${res.message}, ${error}`)
+                const id = e.target.dataset.id;
+                const userid = e.target.dataset.userid;
+                const username = e.target.dataset.username;
+                const btn = document.getElementById("requestBtn-" + id);
+                btn.disabled = true;           
+                try
+                {
+                    const result = await friendRequestApi.acceptFriendRequest(userid,username);
+                    if (result.success)
+                    {
+                        toastr.success("Friend Request Accepted.");
+                        const row = document.getElementById("row-" + id);
+                        if (row)
+                           row.remove();
+                        const container = document.getElementById('request');
+                        if (container.textContent === "")
+                             container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                    }else{
+                        btn.disabled = false;
+                        toastr.error("Failed to accept friend request");
+                    }
+                }catch (error)
+                {
+                    btn.disabled = false;
+                    toastr.error("Failed to accept friend Request, Please try again later");
+                }
+            },
+
+            async RejectRecievedRequest(e)
+            {
+                const id = e.target.dataset.id;
+                const userId = e.target.dataset.userid;
+                const rejectButton = document.getElementById("rejectRequestBtn-" + id);
+                if(!rejectButton) return;
+                rejectButton.disabled = true;
+                try
+                {
+                    const result = await friendRequestApi.rejectRecievedRequest(userId);
+                    if(result.success)
+                    {
+                        toastr.success("Successfully Rejected");
+                        const row = document.getElementById("row-" + id);
+                        if(row) row.remove();
+                        const container = document.getElementById('request');
+                        if(container.textContent === "")
+                           container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                    }else{
+                        toastr.error("Failed to cancel friend Request");
+                         rejectButton.disabled = false;
+                    }
+
+                }catch(error)
+                {
+                    toastr.error("Failed to cancel friend Request, Please try again later.");
+                    rejectButton.disabled = false;
+                }
+            },
+
+            async CancelSentRequest(e)
+            {
+                const id = e.target.dataset.id;
+                const friendId = e.target.dataset.userid;
+                const cancelBtn = document.getElementById("cancelRequestBtn-" + id);
+                if(!cancelBtn) return;
+                cancelBtn.disabled = true;
+                try
+                {
+                    const result = await friendRequestApi.cancelSentRequest(friendId);
+                    if(result.success)
+                    {
+                        toastr.success("Successfully Cancelled");
+                        const row = document.getElementById("row-" + id);
+                        if(row) row.remove();
+                        const container = document.getElementById('sentReq');
+                        if (container.textContent === "")
+                            container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending sent friend request.</div>`;
+                    }else{
+                        toastr.error("Failed to cancel sent friend Request");
+                        cancelBtn.disabled = false;
+                    }
+                }catch(error)
+                {
+                    toastr.error("Failed to cancel sent friend Request, Please try again later.");
+                    cancelBtn.disabled = false;
+                }
+            },
+
+            async RemoveUser(e)
+            {
+                try
+                {
+                    const id = e.target.dataset.id;
+                    const userId = e.target.dataset.userid;
+                    const userName = e.target.dataset.username;
+
+                    const res = await friendRequestApi.removeUser(userId, userName);
+                    if(res.success)
+                    {
+                        toastr.success("SuccessFully Removed User");
+                        document.getElementById(`row-${id}`).remove();
+                    }else
+                    {
+                        toastr.error("Failed to remove user");
+                    }
+                }catch(error)
+                {
+                    toastr.error("Failed to remove user, Please try again later.");
+                }
             }
-        }
 
 
-        function setupPagination(totalPages) {
+        };
+
+
+        document.addEventListener('click', async function(e){
+            const action = e.target.dataset.action;
+            if(!action) return;
+            const handler = clickEventListeners[action];
+            if(handler) return handler(e);
+        });
+
+
+        function setupPagination(totalPages) 
+        {
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
@@ -496,9 +675,10 @@
                 li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
                 li.querySelector('a').addEventListener('click', e => {
                     e.preventDefault();
-                    if (!disabled && page !== currentPage) {
+                    if (!disabled && page !== currentPage) 
+                    {
                         currentPage = page;
-                    switch(selectedTab)
+                        switch(selectedTab)
                         {
                             case 'friend':
                             loadFriends(pageSize, currentPage);
@@ -517,27 +697,91 @@
                 return li;
             };
 
-            pagination.appendChild(createItem(currentPage - 1, '«', currentPage === 1));
-            for (let i = 1; i <= totalPages; i++) {
-                pagination.appendChild(createItem(i, i, false, i === currentPage));
+            function createEllipsis() 
+            {
+                const li = document.createElement('li');
+                li.className = "page-item disabled";
+                li.innerHTML = `<span class="page-link">...</span>`;
+                pagination.appendChild(li);
             }
-            pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));
+
+            pagination.appendChild( createItem(currentPage - 1, '«', currentPage === 1) );
+            if (totalPages <= 3) // condition 1
+            {
+                for (let i = 1; i <= totalPages; i++) 
+                     pagination.appendChild( createItem(i, i, false, i === currentPage));
+            }else 
+            {
+                if (currentPage < 3) // condition 2
+                {
+                    for (let i = 1; i <= 3; i++) 
+                        pagination.appendChild( createItem(i, i, false, i === currentPage));
+                    createEllipsis();
+                    pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+                }else if (currentPage === 3) // condition 3
+                {   
+                    let ellipsisCondition = 0;
+                    for (let i = 3; i <= totalPages; i++) 
+                    {
+                        if (ellipsisCondition === 3)
+                        {
+                           createEllipsis();
+                           pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
+                           break;
+                        }
+                        ellipsisCondition += 1;
+                        pagination.appendChild( createItem(i, i, false, i === currentPage));         
+                    }                         
+                }else 
+                {
+                    let ellipsisCondition = 0;
+                    for (let i = currentPage; i <= totalPages; i++)
+                    {
+                        if(ellipsisCondition === 3)
+                        {
+                            createEllipsis();
+                            pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
+                            break;
+                        }
+                        ellipsisCondition += 1;
+                        if (currentPage === totalPages)
+                        {
+                            for (let i = currentPage - 4; i <= totalPages; i++)
+                            {
+                                pagination.appendChild( createItem(i, i, false, i === currentPage));
+                            }
+                        }else
+                        {
+                            const shownPages = totalPages - currentPage;
+                            if( shownPages < 5 & shownPages !== 5)
+                            {
+                                pagination.appendChild( createItem(i - 1, i, false, i === (currentPage + 1) ));                                                                
+                            }else
+                            { 
+                                pagination.appendChild( createItem(i, i, false, i === currentPage));                                                           
+                            }
+                            // pagination.appendChild( createItem(i, i, false, i === currentPage));
+                        }
+                    }                          
+                }
+            }
+            pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));            
         }
 
-        function updatePaginationInfo(result) {
+        function updatePaginationInfo(result) 
+        {
             const { totalRecords } = result;
-            const start = (currentPage - 1) * pageSize + 1;
-            const end = Math.min(start + pageSize - 1, totalRecords);
-            const info = totalRecords === 0
-                ? 'Showing 0 of 0 records'
-                : `Showing ${start}-${end} of ${totalRecords} records`;
+            const data = currentPage * pageSize;
+            const updatedData = data <= totalRecords ? data : totalRecords; 
+            const info = totalRecords === 0 ? 'Showing 0 of 0 records' : `Showing ${updatedData} of ${totalRecords} records`;
             document.getElementById('paginationInfo').textContent = info;
         }
 
-        function handlePageSizeChange() {
+        function handlePageSizeChange() 
+        {
             pageSize = parseInt(this.value);
             currentPage = 1;
-              switch(selectedTab)
+            switch(selectedTab)
             {
                 case 'friend':
                 loadFriends(pageSize, currentPage);
