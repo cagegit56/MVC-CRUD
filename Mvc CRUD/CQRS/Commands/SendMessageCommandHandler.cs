@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
@@ -7,11 +8,13 @@ namespace Mvc_CRUD.CQRS.Commands;
     {
         private readonly DataDbContext _context;
         private readonly ILogger<SendMessageCommandHandler> _logger;
+        private readonly IMemoryCache _cache;
 
-        public SendMessageCommandHandler(DataDbContext context, ILogger<SendMessageCommandHandler> logger)
+        public SendMessageCommandHandler(DataDbContext context, ILogger<SendMessageCommandHandler> logger, IMemoryCache cache)
         {
            _context = context ?? throw new ArgumentNullException(nameof(context));
            _logger = logger;
+           _cache = cache;
         }
         public async Task<bool> Handle(SendMessageCommand command, CancellationToken cancellationToken)
         {
@@ -19,6 +22,7 @@ namespace Mvc_CRUD.CQRS.Commands;
             {
                 var res = await _context.Chats.AddAsync(command.model);
                 await _context.SaveChangesAsync();
+                _cache.Remove("cacheAll");
                 return true;
             }
             catch (Exception ex) 

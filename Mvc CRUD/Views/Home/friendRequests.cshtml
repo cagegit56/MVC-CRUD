@@ -16,7 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <div class="container py-5">
-    <h3 class="text-center text-primary mb-4">
+    <h3 class="text-center text-primary">
         <i class="fa-solid fa-users me-2"></i>Find Friends
     </h3>
     <div class="container mt-5">
@@ -246,7 +246,7 @@
                                     <i class="bi bi-exclamation-triangle text-danger"></i>
                                 </div>
                                 <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
-                                <p class="text-muted mb-4">Please refresh or try again later...${error}</p>
+                                <p class="text-muted mb-4">Please refresh or try again later...</p>
                                 <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
                                     <i class="bi bi-plus-circle me-2"></i>Refresh
                                 </button>
@@ -349,7 +349,7 @@
                                 <i class="bi bi-exclamation-triangle text-danger"></i>
                             </div>
                             <h6 class="mb-1">Technical Isssue!<br />We currently attending to the issue...</h6>
-                            <p class="text-muted mb-4">Please refresh or try again later...${error} </p>
+                            <p class="text-muted mb-4">Please refresh or try again later... </p>
                             <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
                                 <i class="bi bi-plus-circle me-2"></i>Refresh
                             </button>
@@ -382,7 +382,7 @@
                                                     </div>`
                                         }
                                         <div>
-                                            <h6 class="fw-semibold mb-1">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) + " " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</h6>
+                                            <h6 class="fw-bold mb-1">${friend.userName.charAt(0).toUpperCase() + friend.userName.slice(1) + " " + friend.lastName.charAt(0).toUpperCase() + friend.lastName.slice(1) ?? '?'}</h6>
                                             <small class="text-muted">1.3k followers</small><br />
                                             <small class="text-muted">3 Mutual Friends</small>
                                         </div>
@@ -482,7 +482,7 @@
                                             </div>`
                                 }
                                 <div>
-                                    <h6 class="fw-semibold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
+                                    <h6 class="fw-bold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
                                     <small class="text-muted">1.3k followers</small><br />
                                     <small class="text-muted">3 Mutual Friends</small>
                                 </div>
@@ -697,46 +697,72 @@
                 return li;
             };
 
-            function createEllipsis() {
+            function createEllipsis() 
+            {
                 const li = document.createElement('li');
                 li.className = "page-item disabled";
                 li.innerHTML = `<span class="page-link">...</span>`;
                 pagination.appendChild(li);
             }
 
-            //   if (totalPages <= 2) 
-            // {
-            //     for (let i = 1; i <= totalPages; i++) 
-            //          createItem(i);
-            // }else 
-            // {
-            //     if (currentPage <= 4) {
-            //         for (let i = 1; i <= 5; i++) createItem(i);
-            //         createEllipsis();
-            //         createItem(totalPages);
-            //     } else if (currentPage >= totalPages - 3) 
-            //     {
-            //         createItem(1);
-            //         createEllipsis();
-            //         for (let i = totalPages - 4; i <= totalPages; i++) 
-            //              createItem(i);
-            //     } else {
-            //         createItem(1);
-            //         createEllipsis();
-            //         for (let i = currentPage - 1; i <= currentPage + 1; i++) 
-            //              createItem(i);
-            //         createEllipsis();
-            //         createItem(totalPages);
-            //     }
-            // }
-
             pagination.appendChild( createItem(currentPage - 1, '«', currentPage === 1) );
-            for (let i = 1; i <= totalPages; i++) 
+            if (totalPages <= 3) // condition 1
             {
-                if (currentPage <= 4) 
+                for (let i = 1; i <= totalPages; i++) 
+                     pagination.appendChild( createItem(i, i, false, i === currentPage));
+            }else 
+            {
+                if (currentPage < 3) // condition 2
                 {
+                    for (let i = 1; i <= 3; i++) 
+                        pagination.appendChild( createItem(i, i, false, i === currentPage));
                     createEllipsis();
-                    pagination.appendChild( createItem(i, i, false, i === currentPage) );
+                    pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+                }else if (currentPage === 3) // condition 3
+                {   
+                    let ellipsisCondition = 0;
+                    for (let i = 3; i <= totalPages; i++) 
+                    {
+                        if (ellipsisCondition === 3)
+                        {
+                           createEllipsis();
+                           pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
+                           break;
+                        }
+                        ellipsisCondition += 1;
+                        pagination.appendChild( createItem(i, i, false, i === currentPage));         
+                    }                         
+                }else 
+                {
+                    let ellipsisCondition = 0;
+                    for (let i = currentPage; i <= totalPages; i++)
+                    {
+                        if(ellipsisCondition === 3)
+                        {
+                            createEllipsis();
+                            pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
+                            break;
+                        }
+                        ellipsisCondition += 1;
+                        if (currentPage === totalPages)
+                        {
+                            for (let i = currentPage - 4; i <= totalPages; i++)
+                            {
+                                pagination.appendChild( createItem(i, i, false, i === currentPage));
+                            }
+                        }else
+                        {
+                            const shownPages = totalPages - currentPage;
+                            if( shownPages < 5 & shownPages !== 5)
+                            {
+                                pagination.appendChild( createItem(i - 1, i, false, i === (currentPage + 1) ));                                                                
+                            }else
+                            { 
+                                pagination.appendChild( createItem(i, i, false, i === currentPage));                                                           
+                            }
+                            // pagination.appendChild( createItem(i, i, false, i === currentPage));
+                        }
+                    }                          
                 }
             }
             pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));            

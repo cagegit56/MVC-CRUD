@@ -125,9 +125,22 @@
             <div class="col-md-8">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                        <img src="@Model.UserProfilePicUrl" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" />
-                            <input class="form-control rounded-pill" placeholder="What's on your mind?" />
+                        <div class="d-flex align-items-center gap-1 mb-2">
+                            @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
+                            {
+                                <img src="@Model.UserProfilePicUrl" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                     style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
+                            }
+                            else
+                            {
+                                <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                     style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                    @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
+                                </div>
+                            }
+                            <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
+                                 What's on your mind, @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1))?
+                            </button>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-around">

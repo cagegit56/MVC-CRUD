@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Mvc_CRUD</RootNamespace>
+    <UserSecretsId>0d7fa3b0-1c0a-4814-aa78-369bf05a6a2d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

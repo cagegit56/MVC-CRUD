@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 
@@ -10,12 +11,15 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
     private readonly ILogger<UpdateUserProfileCommandHandler> _logger;
+    private readonly IMemoryCache _cache;
 
-    public UpdateUserProfileCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<UpdateUserProfileCommandHandler> logger)
+    public UpdateUserProfileCommandHandler(DataDbContext context, IUserInfoContextService currentUser,
+           ILogger<UpdateUserProfileCommandHandler> logger, IMemoryCache cache)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _logger = logger;
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     public async Task<bool> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
@@ -66,8 +70,9 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
                         res.Website = request.model.Website;
                 }
 
-                _context.Profile.Update(res);
+                _context.Update(res);
                 await _context.SaveChangesAsync();
+                _cache.Remove("UserProfile-Info");
                 return true;
             }
             _logger.LogError("User not found.");
