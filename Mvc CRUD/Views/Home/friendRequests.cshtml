@@ -1,6 +1,6 @@
 ﻿@using System.Text.Json
 @using Mvc_CRUD.Pagination
-@model PaginateResponse<List<Mvc_CRUD.Models.UserProfile>>
+@model PaginateResponse<List<Mvc_CRUD.Dto.FriendUserProfileDto>>
 
 @{
     ViewData["Title"] = "Find Friends";
@@ -342,6 +342,7 @@
                 setupPagination(result.totalPages);
                 updatePaginationInfo(result);
             }catch (error) {
+                console.log(error);
                 document.getElementById('request').innerHTML = `
                         <div class="container mb-1 mt-1">
                         <div class="text-center">

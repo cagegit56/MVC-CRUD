@@ -20,7 +20,6 @@ namespace Mvc_CRUD.Services;
            CancellationToken cancellationToken = default)
         {
             source = ApplySorting(source, filter.SortBy, filter.SortDirection);
-
             var totalRecords = await source.CountAsync(cancellationToken);
             var items = await source
                 .Skip((filter.PageNumber - 1) * filter.PageSize)
@@ -34,7 +33,6 @@ namespace Mvc_CRUD.Services;
            CancellationToken cancellationToken = default)
         {
             source = ApplySorting(source, filter.SortBy, filter.SortDirection);
-
             var totalRecords = source.Count();
             var items = source
                 .Skip((filter.PageNumber - 1) * filter.PageSize)
@@ -56,9 +54,7 @@ namespace Mvc_CRUD.Services;
                 .ToListAsync(cancellationToken);
 
             var mappedData = _mapper.Map<List<TResponse>>(items);
-
             var response = CreatePaginatedResponse(mappedData, totalRecords, filter);
-
             return response;
         }
 
@@ -73,9 +69,7 @@ namespace Mvc_CRUD.Services;
                 .ToList();
 
             var mappedData = _mapper.Map<List<TResponse>>(items);
-
             var response = CreatePaginatedResponse(mappedData, totalRecords, filter);
-
             return response;
         }
 
@@ -83,12 +77,10 @@ namespace Mvc_CRUD.Services;
         private static IQueryable<T> ApplySorting<T>(IQueryable<T> query, string? sortBy, string? sortDirection)
         {
             var columnToSort = string.IsNullOrWhiteSpace(sortBy) ? "Id" : sortBy;
-
             var sortInfo = typeof(T).GetProperty(columnToSort,
                 BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-            if (sortInfo == null)
-                return query;
+            if (sortInfo == null) return query;
 
             var param = Expression.Parameter(typeof(T), "x");
             var propertyAccess = Expression.Property(param, sortInfo);
@@ -96,35 +88,27 @@ namespace Mvc_CRUD.Services;
             Expression converted = Expression.Convert(propertyAccess, typeof(object));
             var sortLambda = Expression.Lambda<Func<T, object>>(converted, param);
 
-            return sortDirection?.ToLower() == "asc"
-                ? query.OrderBy(sortLambda)
-                : query.OrderByDescending(sortLambda);
+            return sortDirection?.ToLower() == "asc" ? query.OrderBy(sortLambda) : query.OrderByDescending(sortLambda);
         }
 
         private static IEnumerable<T> ApplySorting<T>(IEnumerable<T> query, string? sortBy, string? sortDirection)
         {
             var columnToSort = string.IsNullOrWhiteSpace(sortBy) ? "Id" : sortBy;
-
             var sortProperty = typeof(T).GetProperty(columnToSort,
                 BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-            if (sortProperty == null)
-                return query;
+            if (sortProperty == null) return query;
 
             bool descending = !string.IsNullOrWhiteSpace(sortDirection) && sortDirection.ToLower() == "desc";
 
-            return descending
-                ? query.OrderBy(x => sortProperty.GetValue(x, null))
-                : query.OrderByDescending(x => sortProperty.GetValue(x, null));
+            return descending ? query.OrderBy(x => sortProperty.GetValue(x, null))
+                   : query.OrderByDescending(x => sortProperty.GetValue(x, null));
         }
 
 
-        private PaginateResponse<List<T>> CreatePaginatedResponse<T>(List<T> items, int totalRecords,
-                 PaginationFilter filter)
+        private PaginateResponse<List<T>> CreatePaginatedResponse<T>(List<T> items, int totalRecords, PaginationFilter filter)
         {
-            var httpContext = _httpContext.HttpContext
-            ?? throw new InvalidOperationException("No active HttpContext found.");
-
+            var httpContext = _httpContext.HttpContext?? throw new InvalidOperationException("No active HttpContext found.");
             var response = new PaginateResponse<List<T>>(items, totalRecords, filter.PageNumber, filter.PageSize);
 
             var request = httpContext.Request;

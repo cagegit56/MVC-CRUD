@@ -10,7 +10,7 @@
         public string? ImageContentUrl { get; set; }
         public string? Content { get; set; }
         public int? TotalComments { get; set; } = 0;
-        public int? Shares { get; set; }
+        public int? Shares { get; set; } = 0;
         public string PostScope { get; set; }
         public string? PostBgColour { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

@@ -10,7 +10,8 @@ namespace Mvc_CRUD.Services;
 
           CreateMap<Comments, CommentsDto>().ForMember(x => x.UserName, k => k.MapFrom(s => s.UserName));
           CreateMap<UserProfile, UserProfileDTO>();
-            
+          CreateMap<FriendRequest, FriendRequestDto>();  
+          CreateMap<UserProfile, FriendUserProfileDto>();
         }
     }
 

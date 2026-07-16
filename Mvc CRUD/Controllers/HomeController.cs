@@ -25,7 +25,8 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            var res = await _mediator.Send(new GetAllPostsQuery());          
+            var res = await _mediator.Send(new GetAllPostsQuery(pgFilter));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
             return View(res);
         }
 
@@ -60,9 +61,9 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetComments(int postId)
+        public async Task<IActionResult> GetComments(int postId, PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCommentsQuery(postId));
+            var res = await _mediator.Send(new GetCommentsQuery(postId, pgFilter));
             return Json(res);
         }
 

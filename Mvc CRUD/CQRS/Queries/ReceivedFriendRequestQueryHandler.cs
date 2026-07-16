@@ -1,13 +1,14 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Mvc_CRUD.Dto;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-internal sealed class ReceivedFriendRequestQueryHandler : IRequestHandler<ReceivedFriendRequestQuery, Result<PaginateResponse<List<FriendRequest>>>>
+internal sealed class ReceivedFriendRequestQueryHandler : IRequestHandler<ReceivedFriendRequestQuery, Result<PaginateResponse<List<FriendRequestDto>>>>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
@@ -21,19 +22,18 @@ internal sealed class ReceivedFriendRequestQueryHandler : IRequestHandler<Receiv
         _pagination = pagination ?? throw new ArgumentNullException(nameof(pagination));
         _logger = logger;
     }
-    public async Task<Result<PaginateResponse<List<FriendRequest>>>> Handle(ReceivedFriendRequestQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginateResponse<List<FriendRequestDto>>>> Handle(ReceivedFriendRequestQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var res = await _context.FriendRequests.Where(x => x.ToUserId == _currentUser.UserId 
-                            && x.Status == "Pending" && x.isDeleted != true).AsNoTracking().ToListAsync();
-            var paginatedRes = await _pagination.Paginate(res, request.pgFilter);
-            return Result.Ok(paginatedRes);
+            return Result.Ok( await _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(
+                            _context.FriendRequests.Where(x => x.ToUserId == _currentUser.UserId 
+                            && x.Status == "Pending" && x.isDeleted != true).AsNoTracking(), request.pgFilter));
         }
         catch (Exception ex) 
         {
             _logger.LogError($"Failed to return all sent friend request due to {ex.Message}");
-            return Result.Ok(new PaginateResponse<List<FriendRequest>>()
+            return Result.Ok(new PaginateResponse<List<FriendRequestDto>>()
             {
                 Error = "Failed to return all sent friend request see inner exception for more info."
             });

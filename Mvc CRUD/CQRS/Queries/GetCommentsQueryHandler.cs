@@ -2,21 +2,25 @@
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Dto;
 using Mvc_CRUD.Models;
+using Mvc_CRUD.Pagination;
+using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery, List<CommentsDto>>
+internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery, PaginateResponse<List<CommentsDto>>>
 {
     private readonly DataDbContext _context;
+    private readonly IPaginationService _pagination;
     private readonly ILogger<GetCommentsQueryHandler> _logger;
 
-    public GetCommentsQueryHandler(DataDbContext context, ILogger<GetCommentsQueryHandler> logger)
+    public GetCommentsQueryHandler(DataDbContext context, IPaginationService pagination, ILogger<GetCommentsQueryHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _pagination = pagination ?? throw new ArgumentNullException(nameof(pagination));
         _logger = logger;
     }
 
-    public async Task<List<CommentsDto>> Handle(GetCommentsQuery request, CancellationToken cancellationToken)
+    public async Task<PaginateResponse<List<CommentsDto>>> Handle(GetCommentsQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -30,7 +34,8 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                    Message = x.Message,
                    PostId = x.PostId,
                    SentOn = x.SentOn,
-                   Reply = x.Reply.Select(r => new CommentsReplyDto
+                   TotalComment = 
+                   Reply = x.Reply.Take(5).Select(r => new CommentsReplyDto
                    {
                        Id = r.Id,
                        UserName = r.UserName,
@@ -39,7 +44,7 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                        Message = r.Message,
                        SentOn = r.SentOn,
                        CommentId = r.CommentId,
-                       Replies = r.Replies.Select(y => new ReplyOfReplyDto
+                       Replies = r.Replies.Take(5).Select(y => new ReplyOfReplyDto
                        {
                            Id = y.Id,
                            UserName = y.UserName,
@@ -52,16 +57,13 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                    }).OrderByDescending(r => r.SentOn).ToList()
 
                }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
-            return res;
+            var paginatedRes = await _pagination.Paginate(res, request.pgFilter);
+            return paginatedRes;
         }
         catch (Exception ex)
         {
             _logger.LogError($"Failed to retrieve comments for post id {request.postId} due to {ex.Message}");
-            var error = new List<CommentsDto>()
-            {
-                new CommentsDto {Error = "Failed to retrieve comments."}
-            };
-            return error;
+            return new PaginateResponse<List<CommentsDto>>() { Error = "Failed to retrieve comments." };
         }
     }
 }

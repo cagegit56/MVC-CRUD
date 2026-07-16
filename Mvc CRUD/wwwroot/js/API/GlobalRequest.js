@@ -2,7 +2,7 @@
 
 const request = axios.create({
     baseURL: "/Home",
-    timeout: 30000,
+    timeout: 20000,
     headers: {
         "Content-Type": "application/json"
     }
@@ -15,27 +15,34 @@ request.interceptors.response.use(
     },
     function (error) {
         const status = error.response?.status;
-        if (error.code === "ECONNABORTED") toastr.error("⏱ Request timeout");
-        if (!error.response && !error.code === "ECONNABORTED") alert("🌐 Network error");
+        if (error.code === "ECONNABORTED") toastr.error("Connection Timeout, slow internet connection!");
+        if (!error.response && !error.code === "ECONNABORTED") toastr.error("Network error");
 
         switch (status) {
             case 401:
-                alert("🔐 Unauthorized - redirecting to login");
+                toastr.error("Unauthorized - redirecting to login");
                 window.location.href = "/Home";
                 break;
             case 403:
-                alert("🚫 Forbidden");
+                toastr.error("🚫 Forbidden");
                 break;
             case 404:
-                alert("❓ Not found");
+                toastr.error("❓ Not found");
                 break;
             case 500:
-                alert("🔥 Server error");
+                toastr.error("🔥 Server error");
                 break;
         }
 
         return Promise.reject(error);
     }
 );
+
+toastr.options = {
+    "closeButton": true,
+    "progressBar": false,
+    "positionClass": "toast-top-center",
+    "timeOut": "20000"
+};
 
 export default request;
