@@ -25,6 +25,6 @@ namespace Mvc_CRUD.Dto;
         public string? JobTitle { get; set; }
         public string? Industry { get; set; }
         public string? JobPeriod { get; set; }
-        public string? Errors { get; set; }
+        public string? Error { get; set; }
     }
 

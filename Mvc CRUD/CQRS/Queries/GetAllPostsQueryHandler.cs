@@ -43,6 +43,7 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
                         Id = x.Id,
                         UserName = x.UserName,
                         LastName = x.LastName,
+                        UserId = x.UserId,
                         UserImageUrl = x.UserImageUrl,
                         ImageContentUrl = x.ImageContentUrl,
                         Content = x.Content,

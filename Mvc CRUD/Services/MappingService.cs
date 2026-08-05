@@ -9,9 +9,12 @@ namespace Mvc_CRUD.Services;
         public MappingService(){
 
           CreateMap<Comments, CommentsDto>().ForMember(x => x.UserName, k => k.MapFrom(s => s.UserName));
+          CreateMap<Posts, PostsDto>();
           CreateMap<UserProfile, UserProfileDTO>();
           CreateMap<FriendRequest, FriendRequestDto>();  
           CreateMap<UserProfile, FriendUserProfileDto>();
+          CreateMap<CommentsReply, CommentsReplyDto>();
+          CreateMap<ReplyOfReply, ReplyOfReplyDto>();
         }
     }
 

@@ -67,6 +67,23 @@ namespace Mvc_CRUD.Controllers
             return Json(res);
         }
 
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> CommentReplies(int commentId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetCommentsRepliesQuery(commentId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Replies(int replyId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetRepliesOfReplyQuery(replyId, pgFilter));
+            return Json(res);
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> SendComment(Comments model)
@@ -94,6 +111,7 @@ namespace Mvc_CRUD.Controllers
             if (!res) return Json(new { success = false, message = "Failed to send a reply of reply." });
             return Json(new { success = true, message = "Sent Successfully." });
         }
+      
 
         [HttpGet]
         [Authorize]
@@ -206,6 +224,22 @@ namespace Mvc_CRUD.Controllers
         {
             var res = await _mediator.Send(new GetUserProfileQuery());
             return View(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUserProfile(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUserProfileQuery(userId, pgFilter));
+            return View(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUsersPosts(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUsersPostsQuery(userId, pgFilter));
+            return Json(res);
         }
 
         [HttpGet]

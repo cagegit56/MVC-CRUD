@@ -12,7 +12,7 @@ namespace Mvc_CRUD.Dto;
         public int PostId { get; set; }
         public string Message { get; set; }
         public DateTime SentOn { get; set; }
-        public string? Error { get; set; }
+        public int TotalCommentReplies { get; set; }
         public ICollection<CommentsReplyDto>? Reply { get; set; }
     }
 

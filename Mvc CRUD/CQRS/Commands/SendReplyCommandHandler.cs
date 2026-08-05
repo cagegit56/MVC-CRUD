@@ -20,6 +20,8 @@ internal sealed class SendReplyCommandHandler : IRequestHandler<SendReplyCommand
         try
         {
             await _context.ReplyComments.AddAsync(request.model);
+            await _context.Comment.Where(x => x.Id == request.model.CommentId)
+                .ExecuteUpdateAsync(d => d.SetProperty(k => k.TotalCommentReplies, p => p.TotalCommentReplies + 1));
             await _context.SaveChangesAsync();
             return true;
         }

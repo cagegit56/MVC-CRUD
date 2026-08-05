@@ -56,13 +56,13 @@
                                     <div class="d-flex">
                                         @if (!string.IsNullOrEmpty(potentialFriend.UserProfilePicUrl))
                                         {
-                                            <img src="@potentialFriend.UserProfilePicUrl" id="profileImg" class="rounded-circle me-1 friend-request-pic"
-                                                    style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />                                             
+                                            <img src="@potentialFriend.UserProfilePicUrl" id="viewProfile" class="rounded-circle me-1 clickable friend-request-pic"
+                                               data-id="@potentialFriend.UserId" style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />                                             
                                         }
                                         else
                                         {
-                                            <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                                style="width:50px; height:50px; font-size:1.5rem;"> @potentialFriend.UserName.Substring(0,1).ToUpper()                                        
+                                            <div id="viewProfile" class="rounded-circle bg-primary clickable text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                data-id="@potentialFriend.UserId" style="width:50px; height:50px; font-size:1.5rem;"> @potentialFriend.UserName.Substring(0,1).ToUpper()                                        
                                             </div>
                                         }                                   
                                         <div class="col">
@@ -145,7 +145,17 @@
         let pageSize = 5;
         let selectedTab = ""; 
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => 
+        {
+            const profile = document.querySelectorAll('#viewProfile');
+            profile.forEach( element => {
+                element.addEventListener("click", (e) => {
+                    const userId = e.target.dataset.id;
+                    const redirectUrl = '@Url.Action("ExternalUserProfile", "Home")';
+                    window.location.href = `${redirectUrl}/?userId=${userId}`;
+                });
+            });
+
             document.getElementById('pageSize').addEventListener('change', handlePageSizeChange);
             
             const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
@@ -273,9 +283,9 @@
                     <div class="card h-card w-100 shadow-sm border-0 p-3" id="row-${friend.id}">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                             <div class="d-flex">
-                                ${friend.userProfilePicUrl ? `<img src="${friend.userProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                ${friend.userProfilePicUrl ? `<img src="${friend.userProfilePicUrl}" id="viewProfile" data-id="${friend.userId}" class="rounded-circle me-1 clickable friend-request-pic"
                                                                     style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                                : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                : ` <div id="viewProfile" data-id="${friend.userId}" class="rounded-circle bg-primary text-white d-flex clickable fw-semibold align-items-center justify-content-center me-1"
                                                         style="width:50px; height:50px; font-size:1.5rem;">
                                                         ${(friend.userName).charAt(0).toUpperCase()}
                                                 </div>`
@@ -306,6 +316,15 @@
                     </div>`;
                 card.appendChild(div);
                 container.appendChild(card);
+            });
+
+            const viewProfile = document.querySelectorAll('#viewProfile');
+            viewProfile.forEach( element => {
+                element.addEventListener("click", (e) => {
+                    const userId = e.target.dataset.id;
+                    const redirectUrl = '@Url.Action("ExternalUserProfile", "Home")';
+                    window.location.href = `${redirectUrl}/?userId=${userId}`;
+                });
             });
 
         }
@@ -375,9 +394,9 @@
                            <div id="row-${friend.id}" class="card h-card w-100 shadow-sm border-0 p-3">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap">
                                     <div class="d-flex">
-                                        ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"
+                                        ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="viewProfile" data-id="${friend.userId}" class="rounded-circle clickable me-1 friend-request-pic"
                                                                         style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                                    : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
+                                                    : ` <div id="viewProfile" data-id="${friend.userId}" class="rounded-circle bg-primary text-white d-flex clickable fw-semibold align-items-center justify-content-center me-1"
                                                             style="width:50px; height:50px; font-size:1.5rem;">
                                                             ${(friend.userName).charAt(0).toUpperCase()}
                                                     </div>`
@@ -408,6 +427,15 @@
                        </div>`;
                 card.appendChild(div);
                 container.appendChild(card);
+            });
+
+            const profileView = document.querySelectorAll('#viewProfile');
+            profileView.forEach( element => {
+                element.addEventListener("click", (e) => {
+                    const userId = e.target.dataset.id;
+                    const redirectUrl = '@Url.Action("ExternalUserProfile", "Home")';
+                    window.location.href = `${redirectUrl}/?userId=${userId}`;
+                });
             });
             
         }       
@@ -476,11 +504,10 @@
                     <div class="card h-card w-100 shadow-sm border-0 p-3" id="row-${friend.id}">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                             <div class="d-flex">
-                                ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="profileImg" class="rounded-circle me-1 friend-request-pic"                                                        style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
-                                            : ` <div class="rounded-circle bg-primary text-white d-flex fw-semibold align-items-center justify-content-center me-1"
-                                                    style="width:50px; height:50px; font-size:1.5rem;">
-                                                    ${(friend.toUserName).charAt(0).toUpperCase()}
-                                            </div>`
+                                ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="viewProfile" data-id="${friend.toUserId}" class="rounded-circle me-1 clickable friend-request-pic"                                                        style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
+                                            : `<div id="viewProfile" data-id="${friend.toUserId}" class="rounded-circle bg-primary text-white d-flex clickable fw-semibold align-items-center justify-content-center me-1"
+                                                    style="width:50px; height:50px; font-size:1.5rem;"> ${(friend.toUserName).charAt(0).toUpperCase()}
+                                                </div>`
                                 }
                                 <div>
                                     <h6 class="fw-bold mb-1">${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'}</h6>
@@ -506,6 +533,16 @@
                 card.appendChild(div);
                 container.appendChild(card);
             });
+
+            const userProfile = document.querySelectorAll('#viewProfile');
+            userProfile.forEach( element => {
+                element.addEventListener("click", (e) => {
+                    const userId = e.target.dataset.id;
+                    const redirectUrl = '@Url.Action("ExternalUserProfile", "Home")';
+                    window.location.href = `${redirectUrl}/?userId=${userId}`;
+                });
+            });
+
         }
 
         const clickEventListeners = 

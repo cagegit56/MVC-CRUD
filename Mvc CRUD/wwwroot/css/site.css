@@ -290,6 +290,10 @@ td.message-cell {
     height: 100vh;
 }
 
+.clickable:hover {
+    cursor: pointer;
+}
+
 
                                             /*  *****************Userprofile CSS*************** */
 .camera-icon {

@@ -33,9 +33,9 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                    UserImageUrl = x.UserImageUrl,
                    Message = x.Message,
                    PostId = x.PostId,
-                   SentOn = x.SentOn,
-                   TotalComment = 
-                   Reply = x.Reply.Take(5).Select(r => new CommentsReplyDto
+                   SentOn = x.SentOn, 
+                   TotalCommentReplies = x.TotalCommentReplies,
+                   Reply = x.Reply.OrderByDescending(s => s.SentOn).Take(5).Select(r => new CommentsReplyDto
                    {
                        Id = r.Id,
                        UserName = r.UserName,
@@ -44,7 +44,8 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                        Message = r.Message,
                        SentOn = r.SentOn,
                        CommentId = r.CommentId,
-                       Replies = r.Replies.Take(5).Select(y => new ReplyOfReplyDto
+                       TotalReplies = r.TotalReplies,
+                       Replies = r.Replies.OrderByDescending(d => d.SentOn).Take(5).Select(y => new ReplyOfReplyDto
                        {
                            Id = y.Id,
                            UserName = y.UserName,
@@ -53,11 +54,12 @@ internal sealed class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery
                            Message = y.Message,
                            ReplyId = y.ReplyId,
                            SentOn = y.SentOn,
-                       }).OrderByDescending(y => y.SentOn).ToList(),
-                   }).OrderByDescending(r => r.SentOn).ToList()
+                       }).ToList(),
+                   }).ToList()
+               }).AsNoTracking().ToListAsync();
 
-               }).OrderByDescending(x => x.SentOn).AsNoTracking().ToListAsync();
             var paginatedRes = await _pagination.Paginate(res, request.pgFilter);
+
             return paginatedRes;
         }
         catch (Exception ex)
