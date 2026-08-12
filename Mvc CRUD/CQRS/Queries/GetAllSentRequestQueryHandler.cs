@@ -26,9 +26,10 @@ namespace Mvc_CRUD.CQRS.Queries;
         {
             try
             {
-                return Result.Ok( await _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(
-                                 _context.FriendRequests.Where(x => x.UserId == _currentUser.UserId 
-                                 && x.Status != "Accepted" && x.isDeleted != true).AsNoTracking(), request.pgFilter));
+                var res = await _context.FriendRequests
+                                 .Where(x => x.UserId == _currentUser.UserId && x.Status == "Pending" && x.isDeleted != true)
+                                 .GroupBy(x => x.ToUserId).Select(k => k.First()).AsNoTracking().ToListAsync();
+                return Result.Ok( _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(res, request.pgFilter));
             }
             catch (Exception ex)
             {

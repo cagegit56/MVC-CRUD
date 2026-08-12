@@ -17,33 +17,33 @@
         <div class="col-md-8 mx-auto">          
             <div class="card shadow-sm border-0 rounded-4 mb-2 gap-0">
                 <div class="card-body">
-                <div class="d-flex align-items-center gap-1 mb-2">                    
-                    @if (!string.IsNullOrEmpty(Model.ProfilePicUrl))
-                    {
-                        <img src="@Model.ProfilePicUrl" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
-                             style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
-                    }
-                    else
-                    {
-                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                             style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
-                            @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
-                        </div>
-                    }
-                    <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
-                        What's on your mind, @(!string.IsNullOrEmpty(Model.UserName) ? char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1) : "User")
-                    </button>
+                    <div class="d-flex align-items-center gap-1 mb-2">                    
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicUrl))
+                        {
+                            <img src="@Model.ProfilePicUrl" data-action="ViewProfile" class="rounded-circle me-2 d-flex align-items-center clickable justify-content-center"
+                                 style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
+                        }
+                        else
+                        {
+                            <div data-action="ViewProfile" class='avatar rounded-circle bg-primary text-white clickable d-flex align-items-center justify-content-center'
+                                 style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
+                            </div>
+                        }
+                        <button type="button" class="form-control text-start text-muted bg-light border-0 rounded-pill py-2" data-action="ToggleCreatePostCard">
+                            What's on your mind, @(!string.IsNullOrEmpty(Model.UserName) ? char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1) : "User")
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-light fw-bold bi bi-camera-video text-danger" data-action="ToggleCreatePostCard"> Live</button>
+                        <button type="button" class="btn btn-light fw-bold" data-action="ToggleCreatePostCard">
+                            <i class="bi bi-images text-success"></i> Photo
+                        </button>
+                        <button type="button" class="btn btn-light fw-bold" data-action="ToggleCreatePostCard">
+                            <i class="bi bi-emoji-smile text-warning"></i> Feeling
+                        </button>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-light fw-bold bi bi-camera-video text-danger" data-action="ToggleCreatePostCard"> Live</button>
-                    <button type="button" class="btn btn-light fw-bold" data-action="ToggleCreatePostCard">
-                        <i class="bi bi-images text-success"></i> Photo
-                    </button>
-                    <button type="button" class="btn btn-light fw-bold" data-action="ToggleCreatePostCard">
-                        <i class="bi bi-emoji-smile text-warning"></i> Feeling
-                    </button>
-                </div>
-            </div>
             </div>
             <br />            
             <div id="justPosted"></div>           
@@ -340,6 +340,11 @@
 
         const eventListenerClickMethods = 
         {
+            ViewProfile(){
+                const redirectUrl = '@Url.Action("UserProfile", "Home")';
+                window.location.href = `${redirectUrl}`;
+            },
+
             async Like(event){
                 const postId = event.target.dataset.id;
                 const icon = event.target.querySelector("i");
@@ -1003,11 +1008,11 @@
                         submitBtn.disabled = true;
                         submitBtn.classList.toggle("d-none", true);
                     } else {
-                        toastr.error("Failed to send a reply due to : ");
+                        toastr.error("Failed to send a reply");
                     }
                 }catch (err) {
                     console.log(err);
-                    toastr.error("Network error. Try again.");
+                    toastr.error("Failed to send a reply. Try again later.");
                 }
 
             }
@@ -1873,9 +1878,9 @@
             const results = await PostsApiRequest.getRepliesOfReply(replyId, pageSize, pageCount);
             const res = results.data;
             let displayReplyOfReply = "";
-            res.map(replyOf => {  
+            displayReplyOfReply = res.map(replyOf => {  
                 const replyOfReplyTime = dateProcessing(replyOf.sentOn);
-                return displayReplyOfReply = `<div class="d-flex mb-2">
+                return `<div class="d-flex mb-2">
                                                 ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
                                                 : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOf.userName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                 <ul class="list-unstyled overflow-hidden px-1">

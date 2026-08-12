@@ -49,8 +49,152 @@
                 <small class="text-muted">1,245 Friends</small>
             </div>
             <div class="d-flex gap-2 mt-3 mt-md-0">
-                <a class="btn btn-primary px-4 rounded-pill" data-bs-toggle="modal" data-bs-target="#storyFormModal">Add Friend</a>
-                <a href="@Url.Action("UpdateUserProfile", "Home")" class="btn btn-light px-4 rounded-pill">Send Message</a>
+                @if(Model.FriendStatus == true)
+                {
+                    <button type="submit" id="addFriendBtn" class="btn btn-primary px-4 rounded-pill">
+                        <i class="bi bi-chat-dots-fill"></i> Chat
+                    </button>
+                    <button type="button" class="btn btn-outline-danger px-3 rounded-pill">
+                        <i class="fa-solid fa-user-minus me-1"></i>Unfriend
+                    </button>
+                }else if(Model.PendingRequest == true)
+                {
+                    if(Model.RequestSentByMe == true)
+                    {
+                        <button id="cancelRequestBtn" data-id="@Model.UserId" class="btn btn-primary px-4 rounded-pill">
+                            <i class="bi bi-hourglass-split"></i> Cancel Request
+                        </button> 
+                        <button type="button" id="sendMessageBtn" class="btn btn-light px-4 rounded-pill p-2">Send Message</button>
+                    }else{
+                        <form id="acceptRequestForm" action="@Url.Action("AcceptRequest", "Home")" enctype="multipart/form-data">
+                            <input type="hidden" name="FriendId" value="@Model.UserId" />
+                            <input type="hidden" name="FriendName" value="@Model.UserName" />
+                            <button type="submit" id="acceptRequestBtn" class="btn btn-primary px-4 rounded-pill">
+                                <i class="bi bi-hourglass-split"></i> Accept Request
+                            </button>
+                        </form> 
+                        <button type="button" id="rejectRequestBtn" data-id="@Model.UserId" class="btn btn-outline-danger px-3 rounded-pill">
+                            <i class="fa-solid fa-user-minus me-1"></i>Reject request
+                        </button>
+                    }                                    
+                }else {
+                    <form id="addFriendForm" action="@Url.Action("SendFriendRequest", "Home")" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="ToUserId" value="@Model.UserId" />
+                        <input type="hidden" name="ToUserName" value="@Model.UserName" />
+                        <input type="hidden" name="ToUser_LastName" value="@Model.LastName" />
+                        <input type="hidden" name="ToUser_ProfilePicUrl" value="@Model.UserProfilePicUrl" />
+                        <input type="hidden" name="ToUserEmail" value="@Model.Email" />
+                        <button type="submit" id="addFriendBtn" class="btn btn-primary px-4 rounded-pill">
+                            <i class="fa-solid fa-user-plus me-1"></i>Add Friend
+                        </button>
+                    </form> 
+                    <button type="button" id="sendMessageBtn" class="btn btn-light px-4 rounded-pill p-2">Send Message</button>
+                }   
+                <div class="send-msg-menu d-none position-fixed bottom-0 end-0" id="sendMessageMenu">
+                    <div class="input group">                      
+                         <div class="card shadow-sm border-0 rounded-4 gap-0">
+                             <div class="position-relative">
+                                 <div class="position-absolute end-0">
+                                     <i class="bi bi-globe-central-south-asia clickable" id="minimizeMsgPopUp"></i>
+                                     <i class="bi bi-x-lg m-1 clickable" id="closeMsgPopUp"></i>
+                                 </div>                                
+                             </div>
+                                <div class="card-body" id="msgCardSlide">
+                                    <div class="d-flex align-items-center mb-2">
+                                        @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
+                                        {
+                                            <img src="@Model.UserProfilePicUrl" class="rounded-circle" style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
+                                        }
+                                        else
+                                        {
+                                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                                    style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                                @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
+                                            </div>
+                                        }
+                                        <div class="col ms-1">
+                                            <h6 class="mb-0 fw-bold">
+                                                @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) @(char.ToUpper(Model.LastName[0]) + Model.LastName.Substring(1)) <i class="bi bi-globe text-muted"></i>
+                                            </h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-2" style="height: 337px">
+                            <div class="text-center text-muted mt-5">No conversations yet.</div>
+                        </div>
+                        <div class="mt-auto input-group">
+                            @if (!string.IsNullOrEmpty(Model.CurrentUserProfilePicUrl))
+                            {
+                                <img src="@Model.CurrentUserProfilePicUrl" class="rounded-circle me-2 ms-1" style="width: 36px; height: 36px;">
+                            }
+                            else
+                            {
+                                <div class="avatar rounded-circle me-2 bg-primary text-white ms-1" style="width: 36px; height: 36px;">
+                                    @(!string.IsNullOrEmpty(Model.CurrentUserName) ? Model.CurrentUserName.Substring(0, 1).ToUpper() : "XX")
+                                </div>
+                            }
+                            <input type="text" name="Message" id="sendMessageInput" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                   placeholder="Write a message..." autocomplete="off">
+                            <button type="button" class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                @* <div class="send-msg-menu d-none position-fixed bottom-0 end-0" id="sendMessageMenu">
+                    <div class="position-relative clickable" id="closeMsgPopUp">
+                        <i class="bi bi-x-lg position-absolute end-0 m-2"></i>
+                    </div>
+                    <div class="d-flex flex-column p-3">
+                        <div class="card shadow-sm border-0 rounded-4 mt-4 gap-0">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
+                                    {
+                                        <img src="@Model.UserProfilePicUrl" class="rounded-circle" style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
+                                    }
+                                    else
+                                    {
+                                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                             style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                            @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
+                                        </div>
+                                    }
+                                    <div class="col ms-1">
+                                        <h6 class="mb-0 fw-bold">
+                                            @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) @(char.ToUpper(Model.LastName[0]) + Model.LastName.Substring(1))
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-2" style="height: 305px">
+                            <div class="text-center text-muted mt-5">No conversations yet.</div>
+                        </div>
+                        <div class="mt-auto input-group">
+                            @if (!string.IsNullOrEmpty(Model.CurrentUserProfilePicUrl))
+                            {
+                                <img src="@Model.CurrentUserProfilePicUrl" class="rounded-circle me-2" style="width: 36px; height: 36px;">
+                            }
+                            else
+                            {
+                                <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">
+                                    @(!string.IsNullOrEmpty(Model.CurrentUserName) ? Model.CurrentUserName.Substring(0, 1).ToUpper() : "XX")
+                                </div>
+                            }
+                            <input type="text" name="Message" id="sendMessageInput" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                   placeholder="Write a message..." autocomplete="off">
+                            <button type="button" class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div> *@
+                
             </div>
         </div>
         <hr />
@@ -148,6 +292,13 @@
 
 <script>
     const userId = "@Model.UserId";
+    const currentUserId = "@Model.CurrentUserId";
+    if (userId === currentUserId)
+    {
+        const redirectUrl = '@Url.Action("UserProfile", "Home")';
+        window.location.href = `${redirectUrl}`;
+    }
+    
     const pageNumber = 1;
     const pageSize = 5;
 
@@ -203,9 +354,122 @@
                     content.insertAdjacentHTML('beforeend', postInfo);
              });
         }); 
-    });   
+    }); 
+
+    const sendMsg = document.getElementById("sendMessageBtn");
+    if (sendMsg)
+    {
+        const menu = document.getElementById("sendMessageMenu");
+        sendMsg.addEventListener("click", e => {
+            e.stopPropagation();      
+            menu.classList.contains("d-none") ? menu.classList.remove("d-none") : menu.classList.add("d-none");
+            const input = document.getElementById("sendMessageInput");
+            input.focus();           
+        });
+
+         // document.addEventListener("click", () => {
+         //     menu.style.display = "none";
+         // });
+    }
+
+    const closeBtn = document.getElementById("closeMsgPopUp");
+    if (closeBtn)
+    {
+        closeBtn.addEventListener("click", e => {
+            document.getElementById("sendMessageMenu").classList.add("d-none");
+        });        
+    }  
     
-        
+    const minimizeMsgCard = document.getElementById("minimizeMsgPopUp");
+    if (minimizeMsgCard)
+    {
+        minimizeMsgCard.addEventListener("click", e => {
+            document.getElementById("sendMessageMenu").style.height = "90px";
+        });
+    }
+
+    const msgSlideDirection = document.getElementById("msgCardSlide");
+    if (msgSlideDirection)
+    {
+        msgSlideDirection.addEventListener("click", e => {
+            document.getElementById("sendMessageMenu").style.height = "350px";
+        });
+    }
+
+    const cancelRequest = document.getElementById("cancelRequestBtn");
+    if (cancelRequest)
+    {
+        cancelRequest.addEventListener("click", async (e) =>{
+            const userId = e.target.dataset.id;
+            const results = await fetch(`/Home/RejectRequest?friendUserId=${userId}`, { method: "PUT"} );
+            const res = await results.json();
+            if (res.success)
+            {
+                toastr.success("Request successfully cancelled.")
+                cancelRequest.disabled = true;
+            }else {
+                toastr.error("Failed to cancel friend request.")
+            }
+        });        
+    }
+
+    const rejectRequest = document.getElementById("rejectRequestBtn");
+    if (rejectRequest) 
+    {
+        rejectRequest.addEventListener("click", async (e) => {
+            const userId = e.target.dataset.id;
+            const results = await fetch(`/Home/RejectRequest?friendUserId=${userId}`, { method: "PUT" });
+            const res = await results.json();
+            if (res.success) {
+                toastr.success("Request successfully rejected.")
+                rejectRequest.disabled = true;
+                document.getElementById("acceptRequestBtn").disabled = true;
+            } else {
+                toastr.error("Failed to reject friend request.")
+            }
+        });
+    }
+
+
+    const addFriendForm = document.getElementById("addFriendForm");
+    if (addFriendForm)
+    {
+        addFriendForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            try
+            {
+                const res = await fetch(form.action, { method: "POST", body: new FormData(form) });
+                if(res.ok)
+                { 
+                    document.getElementById("addFriendBtn").disabled = true;
+                    toastr.success("Friend Request SuccessFully sent.");
+                }else { 
+                    toastr.error("Failed to send request.");
+                }
+            }catch(error){
+                toastr.error("Failed to send request, Please try again later.");
+            }
+        });
+    }
+
+    const acceptRequestForm = document.getElementById("acceptRequestForm");
+    if (acceptRequestForm)
+    {
+        acceptRequestForm.addEventListener("submit", async (e) =>{
+            e.preventDefault();
+            const form = e.target;
+            const res = await fetch(form.action, { method: "POST", body: new FormData(form) } );
+            if (res.ok){
+                toastr.success("Successfully Accepted.");
+                document.getElementById("acceptRequestBtn").disabled = true;
+                document.getElementById("rejectRequestBtn").disabled = true;
+            }else{
+                toastr.error("Failed to accept request.");
+            }
+        });
+    }    
+    
 </script>
 
 

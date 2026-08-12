@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -72,7 +73,6 @@ namespace Mvc_CRUD.Services;
             var response = CreatePaginatedResponse(mappedData, totalRecords, filter);
             return response;
         }
-
 
         private static IQueryable<T> ApplySorting<T>(IQueryable<T> query, string? sortBy, string? sortDirection)
         {

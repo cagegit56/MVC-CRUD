@@ -33,8 +33,8 @@ internal sealed class BlockUserCommandHandler : IRequestHandler<BlockUserCommand
                 return Result.Fail("current userid and username cannot be null.");
             }
 
-            //await _context.AddAsync(command.model);
-            //await _context.SaveChangesAsync(cancellationToken);
+            await _context.AddAsync(command.model);
+            await _context.SaveChangesAsync(cancellationToken);
             return Result.Ok("SuccessFully blocked.");
         }
         catch (Exception ex)

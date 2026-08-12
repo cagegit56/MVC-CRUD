@@ -494,8 +494,22 @@ td.message-cell {
     }
 }
 
+/* ***********************************External userprofile******************************/
 
 
+.send-msg-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    height: 500px;
+    min-width: 35%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 9999;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
 
 

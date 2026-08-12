@@ -64,6 +64,7 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
                         }).ToList()
                     })
                     .AsNoTracking().ToListAsync(cancellationToken);
+            if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
             var paginatedRes = await _paginatation.Paginate(results, request.pgFilter);
             paginatedRes.UserName = CurrentUser.UserName;
             paginatedRes.LastName = CurrentUser.LastName;

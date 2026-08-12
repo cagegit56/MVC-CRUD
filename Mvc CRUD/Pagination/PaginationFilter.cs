@@ -10,19 +10,19 @@
         public int PageSize
         {
             get => _pageSize;
-            set => _pageSize = (value > 5) ? 5 : value;
+            set => _pageSize = (value > 50) ? 50 : value;
         }
 
         public PaginationFilter()
         {
             PageNumber = 1;
-            PageSize = 5;
+            PageSize = 50;
         }
 
         public PaginationFilter(int pageNumber, int pageSize, string sortBy, string sortDirection)
         {
             PageNumber = pageNumber < 1 ? 1 : pageNumber;
-            PageSize = pageSize > 5 ? 5 : pageSize;
+            PageSize = pageSize > 50 ? 50 : pageSize;
             SortBy = sortBy;
             SortDirection = sortDirection;
         }

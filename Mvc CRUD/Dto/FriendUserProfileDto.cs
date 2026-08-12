@@ -9,6 +9,8 @@
         public string? Email { get; set; }
         public string? UserProfilePicUrl { get; set; }
         public string? Errors { get; set; }
+        public DateTime CreatedOn { get;}
+        public bool? IsDeleted { get;}
 
     }
 
