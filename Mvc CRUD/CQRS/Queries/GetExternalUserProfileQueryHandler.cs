@@ -44,7 +44,7 @@ namespace Mvc_CRUD.CQRS.Queries;
                 var friendRequestStatus = await _context.FriendRequests
                                            .Where(x => ( (x.UserId == currentUser.UserId && x.ToUserId == request.userId) 
                                            || (x.UserId == request.userId && x.ToUserId == currentUser.UserId) )
-                                           && x.Status == "Pending" && x.isDeleted != true).FirstOrDefaultAsync();
+                                           && x.Status == "Pending" && !x.isDeleted).FirstOrDefaultAsync();
                 if (friendRequestStatus != null) 
                 {
                     mappedRes.PendingRequest = true;

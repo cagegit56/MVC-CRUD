@@ -92,65 +92,14 @@
                 }   
                 <div class="send-msg-menu d-none position-fixed bottom-0 end-0" id="sendMessageMenu">
                     <div class="input group">                      
-                         <div class="card shadow-sm border-0 rounded-4 gap-0">
-                             <div class="position-relative">
-                                 <div class="position-absolute end-0">
-                                     <i class="bi bi-globe-central-south-asia clickable" id="minimizeMsgPopUp"></i>
-                                     <i class="bi bi-x-lg m-1 clickable" id="closeMsgPopUp"></i>
-                                 </div>                                
-                             </div>
-                                <div class="card-body" id="msgCardSlide">
-                                    <div class="d-flex align-items-center mb-2">
-                                        @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
-                                        {
-                                            <img src="@Model.UserProfilePicUrl" class="rounded-circle" style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
-                                        }
-                                        else
-                                        {
-                                            <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                                                    style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
-                                                @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
-                                            </div>
-                                        }
-                                        <div class="col ms-1">
-                                            <h6 class="mb-0 fw-bold">
-                                                @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) @(char.ToUpper(Model.LastName[0]) + Model.LastName.Substring(1)) <i class="bi bi-globe text-muted"></i>
-                                            </h6>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="card shadow-sm border-0 rounded-4 gap-0">
+                            <div class="position-relative">
+                                <div class="position-absolute end-0">
+                                    <i class="bi bi-dash-lg clickable" id="minimizeMsgPopUp"></i>
+                                    <i class="bi bi-x-lg m-1 clickable" id="closeMsgPopUp"></i>
+                                </div>                                
                             </div>
-                        </div>
-                        <hr class="dropdown-divider">
-                        <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-2" style="height: 337px">
-                            <div class="text-center text-muted mt-5">No conversations yet.</div>
-                        </div>
-                        <div class="mt-auto input-group">
-                            @if (!string.IsNullOrEmpty(Model.CurrentUserProfilePicUrl))
-                            {
-                                <img src="@Model.CurrentUserProfilePicUrl" class="rounded-circle me-2 ms-1" style="width: 36px; height: 36px;">
-                            }
-                            else
-                            {
-                                <div class="avatar rounded-circle me-2 bg-primary text-white ms-1" style="width: 36px; height: 36px;">
-                                    @(!string.IsNullOrEmpty(Model.CurrentUserName) ? Model.CurrentUserName.Substring(0, 1).ToUpper() : "XX")
-                                </div>
-                            }
-                            <input type="text" name="Message" id="sendMessageInput" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                   placeholder="Write a message..." autocomplete="off">
-                            <button type="button" class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                @* <div class="send-msg-menu d-none position-fixed bottom-0 end-0" id="sendMessageMenu">
-                    <div class="position-relative clickable" id="closeMsgPopUp">
-                        <i class="bi bi-x-lg position-absolute end-0 m-2"></i>
-                    </div>
-                    <div class="d-flex flex-column p-3">
-                        <div class="card shadow-sm border-0 rounded-4 mt-4 gap-0">
-                            <div class="card-body">
+                            <div class="card-body" id="msgCardSlide">
                                 <div class="d-flex align-items-center mb-2">
                                     @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
                                     {
@@ -159,42 +108,44 @@
                                     else
                                     {
                                         <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
-                                             style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
+                                                style='width:45px; height:45px; font-size: 17px; font-weight: bold;'>
                                             @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
                                         </div>
                                     }
                                     <div class="col ms-1">
                                         <h6 class="mb-0 fw-bold">
-                                            @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) @(char.ToUpper(Model.LastName[0]) + Model.LastName.Substring(1))
+                                            @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) @(char.ToUpper(Model.LastName[0]) + Model.LastName.Substring(1)) <i class="bi bi-globe text-muted"></i>
                                         </h6>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <hr class="dropdown-divider">
-                        <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-2" style="height: 305px">
-                            <div class="text-center text-muted mt-5">No conversations yet.</div>
+                    </div>
+                    <hr class="dropdown-divider">
+                    <div class="px-2">
+                        <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-3" style="height: 337px">                            
+                            <div class="mt-5" id="messageContent"></div>
                         </div>
-                        <div class="mt-auto input-group">
+                        <form class="mt-auto input-group" id="sendMessageForm" action="@Url.Action("SendMessage", "Home")" method="post" enctype="multipart/form-data">
                             @if (!string.IsNullOrEmpty(Model.CurrentUserProfilePicUrl))
                             {
                                 <img src="@Model.CurrentUserProfilePicUrl" class="rounded-circle me-2" style="width: 36px; height: 36px;">
                             }
                             else
                             {
-                                <div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">
+                                <div class="avatar rounded-circle me-2 bg-primary text-white ms-1" style="width: 36px; height: 36px;">
                                     @(!string.IsNullOrEmpty(Model.CurrentUserName) ? Model.CurrentUserName.Substring(0, 1).ToUpper() : "XX")
                                 </div>
                             }
-                            <input type="text" name="Message" id="sendMessageInput" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                   placeholder="Write a message..." autocomplete="off">
-                            <button type="button" class="btn btn-primary btn-sm rounded-pill ms-2 px-3">
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
+                            <input type="hidden" name="ToUserName" value="@Model.UserName" />
+                            <input type="hidden" name="ToUserId" value="@Model.UserId" />
+                            <input type="hidden" name="ToLastName" value="@Model.LastName" />
+                            <input type="hidden" name="ToUserProfilePicUrl" value="@Model.UserProfilePicUrl" />
+                            <input type="text" name="Message" id="sendMessageInput" class="form-control form-control-sm rounded-pill flex-grow-1" placeholder="Write a message..." autocomplete="off">
+                            <button type="submit" id="sendMsgBtn" class="btn btn-primary d-none btn-sm rounded-pill ms-2 px-3"> <i class="bi bi-send"></i></button>
+                        </form>
                     </div>
-                </div> *@
-                
+                </div>                
             </div>
         </div>
         <hr />
@@ -292,20 +243,22 @@
 
 <script>
     const userId = "@Model.UserId";
+    const currentUserName = "@Model.CurrentUserName";
     const currentUserId = "@Model.CurrentUserId";
+    const pageNumber = 1;
+    const pageSize = 5;
+    let minimizedMsgCard = false;
+
     if (userId === currentUserId)
     {
         const redirectUrl = '@Url.Action("UserProfile", "Home")';
         window.location.href = `${redirectUrl}`;
-    }
-    
-    const pageNumber = 1;
-    const pageSize = 5;
+    }   
 
     document.addEventListener("DOMContentLoaded", function(){
 
-        fetch(`/Home/ExternalUsersPosts/?userId=${userId}&pageSize=${pageSize}&pageNumber=${pageNumber}`, {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  })
-       .then( response => {
+       fetch(`/Home/ExternalUsersPosts/?userId=${userId}&pageSize=${pageSize}&pageNumber=${pageNumber}`, {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  })
+        .then( response => {
            return response.json();                        
         }).then( results =>{
             if (results.error) 
@@ -353,8 +306,10 @@
                         </div>`;
                     content.insertAdjacentHTML('beforeend', postInfo);
              });
-        }); 
-    }); 
+        });     
+
+        
+    });    
 
     const sendMsg = document.getElementById("sendMessageBtn");
     if (sendMsg)
@@ -364,13 +319,59 @@
             e.stopPropagation();      
             menu.classList.contains("d-none") ? menu.classList.remove("d-none") : menu.classList.add("d-none");
             const input = document.getElementById("sendMessageInput");
-            input.focus();           
-        });
+            input.focus(); 
+            
+            try 
+            {
+                fetch(`@Url.Action("ExternalUsersMessages", "Home")?userId=${encodeURIComponent(userId)}&pageSize=${pageSize}&pageNumber=${pageNumber}`, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } })
+                    .then(response => {
+                        return response.json();
+                    }).then(results => {
+                        const res = results.data;
+                        if (res.length === 0) 
+                        {
+                           return document.getElementById("messageContent").innerHTML = `<div class="text-center text-muted mt-5" id="noConvo">No conversations yet.</div>`;
+                        }
+                        const msgView = res.map(msg => {
+                            const sentByMe = msg.userName === currentUserName;
+                            return `<div class="d-flex ${sentByMe ? 'justify-content-end px-2' : ''}">
+                                            ${sentByMe ? "" : `<div class='me-2 flex-shrink-0'>
+                                                                    <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                                                        style='width:40px; height:40px; min-width:40px; min-height:40px;'>
+                                                                        ${msg.userName.charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                </div>` }
+                                             <div style="max-width:100%;">
+                                                  <div class="card shadow-sm ${sentByMe ? 'bg-primary text-white' : 'bg-white'}"
+                                                   style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
+                                                 <div class="card-body p-2 small">${msg.message}</div>
+                                              </div>
+                                              <div class="small text-muted mt-1">
+                                                ${new Date(msg.sentOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                              </div>
+                                            </div>
+                                          </div>`;
+                        }).join("");
+                        document.getElementById("messageContent").innerHTML = msgView;
+                    });
+            } catch (error) {
+                document.getElementById("messageContent").innerHTML = `<div class="text-center">
+                                                                                <p class="text-muted mb-2">Please refresh or try again later. </p>
+                                                                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                                </button>
+                                                                            </div>`;
+            }  
 
-         // document.addEventListener("click", () => {
-         //     menu.style.display = "none";
-         // });
-    }
+            document.addEventListener("click", (e) => {
+                if (!menu.contains(e.target)) 
+                {
+                    if (minimizedMsgCard) return;
+                    menu.classList.add("d-none");
+                }
+            });
+        });  
+    }   
 
     const closeBtn = document.getElementById("closeMsgPopUp");
     if (closeBtn)
@@ -385,6 +386,7 @@
     {
         minimizeMsgCard.addEventListener("click", e => {
             document.getElementById("sendMessageMenu").style.height = "90px";
+            minimizedMsgCard = true;
         });
     }
 
@@ -392,7 +394,8 @@
     if (msgSlideDirection)
     {
         msgSlideDirection.addEventListener("click", e => {
-            document.getElementById("sendMessageMenu").style.height = "350px";
+            document.getElementById("sendMessageMenu").style.height = "500px";
+            minimizedMsgCard = false;
         });
     }
 
@@ -430,6 +433,17 @@
         });
     }
 
+    const sendMsgInput = document.getElementById("sendMessageInput");
+    if (sendMsgInput) 
+    {
+        sendMsgInput.addEventListener("input", e =>{
+            const button = document.getElementById("sendMsgBtn");
+            if (!button) return;
+            button.classList.toggle("d-none", e.target.value.trim() === "");
+            button.disabled = false;
+        });       
+    }
+
 
     const addFriendForm = document.getElementById("addFriendForm");
     if (addFriendForm)
@@ -439,8 +453,9 @@
             const form = e.target;
             try
             {
-                const res = await fetch(form.action, { method: "POST", body: new FormData(form) });
-                if(res.ok)
+                const results = await fetch(form.action, { method: "POST", body: new FormData(form) });
+                const res = await results.json();
+                if(res.success)
                 { 
                     document.getElementById("addFriendBtn").disabled = true;
                     toastr.success("Friend Request SuccessFully sent.");
@@ -459,8 +474,9 @@
         acceptRequestForm.addEventListener("submit", async (e) =>{
             e.preventDefault();
             const form = e.target;
-            const res = await fetch(form.action, { method: "POST", body: new FormData(form) } );
-            if (res.ok){
+            const results = await fetch(form.action, { method: "POST", body: new FormData(form) } );
+            const res = await results.json();
+            if (res.success){
                 toastr.success("Successfully Accepted.");
                 document.getElementById("acceptRequestBtn").disabled = true;
                 document.getElementById("rejectRequestBtn").disabled = true;
@@ -468,7 +484,39 @@
                 toastr.error("Failed to accept request.");
             }
         });
-    }    
+    }  
+    
+    const messageForm = document.getElementById("sendMessageForm");
+    if (messageForm) 
+    {
+        messageForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const message = formData.get("Message");
+            const results = await fetch(form.action , {method: "POST", body: formData});
+            const res = await results.json();
+            if (res.success)
+            {
+                const displayer = document.getElementById("messageContent");
+                displayer.insertAdjacentHTML("afterbegin", ` 
+                                                  <div class="d-flex justify-content-end px-2">                                                   
+                                                     <div style="max-width:100%;">
+                                                          <div class="card shadow-sm bg-primary text-white"
+                                                               style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
+                                                                 <div class="card-body text-truncate p-2 small">${message}</div>
+                                                          </div>
+                                                          <div class="small text-muted mt-1">now</div>
+                                                      </div>
+                                                   </div>`);
+                document.getElementById("sendMessageInput").value = null;
+                document.getElementById("sendMsgBtn").classList.toggle("d-none");
+                document.getElementById("noConvo").style.display = "none";
+            }else {
+                toastr.error("Failed to send message");
+            }
+        });
+    }
     
 </script>
 

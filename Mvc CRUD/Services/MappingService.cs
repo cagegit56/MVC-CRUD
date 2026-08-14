@@ -15,6 +15,7 @@ namespace Mvc_CRUD.Services;
           CreateMap<UserProfile, FriendUserProfileDto>();
           CreateMap<CommentsReply, CommentsReplyDto>();
           CreateMap<ReplyOfReply, ReplyOfReplyDto>();
+          CreateMap<Chat, ExternalUserMessagesDto>();
         }
     }
 

@@ -38,7 +38,7 @@ internal sealed class GetAllQueryHandler : IRequestHandler<GetAllQuery, Paginate
             if (!string.IsNullOrEmpty(request.SearchFilter))
             {
                 queryData = queryData.Where(x => x.UserName.Contains(request.SearchFilter, StringComparison.OrdinalIgnoreCase) ||
-                    x.ToUser.Contains(request.SearchFilter, StringComparison.OrdinalIgnoreCase) ||
+                    x.ToUserName.Contains(request.SearchFilter, StringComparison.OrdinalIgnoreCase) ||
                     x.Message.Contains(request.SearchFilter, StringComparison.OrdinalIgnoreCase));
             }
 

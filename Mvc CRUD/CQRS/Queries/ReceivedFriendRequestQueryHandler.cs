@@ -28,7 +28,7 @@ internal sealed class ReceivedFriendRequestQueryHandler : IRequestHandler<Receiv
         {
             return Result.Ok( await _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(
                             _context.FriendRequests.Where(x => x.ToUserId == _currentUser.UserId 
-                            && x.Status == "Pending" && x.isDeleted != true).AsNoTracking(), request.pgFilter));
+                            && x.Status == "Pending" && !x.isDeleted).AsNoTracking(), request.pgFilter));
         }
         catch (Exception ex) 
         {

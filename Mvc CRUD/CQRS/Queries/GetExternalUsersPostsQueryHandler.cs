@@ -24,11 +24,12 @@ namespace Mvc_CRUD.CQRS.Queries;
         {
             if (string.IsNullOrEmpty(request.userId)) 
                 return new PaginateResponse<List<PostsDto>>() { Error = "UserId Cannot be null or empty." };
+
             try
             {
                 var res = await _context.Post
-                    .Where(x => x.UserId == request.userId && x.PostScope == "Public")
-                    .AsNoTracking().ToListAsync();
+                          .Where(x => x.UserId == request.userId && x.PostScope == "Public").AsNoTracking().ToListAsync();
+                 if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
                 var paginatedRes = _pagination.PaginateAndMap<Posts, PostsDto>(res, request.pgFilter);
                 return paginatedRes;
             }
@@ -36,7 +37,7 @@ namespace Mvc_CRUD.CQRS.Queries;
             {
                 _logger.LogError($"Failed to return external user's posts due to {ex.Message}.");
                 return new PaginateResponse<List<PostsDto>>() { Error = "Failed to return external user's posts." };
-        }
+            }
         }
     }
 

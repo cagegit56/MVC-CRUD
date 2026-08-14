@@ -39,7 +39,7 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
                                     .Where(p => !_context.FriendRequests
                                         .Any(r => (r.UserId == _currentUser.UserId && r.ToUserId == p.UserId) 
                                                   && (r.Status == "Pending" || r.Status == "Rejected")
-                                                  && r.isDeleted == false ))
+                                                  && !r.isDeleted ))
                                     .AsSplitQuery().AsNoTracking(), request.pgFilter));
         }
         catch (Exception ex) 

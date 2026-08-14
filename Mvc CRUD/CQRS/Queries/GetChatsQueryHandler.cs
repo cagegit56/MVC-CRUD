@@ -18,12 +18,13 @@ namespace Mvc_CRUD.CQRS.Queries;
        {
            try
            {
-               var chats = await _context.Chats.Where(x => _context.Friends.Any(f => f.UserId == _currentUser.UserId 
-                               && ( (x.UserName == _currentUser.UserName && x.ToUser == f.FriendName) 
-                               || (x.ToUser == _currentUser.UserName && x.UserName == f.FriendName)) )).AsSplitQuery().AsNoTracking().ToListAsync();
-               var chatFrnd = chats.Select(x => x.UserName == _currentUser.UserName ? x.ToUser : x.UserName).ToList();
-               var noChat = await _context.Friends.Where(x => x.UserId == _currentUser.UserId 
-                                   && !chatFrnd.Contains(x.FriendName)).ToListAsync();
+               var chats = await _context.Chats.Where(x => (x.UserId == _currentUser.UserId || x.ToUserId == _currentUser.UserId) 
+                               || _context.Friends.Any(f => f.UserId == _currentUser.UserId 
+                                     && ( (x.UserName == _currentUser.UserName && x.ToUserName == f.FriendName) 
+                               || (x.ToUserName == _currentUser.UserName && x.UserName == f.FriendName)) )).AsSplitQuery().AsNoTracking().ToListAsync();
+               var chatFrnd = chats.Select(x => x.UserName == _currentUser.UserName ? x.ToUserName : x.UserName).ToList();
+               var noChat = await _context.Friends
+                             .Where(x => x.UserId == _currentUser.UserId && !chatFrnd.Contains(x.FriendName)).ToListAsync();
                var res = new List<Chat>();
                    if (noChat.Count() != 0)
                    {
@@ -32,7 +33,7 @@ namespace Mvc_CRUD.CQRS.Queries;
                            var emptyMsg = new Chat()
                            {
                                UserName = _currentUser.UserName!,
-                               ToUser = user.FriendName,
+                               ToUserName = user.FriendName,
                                Message = $"You are now Friends with {char.ToUpper(user.FriendName[0]) + user.FriendName.Substring(1)} Send a Message to Start a Chat.",
                                SentOn = user.CreatedOn,
                            };
@@ -45,9 +46,9 @@ namespace Mvc_CRUD.CQRS.Queries;
                    if (!string.IsNullOrEmpty(response.ToFriend))
                    {
                        res = res.Where(x => (x.UserName.Equals(_currentUser.UserName, StringComparison.OrdinalIgnoreCase) 
-                                  && x.ToUser.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase))
+                                  && x.ToUserName.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase))
                                   || (x.UserName.Equals(response.ToFriend, StringComparison.OrdinalIgnoreCase) 
-                                  && x.ToUser.Equals(_currentUser.UserName, StringComparison.OrdinalIgnoreCase)))
+                                  && x.ToUserName.Equals(_currentUser.UserName, StringComparison.OrdinalIgnoreCase)))
                                   .OrderBy(x => x.SentOn).ToList();
                        return res;
                    }

@@ -62,10 +62,10 @@ public class DataDbContext : DbContext
                 .HasIndex(x => x.UserId);
 
                modelBuilder.Entity<Chat>()
-                .HasIndex(f => new {f.UserName, f.ToUser});
+                .HasIndex(f => new {f.UserName, f.ToUserName });
           
                modelBuilder.Entity<Chat>()
-                .HasIndex(f => new {f.ToUser, f.UserName});
+                .HasIndex(f => new {f.ToUserName, f.UserName});
              
                modelBuilder.Entity<Comments>()
                 .HasIndex(f => f.PostId);

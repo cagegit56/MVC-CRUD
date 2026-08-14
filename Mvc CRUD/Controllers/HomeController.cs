@@ -135,8 +135,8 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendMessage(Chat model)
         {
             var res = await _mediator.Send(new SendMessageCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a message." });
-            return Json(new { success = true, message = "Successfully Sent." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "success" });
         }
 
         [Authorize]
@@ -239,6 +239,14 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> ExternalUsersPosts(string userId, PaginationFilter pgFilter)
         {
             var res = await _mediator.Send(new GetExternalUsersPostsQuery(userId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUsersMessages(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUserMessagesQuery(userId, pgFilter));
             return Json(res);
         }
 
