@@ -23,5 +23,7 @@
         public string? JobTitle { get; set; }
         public string? Industry { get; set; }
         public string? JobPeriod { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public bool? IsDeleted { get; set; } = false;
     }
 

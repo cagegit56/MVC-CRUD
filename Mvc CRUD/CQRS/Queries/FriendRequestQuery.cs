@@ -6,5 +6,5 @@ using Mvc_CRUD.Pagination;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-    public record FriendRequestQuery(PaginationFilter pgFilter) : IRequest<Result<PaginateResponse<List<UserProfile>>>>;
+    public record FriendRequestQuery(PaginationFilter pgFilter) : IRequest<Result<PaginateResponse<List<FriendUserProfileDto>>>>;
 

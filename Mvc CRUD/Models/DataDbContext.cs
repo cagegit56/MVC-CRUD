@@ -21,21 +21,21 @@ public class DataDbContext : DbContext
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-              
-               modelBuilder.Entity<Likes>()
-                .HasOne<Posts>()
-                .WithMany(x => x.PostLikes)
+            base.OnModelCreating(modelBuilder);            
+
+               modelBuilder.Entity<Posts>()
+                .HasMany(l => l.PostLikes)
+                .WithOne(p => p.Post)
                 .HasForeignKey(k => k.PostId);
 
-               modelBuilder.Entity<CommentsReply>()
-                .HasOne(r => r.Comment)
-                .WithMany(c => c.Reply)
+               modelBuilder.Entity<Comments>()
+                .HasMany(r => r.Reply)
+                .WithOne(c => c.Comment)
                 .HasForeignKey(r => r.CommentId);
 
-               modelBuilder.Entity<ReplyOfReply>()
-                .HasOne(r => r.CommentReplies)
-                .WithMany(c => c.Replies)
+                modelBuilder.Entity<CommentsReply>()
+                .HasMany(x => x.Replies)
+                .WithOne(c => c.CommentReplies)
                 .HasForeignKey(r => r.ReplyId);
 
                 //  *********** Database Indexes **************
@@ -62,10 +62,10 @@ public class DataDbContext : DbContext
                 .HasIndex(x => x.UserId);
 
                modelBuilder.Entity<Chat>()
-                .HasIndex(f => new {f.UserName, f.ToUser});
+                .HasIndex(f => new {f.UserName, f.ToUserName });
           
                modelBuilder.Entity<Chat>()
-                .HasIndex(f => new {f.ToUser, f.UserName});
+                .HasIndex(f => new {f.ToUserName, f.UserName});
              
                modelBuilder.Entity<Comments>()
                 .HasIndex(f => f.PostId);

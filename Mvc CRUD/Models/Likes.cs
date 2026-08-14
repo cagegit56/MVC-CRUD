@@ -8,6 +8,7 @@
         public string? UserProfilePicUrl { get; set; }
         public int PostId { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public Posts? Post { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
     }
 

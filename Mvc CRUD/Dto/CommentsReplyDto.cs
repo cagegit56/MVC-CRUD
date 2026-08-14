@@ -11,6 +11,7 @@ namespace Mvc_CRUD.Dto;
         public string? Message { get; set; }
         public string? ImageContentUrl { get; set; }
         public int CommentId { get; set; }
+        public int TotalReplies { get; set; } = 0;
         public DateTime SentOn { get; set; } = DateTime.UtcNow;
         public ICollection<ReplyOfReplyDto>? Replies { get; set; }
     }

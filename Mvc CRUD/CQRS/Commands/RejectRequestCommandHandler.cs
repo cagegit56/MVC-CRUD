@@ -20,26 +20,33 @@ namespace Mvc_CRUD.CQRS.Commands;
         }
        public async Task<Result> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
        {
-          if (string.IsNullOrEmpty(command.toUserId))
-              return Result.Fail("ToUserId cannot be null.");
-          try
-          {
-            var res = await _context.FriendRequests.Where(x => 
-                            ((x.UserId == _currentUser.UserId && x.ToUserId == command.toUserId) 
-                            || (x.UserId == command.toUserId && x.ToUserId == _currentUser.UserId)) 
-                            && !x.isDeleted )
-                .ExecuteUpdateAsync(u => u.SetProperty(p => p.isDeleted, true));
+            if (string.IsNullOrEmpty(command.toUserId))
+                return Result.Fail("ToUserId cannot be null.");
+            try
+            {
+                var rec = await _context.FriendRequests
+                            .Where(x => (x.UserId == _currentUser.UserId && x.ToUserId == command.toUserId)
+                            || (x.UserId == command.toUserId && x.ToUserId == _currentUser.UserId)
+                            && !x.isDeleted).ToListAsync();
 
-            if (res == 0) return Result.Fail("No friend request found.");
+                foreach(var request  in rec) 
+                {
+                    if(request.UserId == _currentUser.UserId)
+                    {
+                        request.Status = "Cancelled";
+                    }else {
+                        request.Status = "Rejected";
+                    }
+                }           
 
-            await _context.SaveChangesAsync(cancellationToken);
-            return Result.Ok();
-          }
-          catch (Exception ex) 
-          {
-            _logger.LogError($"Failed to reject friend request due to : {ex.Message}");
-            return Result.Fail("Failed to reject friend request, Please see the inner exception for more info.");
-          }
+                await _context.SaveChangesAsync(cancellationToken);
+                return Result.Ok();
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError($"Failed to reject friend request due to : {ex.Message}");
+                return Result.Fail("Failed to reject friend request, Please see the inner exception for more info.");
+            }
        }
     }
 

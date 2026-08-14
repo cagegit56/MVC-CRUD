@@ -4,6 +4,7 @@ namespace Mvc_CRUD.Dto;
 
     public class UserProfileDTO
     {
+        public int Id { get; set; }
         public string UserName { get; set; }
         public string LastName { get; set; }
         public string UserId { get; set; }
@@ -24,6 +25,12 @@ namespace Mvc_CRUD.Dto;
         public string? JobTitle { get; set; }
         public string? Industry { get; set; }
         public string? JobPeriod { get; set; }
-        public string? Errors { get; set; }
+        public bool? PendingRequest { get; set; } = false;
+        public bool? RequestSentByMe { get; set; } = false;
+        public bool? FriendStatus { get; set; } = false;        
+        public string? Error { get; set; }
+        public string? CurrentUserId { get; set; }
+        public string? CurrentUserName { get; set; }
+        public string? CurrentUserProfilePicUrl { get; set; }
     }
 

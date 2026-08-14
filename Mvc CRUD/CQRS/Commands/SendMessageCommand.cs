@@ -1,7 +1,8 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    public record SendMessageCommand(Chat model) : IRequest<bool>;
+    public record SendMessageCommand(Chat model) : IRequest<Result<string>>;
 

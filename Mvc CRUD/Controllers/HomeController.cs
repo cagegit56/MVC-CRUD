@@ -25,7 +25,8 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> Index([FromQuery] PaginationFilter pgFilter, string filter)
         {
-            var res = await _mediator.Send(new GetAllPostsQuery());          
+            var res = await _mediator.Send(new GetAllPostsQuery(pgFilter));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
             return View(res);
         }
 
@@ -60,9 +61,26 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetComments(int postId)
+        public async Task<IActionResult> GetComments(int postId, PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCommentsQuery(postId));
+            var res = await _mediator.Send(new GetCommentsQuery(postId, pgFilter));
+            return Json(res);
+        }
+
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> CommentReplies(int commentId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetCommentsRepliesQuery(commentId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Replies(int replyId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetRepliesOfReplyQuery(replyId, pgFilter));
             return Json(res);
         }
 
@@ -93,6 +111,7 @@ namespace Mvc_CRUD.Controllers
             if (!res) return Json(new { success = false, message = "Failed to send a reply of reply." });
             return Json(new { success = true, message = "Sent Successfully." });
         }
+      
 
         [HttpGet]
         [Authorize]
@@ -116,8 +135,8 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendMessage(Chat model)
         {
             var res = await _mediator.Send(new SendMessageCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a message." });
-            return Json(new { success = true, message = "Successfully Sent." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "success" });
         }
 
         [Authorize]
@@ -205,6 +224,30 @@ namespace Mvc_CRUD.Controllers
         {
             var res = await _mediator.Send(new GetUserProfileQuery());
             return View(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUserProfile(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUserProfileQuery(userId, pgFilter));
+            return View(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUsersPosts(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUsersPostsQuery(userId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ExternalUsersMessages(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetExternalUserMessagesQuery(userId, pgFilter));
+            return Json(res);
         }
 
         [HttpGet]

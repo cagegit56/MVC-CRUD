@@ -12,6 +12,9 @@
         public string? FirstPage { get; set; }
         public string? LastPage { get; set; }
         public string? Error { get; set; }
+        public string? UserName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfilePicUrl { get; set; }
 
         public PaginateResponse() { }
 

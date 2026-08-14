@@ -1,10 +1,12 @@
-﻿namespace Mvc_CRUD.Dto;
+﻿using Mvc_CRUD.Models;
+
+namespace Mvc_CRUD.Dto;
     public class PostsViewDto
     {
         public string currentUserName { get; set; }
         public string currentUserLastName { get; set; }
         public string? currentUserProfilePic { get; set; }
         public string? Errors { get; set; }
-        public List<PostsDto>? Posts { get; set; } = new();
+        public ICollection<PostsDto>? Posts { get; set; }
     }
 

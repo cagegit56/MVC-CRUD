@@ -11,6 +11,7 @@ namespace Mvc_CRUD.Models;
         public string Message { get; set; }
         public string? ImageContentUrl { get; set; }
         public int CommentId { get; set; }
+        public int TotalReplies { get; set; } = 0;
         public DateTime SentOn { get; set; } = DateTime.UtcNow;
         public Comments? Comment { get; set; }
         public ICollection<ReplyOfReply>? Replies { get; set; }

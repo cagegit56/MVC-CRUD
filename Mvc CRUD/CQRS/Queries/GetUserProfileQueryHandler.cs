@@ -43,7 +43,7 @@ internal sealed class GetUserProfileQueryHandler : IRequestHandler<GetUserProfil
         catch (Exception ex) 
         {
             _logger.LogError($"Failed to get user's profile info due to : {ex.Message}");
-            res.Errors = "Failed to get user's profile info";
+            res.Error = "Failed to get user's profile info";
             return res;
         }
 

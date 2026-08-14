@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
@@ -19,6 +20,8 @@ internal sealed class SendReplyOfReplyCommandHandler : IRequestHandler<SendReply
         try
         {
             await _context.Replies.AddAsync(request.model);
+            await _context.ReplyComments.Where(x => x.Id == request.model.ReplyId)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.TotalReplies, d => d.TotalReplies + 1));
             await _context.SaveChangesAsync();
             return true;
         }

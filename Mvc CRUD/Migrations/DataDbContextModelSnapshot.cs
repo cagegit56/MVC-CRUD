@@ -67,14 +67,41 @@ namespace Mvc_CRUD.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
                     b.Property<string>("Message")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfilePicUrl")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ToUser")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToLastName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToUserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToUserProfilePicUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -84,9 +111,9 @@ namespace Mvc_CRUD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ToUser", "UserName");
+                    b.HasIndex("ToUserName", "UserName");
 
-                    b.HasIndex("UserName", "ToUser");
+                    b.HasIndex("UserName", "ToUserName");
 
                     b.ToTable("Chats");
                 });
@@ -150,6 +177,9 @@ namespace Mvc_CRUD.Migrations
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("TotalCommentReplies")
+                        .HasColumnType("integer");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -192,6 +222,9 @@ namespace Mvc_CRUD.Migrations
 
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TotalReplies")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UserImageUrl")
                         .HasColumnType("text");
@@ -454,6 +487,9 @@ namespace Mvc_CRUD.Migrations
                     b.Property<string>("Course")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
@@ -465,6 +501,9 @@ namespace Mvc_CRUD.Migrations
 
                     b.Property<string>("Industry")
                         .HasColumnType("text");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("JobPeriod")
                         .HasColumnType("text");
@@ -525,11 +564,13 @@ namespace Mvc_CRUD.Migrations
 
             modelBuilder.Entity("Mvc_CRUD.Models.Likes", b =>
                 {
-                    b.HasOne("Mvc_CRUD.Models.Posts", null)
+                    b.HasOne("Mvc_CRUD.Models.Posts", "Post")
                         .WithMany("PostLikes")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Mvc_CRUD.Models.ReplyOfReply", b =>
