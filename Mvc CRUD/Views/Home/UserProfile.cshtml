@@ -23,6 +23,7 @@
                     </div>
                     <div id="updatedCoverImage"></div>
                 }
+                <div id="removedCoverPic"></div>
             </button>
             <ul class="custom-menu" id="dropDownMenu">
                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a></li>
@@ -30,7 +31,7 @@
                         <input type="file" id="coverInput" accept="image/*" class="d-none">  </label>
                 </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#">Remove Cover Photo</a></li>
+                <li><a class="dropdown-item text-danger" id="removeCoverPic" href="#">Remove Cover Photo</a></li>
             </ul>
             </div>
 
@@ -49,7 +50,8 @@
                                 @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
                             </div>
                             <div id="updatedProfileImage"></div>
-                        }                        
+                        } 
+                        <div id="removedProfilePic"></div>
                         <div class="camera-icon">
                             <i class="bi bi-camera-fill"></i>
                         </div>
@@ -60,7 +62,7 @@
                         <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
                             <input type="file" id="picInput" accept="image/*" class="d-none"></label></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#">Remove Photo</a></li>
+                        <li><a class="dropdown-item text-danger" id="removeProfilePic" href="#">Remove Photo</a></li>
                     </ul>
                 </div>
             </div>
@@ -229,7 +231,11 @@
 
 
 <script>
+    const currentUserName = "@Model.UserName";
+    const currentUserLastName = "@Model.LastName";
+
     document.addEventListener("DOMContentLoaded", function(){
+
         const dropdown = document.getElementById("toggleDropDown");
         const menu = document.getElementById("dropDownMenu");
         const isCoverImage = document.getElementById("coverImage");
@@ -372,6 +378,46 @@
             }
         }
     });
+
+    const removeCoverPicBtn = document.getElementById("removeCoverPic");
+    if (removeCoverPicBtn)
+    {
+        removeCoverPicBtn.addEventListener("click", async (e) =>{
+            const response = await fetch(`RemoveCoverPicture`, {method: "PATCH", headers: {"Content-Type": "application/json"} });
+            const res = await response.json();
+            if (res.success)
+            {
+                document.getElementById("coverImage").style.display = "none";
+                   document.getElementById("removedCoverPic").innerHTML = `<div id="letterCoverImage" class="bg-secondary w-100" style="height: 400px; cursor : pointer; align-content : center;">
+                                                                               <div class="text-capitalize text-white fw-bolder h1">
+                                                                                    ${currentUserName.charAt(0).toUpperCase() + currentUserName.slice(1) ?? '?'}
+                                                                               </div>
+                                                                               <div> <small class="text-white h4">Add a Cover Picture</small> </div>
+                                                                           </div>`;
+            }else{
+                toastr.error("Technical issue, please try again later.");
+            }
+        });
+    }
+
+    const removeProfilePicBtn = document.getElementById("removeProfilePic");
+    if (removeProfilePicBtn)
+    {
+        removeProfilePicBtn.addEventListener("click", async (e) =>{
+            const response = await fetch(`RemoveProfilePicture`, {method: "PATCH",headers: { "X-Requested-With": "XMLHttpRequest" } });
+            const res = await response.json();
+            if (res.success)
+            {
+                document.getElementById("profileImage").style.display = "none";
+                   document.getElementById("removedProfilePic").innerHTML = `<div id="letterProfileImage" class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                                                                                style='width:150px; height:150px; min-width:50px; min-height:50px;'>
+                                                                                   ${currentUserName.charAt(0).toUpperCase()}
+                                                                              </div>`;
+            }else{
+                toastr.error("Technical issue, please try again later.");
+            }
+        });
+    }
 
 </script>
 

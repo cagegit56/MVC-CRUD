@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
@@ -6,7 +7,7 @@ using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, bool>
+internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, Result>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
@@ -22,7 +23,7 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
-    public async Task<bool> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -61,9 +62,7 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
                         res.Industry = request.model.Industry;
                     if (!string.IsNullOrWhiteSpace(request.model.JobPeriod))
                         res.JobPeriod = request.model.JobPeriod;
-                }
-                else
-                {
+                }else {
                     if (!string.IsNullOrWhiteSpace(request.model.FromLocation))
                         res.FromLocation = request.model.FromLocation;
                     if (!string.IsNullOrWhiteSpace(request.model.Website))
@@ -73,15 +72,15 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
                 _context.Update(res);
                 await _context.SaveChangesAsync();
                 _cache.Remove("UserProfile-Info");
-                return true;
+                return Result.Ok();
+            }else {
+                _logger.LogError("User profile not found.");
+                return Result.Fail("User profile not found");
             }
-            _logger.LogError("User not found.");
-            return false;
-        }
-        catch (Exception Ex)
-        {
+              
+        }catch (Exception Ex) {
             _logger.LogError($"Failed to update user info due to : {Ex.Message} ");
-            return false;
+            return Result.Fail("Technical error, please try again later.");
         }
     }
 }

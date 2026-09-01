@@ -29,7 +29,7 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
         try
         {
             if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
-            return Result.Ok( await _pagination.PaginateAndMap<UserProfile, FriendUserProfileDto>( 
+            var res = await _pagination.PaginateAndMap<UserProfile, FriendUserProfileDto>(
                                     _context.Profile.Where(p => p.UserId != _currentUser.UserId)
                                     .Where(p => !_context.Friends
                                         .Any(f => (f.UserId == _currentUser.UserId && f.FriendId == p.UserId) ||
@@ -37,10 +37,12 @@ internal sealed class FriendRequestQueryHandler : IRequestHandler<FriendRequestQ
                                     .Where(p => !_context.BlockedUser
                                         .Any(b => b.UserId == _currentUser.UserId && b.BlockUserId == p.UserId))
                                     .Where(p => !_context.FriendRequests
-                                        .Any(r => (r.UserId == _currentUser.UserId && r.ToUserId == p.UserId) 
+                                        .Any(r => (r.UserId == _currentUser.UserId && r.ToUserId == p.UserId)
                                                   && (r.Status == "Pending" || r.Status == "Rejected")
-                                                  && !r.isDeleted ))
-                                    .AsSplitQuery().AsNoTracking(), request.pgFilter));
+                                                  && !r.isDeleted))
+                                    .AsSplitQuery().AsNoTracking(), request.pgFilter);
+            res.UserName = _currentUser.UserName;
+            return Result.Ok(res);
         }
         catch (Exception ex) 
         {

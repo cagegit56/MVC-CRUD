@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-public record UpdateUserProfileCommand(UserProfile model, string tab) : IRequest<bool>;
+public record UpdateUserProfileCommand(UserProfile model, string tab) : IRequest<Result>;

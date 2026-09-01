@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
@@ -7,7 +8,7 @@ using System.Diagnostics;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<UpdateProfilePictureCommand, bool>
+internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<UpdateProfilePictureCommand, Result>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
@@ -22,7 +23,7 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
         _logger = logger;
     }
 
-    public async Task<bool> Handle(UpdateProfilePictureCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateProfilePictureCommand request, CancellationToken cancellationToken)
     {
         var trans = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -34,7 +35,6 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
                 {
                     string folder = Path.Combine("wwwroot/images/ProfilePictures");
                     Directory.CreateDirectory(folder);
-
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(request.image.FileName);
                     string filePath = Path.Combine(folder, fileName);
 
@@ -43,36 +43,43 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
                         await request.image.CopyToAsync(stream);
                     }
 
+                    string galleryFolder = Path.Combine("wwwroot/images/Gallery");
+                    Directory.CreateDirectory(galleryFolder);
+                    string galleryFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.image.FileName);
+                    string galleryFilePath = Path.Combine(galleryFolder, galleryFileName);
+
+                    using (var stream = new FileStream(galleryFilePath, FileMode.Create))
+                    {
+                        await request.image.CopyToAsync(stream);
+                    }
+
                     res.UserProfilePicUrl = "/images/ProfilePictures/" + fileName;
                     _context.Update(res);
 
-                    var posts = await _context.Post.Where(x => x.UserId == _currentUser.UserId).ToListAsync();
-                    if (posts != null)
-                    {
-                        foreach (var postInfo in posts)
-                        {
-                            postInfo.UserImageUrl = "/images/ProfilePictures/" + fileName;
-                            _context.Post.Update(postInfo);
-                        }
-                    }
+                    var posts = await _context.Post.Where(x => x.UserId == _currentUser.UserId)
+                        .ExecuteUpdateAsync(u => u.SetProperty(p => p.UserImageUrl, "/images/ProfilePictures/" + fileName));
+
+                    var friendRequests = await _context.FriendRequests
+                        .Where(x => x.UserId == _currentUser.UserId && x.Status == "Pending")
+                        .ExecuteUpdateAsync(s => s.SetProperty(p => p.ProfilePicUrl, "/images/ProfilePictures/" + fileName));
 
                     await _context.SaveChangesAsync(cancellationToken);
                     await trans.CommitAsync(cancellationToken);
                 }
                 _cache.Remove($"UserInfo-{_currentUser.UserId}");
-                return true;
+                return Result.Ok();
             }
             else
             {
                 await trans.RollbackAsync(cancellationToken);
                 _logger.LogError("Image content is null, cannot save an empty image.");
-                return false;
+                return Result.Fail("Image content is null, cannot save an empty image.");
             }
         }
         catch (Exception ex) {
             await trans.RollbackAsync(cancellationToken);
             _logger.LogError($"Failed to update profile picture due to : {ex.Message}");
-            return false;
+            return Result.Fail("Technical error, please see the inner exeception");
         }        
     }
 }

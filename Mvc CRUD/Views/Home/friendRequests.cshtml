@@ -144,6 +144,9 @@
         let currentPage = 1;
         let pageSize = 5;
         let selectedTab = "";
+        let minimizedMsgCard = false;
+        let state = { currentPage: 1, totalPages : @Model.TotalPages };
+        const currentUserName = "@Model.UserName";
         
         toastr.options = {
             "closeButton": true,
@@ -175,6 +178,7 @@
                         selectedTab = "friend";
                         currentPage = 1;
                         pageSize = 5;
+                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadFriends(pageSize, currentPage);
                     }else if (activeTabId === "request-tab") 
@@ -182,12 +186,14 @@
                         selectedTab = "request";
                         currentPage = 1;
                         pageSize = 5;
+                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadFriendRequest(pageSize, currentPage);
                     }else {
                         selectedTab = "sentRequest";
                         currentPage = 1;
                         pageSize = 5;
+                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadSentRequest(pageSize, currentPage);
                     }
@@ -222,8 +228,7 @@
                 })
             )
             document.getElementById("loadingSpinner").classList.add("d-none");
-            setupPagination(model.totalPages);
-            updatePaginationInfo(model);
+            update();
         }
         
         async function loadFriends(size,pageNumber) 
@@ -236,8 +241,8 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    setupPagination(result.totalPages);
-                    updatePaginationInfo(result);
+                    state.totalPages = 0;
+                    update();
                     return document.getElementById('friend').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -253,10 +258,11 @@
                     </div> `;
                 }
                 renderFriends(result.data);
-                setupPagination(result.totalPages);
-                updatePaginationInfo(result);
-            } catch (error) {
-                console.log("timeout error", error);
+                state.totalPages = result.totalPages;
+                update();
+            }catch (error) {
+                state.totalPages = 0;
+                update();
                 document.getElementById('friend').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -349,8 +355,8 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    setupPagination(result.totalPages);
-                    updatePaginationInfo(result);
+                    state.totalPages = 0;
+                    update();
                     return document.getElementById('request').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -366,10 +372,11 @@
                     </div> `;
                 }
                 renderReceivedFriendRequests(result.data);
-                setupPagination(result.totalPages);
-                updatePaginationInfo(result);
+                state.totalPages = result.totalPages;
+                update();
             }catch (error) {
-                console.log(error);
+                state.totalPages = 0;
+                update();
                 document.getElementById('request').innerHTML = `
                         <div class="container mb-1 mt-1">
                         <div class="text-center">
@@ -460,8 +467,8 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    setupPagination(result.totalPages);
-                    updatePaginationInfo(result);
+                    state.totalPages = 0;
+                    update();
                     return document.getElementById('sentReq').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -477,9 +484,11 @@
                     </div> `;
                 }
                 renderSentRequests(result.data);
-                setupPagination(result.totalPages);
-                updatePaginationInfo(result);
+                state.totalPages = result.totalPages;
+                update();
             }catch (error) {
+                state.totalPages = 0;
+                update();
                 document.getElementById('sentReq').innerHTML = `
                     <div class="container mb-1 mt-1">
                         <div class="text-center">
@@ -509,7 +518,7 @@
             div.className = 'd-flex flex-column align-items-center gap-3';
             friends.forEach(friend => {  
                 div.innerHTML += `
-                    <div class="card h-card w-100 shadow-sm border-0 p-3" id="row-${friend.id}">
+                    <div class="card w-100 h-card shadow-sm border-0 p-3" id="row-${friend.id}">
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                             <div class="d-flex">
                                 ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" id="viewProfile" data-id="${friend.toUserId}" class="rounded-circle me-1 clickable friend-request-pic"                                                        style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
@@ -531,9 +540,59 @@
                                     data-userid="${friend.toUserId}">
                                     <i class="fa-solid fa-user-plus me-1"></i>Cancel Request
                                 </button>
-                                <button type="submit" class="btn btn-light px-4 rounded-pill p-2"> 
-                                     <i class="bi bi-chat"></i> Message
+                                <button type="button" data-action="SendMessage" data-userid="${friend.toUserId}" data-id="${friend.id}" class="btn btn-light text-primary text-bold px-4 rounded-pill p-2"> 
+                                     <i class="bi bi-send"></i> Message
                                 </button>
+
+                                <div class="send-msg-menu position-fixed bottom-0 end-0 d-none" id="sendMessageMenu-${friend.id}">
+                                    <div class="input group">
+                                        <div class="card shadow-sm border-0 gap-0">
+                                            <div class="position-relative">
+                                                <div class="position-absolute end-0">
+                                                    <i class="bi bi-dash-lg clickable" id="minimizeMsgPopUp" data-action="MinimizeMessages" data-id="${friend.id}"></i>
+                                                    <i class="bi bi-x-lg m-1 clickable" id="closeMsgPopUp" data-action="CloseMessages" data-id="${friend.id}"></i>
+                                                </div>
+                                            </div>
+                                            <div class="card-body clickable" data-action="ExitMinimizedMsg" data-id="${friend.id}">
+                                                <div class="d-flex align-items-center mb-2" data-action="ExitMinimizedMsg" data-id="${friend.id}">
+                                                    ${friend.toUser_ProfilePicUrl ? `<img src="${friend.toUser_ProfilePicUrl}" class="rounded-circle" style="width:45px; height:45px; object-fit: cover; cursor : pointer" />` 
+                                                               : ` <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                                                      style='width:45px; height:45px; font-size: 17px; font-weight: bold;'> ${(friend.toUserName).charAt(0).toUpperCase()}
+                                                                    </div>`}
+                                                    <div class="col ms-1">
+                                                        <h6 class="mb-0 fw-bold">
+                                                            ${friend.toUserName.charAt(0).toUpperCase() + friend.toUserName.slice(1)+ " " + friend.toUser_LastName.charAt(0).toUpperCase() + friend.toUser_LastName.slice(1) ?? '?'} <i class="bi bi-globe text-muted"></i>
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                         </div>
+                                         </div>
+                                         <hr class="dropdown-divider mb-2 mt-2">
+                                         <div class="px-2">
+                                             <div id="messagesContainer" class="flex-grow-1 overflow-auto bg-light mb-3" style="height: 337px">
+                                                 <div class="mt-5" id="messageContent-${friend.id}"></div>
+                                             </div>
+                                             <form class="mt-auto input-group" data-action="SendMessageForm" action="@Url.Action("SendMessage", "Home")" method="post" data-id="${friend.id}" enctype="multipart/form-data">
+                                                 ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" class="rounded-circle me-2" style="width: 36px; height: 36px;">` 
+                                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white ms-1" style="width: 36px; height: 36px;">
+                                                                       ${(friend.userName).charAt(0).toUpperCase()}
+                                                                   </div>`}
+                                       
+                                                 <input type="hidden" name="ToUserName" value="${friend.toUserName}" />
+                                                 <input type="hidden" name="ToUserId" value="${friend.toUserId}" />
+                                                 <input type="hidden" name="ToLastName" value="${friend.toUser_LastName}" />
+                                                 <input type="hidden" name="ToUserProfilePicUrl" value="${friend.toUser_ProfilePicUrl}" />
+                                                 <textarea name="Message" data-action="SendMessageInput" 
+                                                     data-id="${friend.id}" id="sendMsgInput-${friend.id}"
+                                                     class="form-control form-control-sm rounded-pill" 
+                                                     placeholder="Write a message..." autocomplete="off"
+                                                     style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
+                                                 <button type="submit" id="sendMsgBtn-${friend.id}" class="btn btn-primary d-none btn-sm rounded-pill ms-2 px-3"> <i class="bi bi-send"></i></button>
+                                             </form>
+                                       </div>
+                                 </div>
+
                             </div>
                         </div>
                     </div>`;
@@ -693,10 +752,140 @@
                 {
                     toastr.error("Failed to remove user, Please try again later.");
                 }
+            },
+
+            async SendMessage(e)
+            {
+                e.stopPropagation();
+                const id = e.target.dataset.id;
+                const userId = e.target.dataset.userid;
+                document.getElementById(`row-${id}`).classList.remove("h-card");
+                const menu = document.getElementById(`sendMessageMenu-${id}`);
+                menu.classList.contains("d-none") ? menu.classList.remove("d-none") : menu.classList.add("d-none");
+                const input = document.getElementById(`sendMsgInput-${id}`);
+                input.focus(); 
+ 
+                try 
+                {
+                    fetch(`@Url.Action("ExternalUsersMessages", "Home")?userId=${encodeURIComponent(userId)}&pageSize=${pageSize}&pageNumber=${currentPage}`, { method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" } })
+                        .then(response => {
+                            return response.json();
+                        }).then(results => {
+                            const res = results.data;
+                            if (res.length === 0) 
+                            {
+                            return document.getElementById(`messageContent-${id}`).innerHTML = `<div class="text-center text-muted mt-5" id="noConvo-${id}">No conversations yet.</div>`;
+                            }
+                            const msgView = res.map(msg => {
+                                const sentByMe = msg.userName === currentUserName;                                
+                                return `<div class="d-flex ${sentByMe ? 'justify-content-end px-2' : ''}">
+                                                ${sentByMe ? "" : `<div class='me-2 flex-shrink-0'>
+                                                                        <div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center'
+                                                                            style='width:40px; height:40px; min-width:40px; min-height:40px;'>
+                                                                            ${msg.userName.charAt(0).toUpperCase()}
+                                                                        </div>
+                                                                    </div>` }
+                                                <div style="max-width:100%;">
+                                                    <div class="card shadow-sm ${sentByMe ? 'bg-primary text-white' : 'bg-white'}"
+                                                    style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
+                                                    <div class="card-body p-2 small">${msg.message}</div>
+                                                </div>
+                                                <div class="small text-muted mt-1">
+                                                    ${new Date(msg.sentOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                                </div>
+                                            </div>`;
+                            }).join("");
+                            document.getElementById(`messageContent-${id}`).innerHTML = msgView;
+                        });
+                } catch (error) {
+                    document.getElementById(`messageContent-${id}`).innerHTML = `<div class="text-center">
+                                                                                    <p class="text-muted mb-2">Please refresh or try again later. </p>
+                                                                                    <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                        <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                                    </button>
+                                                                                </div>`;
+                }  
+
+                const btn = e.target;
+                document.addEventListener("click", (e) => {
+                    if (!menu.contains(e.target) && !btn.contains(e.target)) 
+                    {
+                        if (minimizedMsgCard) return;
+                        menu.classList.add("d-none");
+                    }
+                });
+            },
+
+            CloseMessages(e)
+            {
+                const id = e.target.dataset.id;
+                document.getElementById(`sendMessageMenu-${id}`).classList.add("d-none");
+            },
+
+            MinimizeMessages(e)
+            {
+                const id = e.target.dataset.id;
+                document.getElementById(`sendMessageMenu-${id}`).style.height = "90px";
+                minimizedMsgCard = true;
+            },         
+
+            ExitMinimizedMsg(e)
+            {
+                const id = e.target.dataset.id;
+                document.getElementById(`sendMessageMenu-${id}`).style.height = "500px";
+                minimizedMsgCard = false;
             }
 
-
         };
+
+        const inputEventListeners = 
+        {
+            SendMessageInput(e)
+            {
+                const id = e.target.dataset.id;
+                const button = document.getElementById(`sendMsgBtn-${id}`);
+                if (!button) return;
+                button.classList.toggle("d-none", e.target.value.trim() === "");
+                button.disabled = false;
+            }
+        };
+
+
+        const formSubmission = 
+        {
+            async SendMessageForm(e)
+            {
+                e.preventDefault();
+                const id = e.target.dataset.id;
+                const form = e.target;
+                const formData = new FormData(form);
+                const message = formData.get("Message");
+                const results = await fetch(form.action , {method: "POST", body: formData});
+                const res = await results.json();
+                if (res.success)
+                {
+                    const displayer = document.getElementById(`messageContent-${id}`);
+                    displayer.insertAdjacentHTML("afterbegin", ` 
+                                                      <div class="d-flex justify-content-end px-2">                                                   
+                                                         <div style="max-width:100%;">
+                                                              <div class="card shadow-sm bg-primary text-white"
+                                                                   style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
+                                                                     <div class="card-body text-truncate p-2 small">${message}</div>
+                                                              </div>
+                                                              <div class="small text-muted mt-1">now</div>
+                                                          </div>
+                                                       </div>`);
+                    document.getElementById(`sendMsgInput-${id}`).value = null;
+                    document.getElementById(`sendMsgBtn-${id}`).classList.toggle("d-none");
+                    document.getElementById(`noConvo-${id}`).style.display = "none";
+                }else {
+                    toastr.error("Failed to send message");
+                }
+            }
+
+        }
+
 
 
         document.addEventListener('click', async function(e){
@@ -706,121 +895,149 @@
             if(handler) return handler(e);
         });
 
+        document.addEventListener("input", e => {
+            const action = e.target.dataset.action;
+            if (!action) return;
+            const handler = inputEventListeners[action];
+            if (handler) return handler(e); 
+        });
 
-        function setupPagination(totalPages) 
-        {
-            const pagination = document.getElementById('pagination');
-            pagination.innerHTML = '';
+        document.addEventListener("submit", async (e) => {
+            const action = e.target.dataset.action;
+            if (!action) return;
+            const handler = formSubmission[action];
+            if (handler) return handler(e);
+        }); 
 
-            if (totalPages <= 1) return;
+        // function setupPagination(totalPages) 
+        // {
+        //     const pagination = document.getElementById('pagination');
+        //     pagination.innerHTML = '';
 
-            const createItem = (page, label, disabled, active) => {
-                const li = document.createElement('li');
-                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
-                li.querySelector('a').addEventListener('click', e => {
-                    e.preventDefault();
-                    if (!disabled && page !== currentPage) 
-                    {
-                        currentPage = page;
-                        switch(selectedTab)
-                        {
-                            case 'friend':
-                            loadFriends(pageSize, currentPage);
-                            break;
-                            case 'request' :
-                            loadFriendRequest(pageSize, currentPage);
-                            break;
-                            case 'sentRequest' :
-                            loadSentRequest(pageSize, currentPage);
-                            break;
-                            default :
-                            loadFriends(pageSize, currentPage);
-                        }
-                    }
-                });
-                return li;
-            };
+        //     if (totalPages <= 1) return;
 
-            function createEllipsis() 
-            {
-                const li = document.createElement('li');
-                li.className = "page-item disabled";
-                li.innerHTML = `<span class="page-link">...</span>`;
-                pagination.appendChild(li);
-            }
+        //     const createItem = (page, label, disabled, active) => {
+        //         const li = document.createElement('li');
+        //         li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+        //         li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
+        //         li.querySelector('a').addEventListener('click', e => {
+        //             e.preventDefault();
+        //             if (!disabled && page !== currentPage) 
+        //             {
+        //                 currentPage = page;
+        //                 switch(selectedTab)
+        //                 {
+        //                     case 'friend':
+        //                     loadFriends(pageSize, currentPage);
+        //                     break;
+        //                     case 'request' :
+        //                     loadFriendRequest(pageSize, currentPage);
+        //                     break;
+        //                     case 'sentRequest' :
+        //                     loadSentRequest(pageSize, currentPage);
+        //                     break;
+        //                     default :
+        //                     loadFriends(pageSize, currentPage);
+        //                 }
+        //             }
+        //         });
+        //         return li;
+        //     };
 
-            pagination.appendChild( createItem(currentPage - 1, '«', currentPage === 1) );
-            if (totalPages <= 3) // condition 1
-            {
-                for (let i = 1; i <= totalPages; i++) 
-                     pagination.appendChild( createItem(i, i, false, i === currentPage));
-            }else 
-            {
-                if (currentPage < 3) // condition 2
-                {
-                    for (let i = 1; i <= 3; i++) 
-                        pagination.appendChild( createItem(i, i, false, i === currentPage));
-                    createEllipsis();
-                    pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
-                }else if (currentPage === 3) // condition 3
-                {   
-                    let ellipsisCondition = 0;
-                    for (let i = 3; i <= totalPages; i++) 
-                    {
-                        if (ellipsisCondition === 3)
-                        {
-                           createEllipsis();
-                           pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
-                           break;
-                        }
-                        ellipsisCondition += 1;
-                        pagination.appendChild( createItem(i, i, false, i === currentPage));         
-                    }                         
-                }else 
-                {
-                    let ellipsisCondition = 0;
-                    for (let i = currentPage; i <= totalPages; i++)
-                    {
-                        if(ellipsisCondition === 3)
-                        {
-                            createEllipsis();
-                            pagination.appendChild( createItem(i, totalPages, false, currentPage === totalPages));
-                            break;
-                        }
-                        ellipsisCondition += 1;
-                        if (currentPage === totalPages)
-                        {
-                            for (let i = currentPage - 4; i <= totalPages; i++)
-                            {
-                                pagination.appendChild( createItem(i, i, false, i === currentPage));
-                            }
-                        }else
-                        {
-                            const shownPages = totalPages - currentPage;
-                            if( shownPages < 5 & shownPages !== 5)
-                            {
-                                pagination.appendChild( createItem(i - 1, i, false, i === (currentPage + 1) ));                                                                
-                            }else
-                            { 
-                                pagination.appendChild( createItem(i, i, false, i === currentPage));                                                           
-                            }
-                            // pagination.appendChild( createItem(i, i, false, i === currentPage));
-                        }
-                    }                          
-                }
-            }
-            pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));            
-        }
+        //     function createEllipsis() 
+        //     {
+        //         const li = document.createElement('li');
+        //         li.className = "page-item disabled";
+        //         li.innerHTML = `<span class="page-link">...</span>`;
+        //         pagination.appendChild(li);
+        //     }
 
-        function updatePaginationInfo(result) 
-        {
-            const { totalRecords } = result;
-            const data = currentPage * pageSize;
-            const updatedData = data <= totalRecords ? data : totalRecords; 
-            const info = totalRecords === 0 ? 'Showing 0 of 0 records' : `Showing ${updatedData} of ${totalRecords} records`;
-            document.getElementById('paginationInfo').textContent = info;
-        }
+        //     pagination.appendChild( createItem(currentPage - 1, '«', currentPage === 1) );
+        //         if (totalPages < 5)
+        //         {
+        //             for (let i = 1; i <= totalPages; i++)
+        //             {
+        //                 pagination.appendChild( createItem(i, i, false, i === currentPage));                                            
+        //             }                           
+        //         }else{
+        //             const limiter = 5;
+        //             let displayedPages = 1;
+        //             for (let k = 1; k <= totalPages; k++)
+        //             {   
+        //                 if (currentPage >= 4 )
+        //                 {     
+        //                     const leftPages = totalPages - (currentPage -1);
+        //                     for (let g = currentPage - 1; g <= totalPages; g++) 
+        //                     {                                
+        //                         if (leftPages < 5)
+        //                         {
+        //                             if (leftPages < 3)
+        //                             {
+        //                                 for (let m = (g - 2); m <= totalPages; m++)
+        //                                 {  
+        //                                     if (displayedPages >= limiter)
+        //                                     {
+        //                                         createEllipsis();
+        //                                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+        //                                         break;
+        //                                     }else{
+        //                                         pagination.appendChild( createItem( m, m, false, m === currentPage));
+        //                                         displayedPages++;
+        //                                     }
+        //                                 }
+        //                             }else{
+        //                                 for (let m = (g - 1); m <= totalPages; m++)
+        //                                 {  
+        //                                     if (displayedPages >= limiter)
+        //                                     {
+        //                                         createEllipsis();
+        //                                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+        //                                         break;
+        //                                     }else{
+        //                                         pagination.appendChild( createItem( m, m, false, m === currentPage));
+        //                                         displayedPages++;
+        //                                     }
+        //                                 }
+        //                             }                                   
+        //                             break;
+        //                         } 
+
+        //                         if (displayedPages >= limiter)
+        //                         {
+        //                             createEllipsis();
+        //                             pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+        //                             break;
+        //                         }else{
+        //                             pagination.appendChild( createItem(g, g, false, g === currentPage)); 
+        //                             displayedPages++;
+        //                         }                               
+        //                     }  
+        //                     break;
+        //                 }else
+        //                 {
+        //                     if (displayedPages >= limiter)
+        //                     {
+        //                         createEllipsis();
+        //                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
+        //                         break;
+        //                     }else{
+        //                         displayedPages++;
+        //                         pagination.appendChild( createItem(k, k, false, k === currentPage));
+        //                     }
+        //                 }                        
+        //             }
+        //         }
+        //     pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));            
+        // }
+
+        // function updatePaginationInfo(result) 
+        // {
+        //     const { totalRecords } = result;
+        //     const data = currentPage * pageSize;
+        //     const updatedData = data <= totalRecords ? data : totalRecords; 
+        //     const info = totalRecords === 0 ? 'Showing 0 of 0 records' : `Showing ${updatedData} of ${totalRecords} records`;
+        //     document.getElementById('paginationInfo').textContent = info;
+        // }
 
         function handlePageSizeChange() 
         {
@@ -841,6 +1058,115 @@
                 loadFriends(pageSize, currentPage);
             }
         }
+
+        const container = document.getElementById('pagination');
+        const DOTS = 'DOTS';   
+
+        function renderPagination(container, { currentPage, totalPages, onPageChange, siblingCount = 1 }) 
+        {
+            container.innerHTML = '';
+            if (!totalPages || totalPages <= 1) return;
+
+            currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+            const createItem = (page, label, disabled, active) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link clickable" >${label}</a>`;
+
+                if (!disabled) {
+                    li.addEventListener('click', () => onPageChange(page));
+                }
+                return li;
+            };
+
+            function createEllipsis() 
+            {
+                const li = document.createElement('li');
+                li.className = "page-item disabled";
+                li.innerHTML = `<span class="page-link">...</span>`;
+                return li;
+            }
+
+            const isFirstPage = currentPage === 1;
+            container.appendChild( createItem( isFirstPage ? 1 : currentPage - 1,'«', isFirstPage ) );
+
+            const range = getPaginationRange(currentPage, totalPages, siblingCount);
+            for (const item of range) 
+            {
+                if (item === DOTS) {
+                    container.appendChild(createEllipsis());
+                } else {
+                    container.appendChild( createItem(item, item, false, item === currentPage ));
+                }
+            }
+
+            const isLastPage = currentPage === totalPages;
+            container.appendChild( createItem(isLastPage ? totalPages : currentPage + 1, '»', isLastPage) );
+        }
+
+        
+        function getPaginationRange(currentPage, totalPages, siblingCount = 1) 
+        {
+            if (totalPages <= 0) return [];
+
+            const range = (start, end) =>
+            Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+            const totalVisibleSlots = siblingCount * 2 + 5;
+
+            if (totalVisibleSlots >= totalPages) {
+            return range(1, totalPages);
+            }
+
+            const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+            const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+            const shouldShowLeftDots = leftSiblingIndex > 2;
+            const shouldShowRightDots = rightSiblingIndex < totalPages - 1;
+
+            if (!shouldShowLeftDots && shouldShowRightDots) 
+            {
+                const leftItemCount = 3 + siblingCount * 2;
+                return [...range(1, leftItemCount), DOTS, totalPages];
+            }
+
+            if (shouldShowLeftDots && !shouldShowRightDots) 
+            {
+                const rightItemCount = 3 + siblingCount * 2;
+                return [1, DOTS, ...range(totalPages - rightItemCount + 1, totalPages)];
+            }
+
+            return [1, DOTS, ...range(leftSiblingIndex, rightSiblingIndex), DOTS, totalPages];
+        }              
+               
+
+        function update() 
+        {
+            state.totalPages >= 1 ? document.getElementById('paginationInfo').innerHTML = ` Showing Page ${state.currentPage} of ${state.totalPages}`
+                    : document.getElementById('paginationInfo').innerHTML = "";
+            renderPagination(container, { currentPage: state.currentPage, totalPages: state.totalPages, 
+                onPageChange: (page) => {
+                    state.currentPage = page;
+                    switch(selectedTab)
+                    {
+                        case 'friend':
+                        loadFriends(pageSize, page);
+                        break;
+                        case 'request' :
+                        loadFriendRequest(pageSize, page);
+                        break;
+                        case 'sentRequest' :
+                        loadSentRequest(pageSize, page);
+                        break;
+                        default :
+                        loadFriends(pageSize, page);
+                    }
+                    update();
+                },
+            });
+        }
+
     </script>
 
 

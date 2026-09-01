@@ -197,7 +197,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> BlockUser(BlockedUsers model)
         {
             var res = await _mediator.Send(new BlockUserCommand(model));
-            if (!res.IsSuccess) return Json(new { success = false, message = $"{res}" });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successfully blocked."});
         }               
 
@@ -263,7 +263,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateUserProfile(UserProfile model, string tabInfo)
         {
             var res = await _mediator.Send(new UpdateUserProfileCommand(model, tabInfo));
-            if (!res) return Json(new { success = false, messsage = "Failed to update user profile info." });
+            if (!res.IsSuccess) return Json(new { success = false, messsage = res });
             return Json(new { success = true, message = "Successfully updated user info." });
         }
 
@@ -272,8 +272,17 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateProfilePicture(IFormFile profileImage)
         {
             var res = await _mediator.Send(new UpdateProfilePictureCommand(profileImage));
-            if (!res) return Json(new { success = false, message = "Failed to update profile picture."});
+            if (!res.IsSuccess) return Json(new { success = false, message = res});
             return Json(new { success = true, message = "Successful updated profile picture"}); 
+        }
+
+        [HttpPatch]
+        [Authorize]
+        public async Task<IActionResult> RemoveProfilePicture()
+        {
+            var res = await _mediator.Send(new RemoveProfilePictureCommand());
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Successful updated profile picture" });
         }
 
         [HttpPatch]
@@ -281,9 +290,18 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateCoverPicture(IFormFile coverImage)
         {
             var res = await _mediator.Send(new UpdateCoverPictureCommand(coverImage));
-            if (!res) return Json(new { success = true, message = "Failed to update cover image."});
+            if (!res.IsSuccess) return Json(new { success = false, message = res});
             return Json(new { success = true, message = "Sucessfully updated cover image."});
-        } 
+        }
+
+        [HttpPatch]
+        [Authorize]
+        public async Task<IActionResult> RemoveCoverPicture()
+        {
+            var res = await _mediator.Send(new RemoveCoverPicureCommand());
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Sucessfully updated cover image." });
+        }
 
         [HttpGet]
         [Authorize]
