@@ -94,7 +94,7 @@
             </li>
         </ul>
 
-        <div class="row mt-4">
+        <div class="row mt-4 mb-2">
             <div class="col-md-4">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
@@ -107,24 +107,14 @@
 
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3">Photos</h5>
-                        <div class="row g-2">
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                        </div>
+                        <h5 class="fw-bold">Photos</h5>
+                        <div class="row g-2" id="galleryPics"></div>
                     </div>
                 </div>
             </div>
 
             @* ********************************** Posts **************************** *@
-            <div class="col-md-8">
+            <div class="col-md-8 mt-2">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
                         <div class="d-flex align-items-center gap-1 mb-2">
@@ -233,6 +223,7 @@
 <script>
     const currentUserName = "@Model.UserName";
     const currentUserLastName = "@Model.LastName";
+    const currentUserId = "@Model.UserId";
 
     document.addEventListener("DOMContentLoaded", function(){
 
@@ -283,17 +274,24 @@
 
     });
 
-    fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  }).then(results =>{
-        if(!results)
-        {
-            return document.getElementById('postContent').innerHTML =  `<div class="alert alert-danger text-center w-100">Error loading Posts. Please try again later.</div>`;
-        }else{
-            return results.json();
-        }        
-    }).then(res =>{
+    fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  })
+    .then(response => response.json())
+    .then(results => {
+        if (results.error)
+            return document.getElementById('postContent').innerHTML =  `<div class="text-center">
+                                                                            <div class="display-1 text-muted">
+                                                                                <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                            </div>
+                                                                            <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                            <p class="text-muted">Please refresh or try again later. </p>
+                                                                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                            </button>
+                                                                        </div>`;
         const content = document.getElementById('postContent');
+        const res = results.data;
          if (res.length === 0)
-              return content.innerHTML = ` <div class="alert alert-primary text-center w-100">No Posts found. Please create a post and try again.</div>`;
+              return content.innerHTML = `<div class="alert alert-primary text-center w-100">No Posts found. Please create a post and try again.</div>`;
          content.innerHTML = '';
          res.forEach(post => {
                 const firstLetter = post.userName?.charAt(0).toUpperCase() ?? "?";
@@ -324,7 +322,56 @@
                     </div>`;
                 content.insertAdjacentHTML('beforeend', postInfo);
          });
-    }); 
+    })
+    .catch(error =>{
+        document.getElementById("postContent").innerHTML = `<div class="text-center">
+                                                                <div class="text-muted">
+                                                                    <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                </div>
+                                                                <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                <p class="text-muted">Please refresh or try again later. </p>
+                                                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                </button>
+                                                            </div>`;
+    });
+    
+    fetch(`/Home/GalleryPictures?userId=${currentUserId}&pageSize=5&pageNumber=1`, { method : "GET", headers: { "Content-Type" : "application/json"} })
+    .then( response => response.json() )
+    .then(results => {
+         if (results.error)
+              return document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                            <div class="text-muted">
+                                                                                <i class="bi bi-exclamation-triangle text-danger"></i>
+                                                                            </div>
+                                                                            <h5>Technical Issue!<br />We currently attending to the issue.</h5>
+                                                                            <p class="text-muted">Please refresh or try again later. </p>
+                                                                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                            </button>
+                                                                         </div>`;
+        const res = results.data;
+        if (res.length <= 0) 
+             return document.getElementById("galleryPics").innerHTML = `<div class="alert alert-primary text-center w-100">No Pictures yet. Please add a profile/cover image.</div>`;
+        const images = res.map( pics => {
+            return `<div class="col-4">
+                        <img src="${pics.imageUrl}" class="w-100 rounded" style="height: 150px" />
+                    </div>`;
+        }).join(""); 
+        document.getElementById("galleryPics").innerHTML = images;
+    })
+    .catch(error =>{
+        document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                <div class="text-muted">
+                                                                    <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                </div>
+                                                                <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                <p class="text-muted">Please refresh or try again later. </p>
+                                                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                </button>
+                                                            </div>`;
+    });
          
 
     document.getElementById("picInput").addEventListener("change", async function (event) {
@@ -388,12 +435,12 @@
             if (res.success)
             {
                 document.getElementById("coverImage").style.display = "none";
-                   document.getElementById("removedCoverPic").innerHTML = `<div id="letterCoverImage" class="bg-secondary w-100" style="height: 400px; cursor : pointer; align-content : center;">
-                                                                               <div class="text-capitalize text-white fw-bolder h1">
-                                                                                    ${currentUserName.charAt(0).toUpperCase() + currentUserName.slice(1) ?? '?'}
-                                                                               </div>
-                                                                               <div> <small class="text-white h4">Add a Cover Picture</small> </div>
-                                                                           </div>`;
+                document.getElementById("removedCoverPic").innerHTML = `<div id="letterCoverImage" class="bg-secondary w-100" style="height: 400px; cursor : pointer; align-content : center;">
+                                                                            <div class="text-capitalize text-white fw-bolder h1">
+                                                                                ${currentUserName.charAt(0).toUpperCase() + currentUserName.slice(1) ?? '?'}
+                                                                            </div>
+                                                                            <div> <small class="text-white h4">Add a Cover Picture</small> </div>
+                                                                        </div>`;
             }else{
                 toastr.error("Technical issue, please try again later.");
             }
@@ -409,10 +456,10 @@
             if (res.success)
             {
                 document.getElementById("profileImage").style.display = "none";
-                   document.getElementById("removedProfilePic").innerHTML = `<div id="letterProfileImage" class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
-                                                                                style='width:150px; height:150px; min-width:50px; min-height:50px;'>
-                                                                                   ${currentUserName.charAt(0).toUpperCase()}
-                                                                              </div>`;
+                document.getElementById("removedProfilePic").innerHTML = `<div id="letterProfileImage" class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                                                                            style='width:150px; height:150px; min-width:50px; min-height:50px;'>
+                                                                                ${currentUserName.charAt(0).toUpperCase()}
+                                                                            </div>`;
             }else{
                 toastr.error("Technical issue, please try again later.");
             }

@@ -1115,8 +1115,9 @@
 
             const totalVisibleSlots = siblingCount * 2 + 5;
 
-            if (totalVisibleSlots >= totalPages) {
-            return range(1, totalPages);
+            if (totalVisibleSlots >= totalPages) 
+            {
+                return range(1, totalPages);
             }
 
             const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);

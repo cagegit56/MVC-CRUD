@@ -53,6 +53,25 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
                     await request.postImage.CopyToAsync(stream);
                 }
 
+                string galleryFolder = Path.Combine("wwwroot/images/Gallery");
+                Directory.CreateDirectory(galleryFolder);
+                string galleryFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.postImage.FileName);
+                string galleryFilePath = Path.Combine(galleryFolder, galleryFileName);
+
+                using (var stream = new FileStream(galleryFilePath, FileMode.Create))
+                {
+                    await request.postImage.CopyToAsync(stream);
+                }
+
+                var galleryInfo = new GalleryImages()
+                {
+                    UserName = CurrentUser.UserName!,
+                    LastName = CurrentUser.LastName!,
+                    UserId = CurrentUser.UserId!,
+                    ImageUrl = "/images/Gallery/" + galleryFileName
+                };
+                await _context.Gallery.AddAsync(galleryInfo);
+
                 model.ImageContentUrl = "/images/PostPictures/" + fileName;
             }
 

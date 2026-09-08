@@ -305,17 +305,25 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> UserPosts()
+        public async Task<IActionResult> UserPosts(PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCurrentUserPostsQuery());
+            var res = await _mediator.Send(new GetCurrentUserPostsQuery(pgFilter));
             return Json(res);
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserPostComments(int postId)
+        public async Task<IActionResult> GetUserPostComments(int postId, PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCurrentUserPostCommentsQuery(postId));
+            var res = await _mediator.Send(new GetCurrentUserPostCommentsQuery(postId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GalleryPictures(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetGalleryImagesQuery(userId, pgFilter));
             return Json(res);
         }
 

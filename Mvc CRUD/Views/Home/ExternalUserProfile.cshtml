@@ -18,8 +18,9 @@
                 }else
                 {
                     <div id="letterCoverImage" class="bg-secondary w-100 text-center" style="height: 400px; align-content : center;">
-                        <div class="text-capitalize text-white fw-bolder h1"> @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) </div>
-                        <div> <small class="text-white h4">Add a Cover Picture</small> </div>
+                        <div class="text-capitalize text-white fw-bolder h1"> 
+                            @(char.ToUpper(Model.UserName[0]) + Model.UserName.Substring(1)) 
+                        </div>
                     </div>                   
                 }   
             </div>
@@ -182,23 +183,13 @@
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body">
                         <h5 class="fw-bold mb-3">Photos</h5>
-                        <div class="row g-2">
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                        </div>
+                        <div class="row g-2" id="galleryPics"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="col-md-8 mt-2">
+                <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body text-center text-primary">
                         <h5 class="fw-bold">Posts Feed</h5>
                     </div>
@@ -262,9 +253,8 @@
     document.addEventListener("DOMContentLoaded", function(){
 
        fetch(`/Home/ExternalUsersPosts/?userId=${userId}&pageSize=${pageSize}&pageNumber=${pageNumber}`, {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  })
-        .then( response => {
-           return response.json();                        
-        }).then( results =>{
+        .then( response => response.json())
+        .then( results =>{
             if (results.error) 
                 return document.getElementById('postContent').innerHTML =  
                         `<div class="text-center">
@@ -310,7 +300,54 @@
                         </div>`;
                     content.insertAdjacentHTML('beforeend', postInfo);
              });
-        });     
+        })
+        .catch(error =>
+             document.getElementById('postContent').innerHTML =
+                        `<div class="text-center">
+                            <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                            <h5>Failed to load more feeds.</h5>
+                            <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                            <p class="text-muted mb-2">Please refresh or try again later. </p>
+                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                            </button>
+                         </div>`
+        );  
+        
+        fetch(`/Home/GalleryPictures?userId=${userId}`, { method: "GET", headers : {"Content-Type" : "application/json"} })
+        .then( response => response.json())
+        .then (results => {
+            if (results.error)  return document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                                              <div class="text-muted">
+                                                                                                  <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                                              </div>
+                                                                                              <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                                              <p class="text-muted">Please refresh or try again later111. </p>
+                                                                                              <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                                  <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                                              </button>
+                                                                                          </div>`;
+            const res = results.data;
+            if (res.length <= 0) return document.getElementById("galleryPics").innerHTML = `<div class="alert alert-primary text-center w-100">No Pictures yet.</div>`;
+            const img = res.map(pic => {
+                return `<div class="col-4">
+                            <img src="${pic.imageUrl}" class="w-100 rounded" style="height: 150px" />
+                        </div>`;
+            }).join("");
+            document.getElementById("galleryPics").innerHTML = img;
+        })
+        .catch(error => {
+             document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                      <div class="text-muted">
+                                                                          <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                      </div>
+                                                                      <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                      <p class="text-muted">Please refresh or try again later. </p>
+                                                                      <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                          <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                      </button>
+                                                                  </div>`;
+        });
 
         
     });    

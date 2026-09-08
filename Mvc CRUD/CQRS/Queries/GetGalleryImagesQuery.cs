@@ -1,0 +1,6 @@
+﻿using MediatR;
+using Mvc_CRUD.Models;
+using Mvc_CRUD.Pagination;
+
+namespace Mvc_CRUD.CQRS.Queries;
+    public record GetGalleryImagesQuery(string userId, PaginationFilter pgFilter) : IRequest<PaginateResponse<List<GalleryImages>>>;

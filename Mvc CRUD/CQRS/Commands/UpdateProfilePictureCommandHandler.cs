@@ -53,6 +53,15 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
                         await request.image.CopyToAsync(stream);
                     }
 
+                    var galleryInfo = new GalleryImages() 
+                    { 
+                        UserName = _currentUser.UserName!,
+                        LastName = _currentUser.LastName!,
+                        UserId = _currentUser.UserId!,
+                        ImageUrl = "/images/Gallery/" + galleryFileName
+                    };
+                    await _context.Gallery.AddAsync(galleryInfo);
+
                     res.UserProfilePicUrl = "/images/ProfilePictures/" + fileName;
                     _context.Update(res);
 

@@ -42,6 +42,25 @@ internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateC
                         await request.image.CopyToAsync(stream);
                     }
 
+                    string galleryFolder = Path.Combine("wwwroot/images/Gallery");
+                    Directory.CreateDirectory(galleryFolder);
+                    string galleryFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.image.FileName);
+                    string galleryFilePath = Path.Combine(galleryFolder, galleryFileName);
+
+                    using (var stream = new FileStream(galleryFilePath, FileMode.Create))
+                    {
+                        await request.image.CopyToAsync(stream);
+                    }
+
+                    var galleryInfo = new GalleryImages()
+                    {
+                        UserName = _currentUser.UserName!,
+                        LastName = _currentUser.LastName!,
+                        UserId = _currentUser.UserId!,
+                        ImageUrl = "/images/Gallery/" + galleryFileName
+                    };
+                    await _context.Gallery.AddAsync(galleryInfo);
+
                     res.UserCoverPicUrl = "/images/CoverPictures/" + fileName;
                     _context.Update(res);
                     await _context.SaveChangesAsync(cancellationToken);
