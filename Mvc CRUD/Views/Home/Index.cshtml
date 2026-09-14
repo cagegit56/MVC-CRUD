@@ -441,7 +441,7 @@
                         const collapseElements = document.getElementById(`commentsContents-${postId}`);
                         if (collapseElements != null) 
                         {
-                            const collapseInstances = new bootstrap.Collapse(collapseElements, { toggle: false })
+                            const collapseInstances = new bootstrap.Collapse(collapseElements, { toggle: false })                            
                             const display = document.getElementById(`displayer-${postId}`);
                             var toggleStatus = display.classList.contains("show");
                             if(!toggleStatus)
@@ -449,7 +449,7 @@
                                 var result = await PostsApiRequest.getComments(postId, pageSize, currentPage);                                 
                                 const res = result.data;
                                 const totalCommentsRecords = result.totalRecords;
-                                displayComments(postId, res);
+                                displayComments(postId, res);                               
 
                                 let triggerCommentsCounts = 2;
                                 let loadedComments = 5;
@@ -470,6 +470,7 @@
                                 display.classList.remove("show");
                             }
                             collapseInstances.toggle();
+                            document.getElementById(`commentInput-${postId}`).focus();
                         }     
                     }catch(error)
                     {
@@ -484,7 +485,7 @@
                                 document.getElementById(`displayer-${postId}`).innerHTML = `
                                             <div class="text-center">
                                                     <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-                                                    <h5>Failed to load more feeds.</h5>
+                                                    <h5>Failed to comments.</h5>
                                                     <h6>Technical Issue!<br />We currently attending to the issue.</h6>
                                                     <p class="text-muted mb-2">Please refresh or try again later. </p>
                                                     <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
@@ -1263,8 +1264,8 @@
                                                                 ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                 <div class="input-group" data-post-id="${res.id}">
-                                                                    <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill"
-                                                                            placeholder="Write a reply..." autocomplete="off">
+                                                                    <textarea name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill"
+                                                                            placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                                     <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                                         <i class="bi bi-send"></i>
                                                                     </button>
@@ -1317,8 +1318,8 @@
                                                 ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                 <div class="input-group me-2" data-post-id="${comment.id}">
-                                                    <input type="text" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" 
-                                                            class="form-control form-control-sm rounded-pill" placeholder="Write a reply..." autocomplete="off">
+                                                    <textarea data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" 
+                                                            class="form-control form-control-sm rounded-pill" placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                     <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                         <i class="bi bi-send"></i>
                                                     </button>
@@ -1354,8 +1355,8 @@
                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                     : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                             <div class="input-group" data-post-id="${postId}">
-                                                <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                        placeholder="Write a comment..." autocomplete="off">
+                                                <textarea name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                        placeholder="Write a comment..." autocomplete="off" style="height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                 <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                     <i class="bi bi-send"></i>
                                                 </button>
@@ -1513,8 +1514,8 @@
                                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                                         : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                                 <div class="input-group me-2" data-post-id="${res.id}">
-                                                                    <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                                            placeholder="Write a reply..." autocomplete="off">
+                                                                    <textarea name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                            placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                                     <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                                         <i class="bi bi-send"></i>
                                                                     </button>
@@ -1562,8 +1563,8 @@
                                             ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                     : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                             <div class="input-group me-2" data-post-id="${comment.id}">
-                                                <input type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
-                                                        placeholder="Write a reply..." autocomplete="off">
+                                                <textarea type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
+                                                        placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                 <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                     <i class="bi bi-send"></i>
                                                 </button>
@@ -1599,10 +1600,10 @@
                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                 : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
-                                        <div class="input-group" data-post-id="${postId}">
-                                            <input type="text" name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                    placeholder="Write a comment..." autocomplete="off">
-                                            <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
+                                        <div class="d-flex col" data-post-id="${postId}">
+                                            <textarea name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                    placeholder="Write a comment..." autocomplete="off" style="height: 20px; resize: none; overflow-y: hidden;"></textarea>
+                                            <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary rounded-pill ms-2 px-3">
                                                 <i class="bi bi-send"></i>
                                             </button>
                                         </div>
@@ -1695,8 +1696,8 @@
                                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                                     : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                             <div class="input-group me-2" data-post-id="${res.id}">
-                                                                <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                                        placeholder="Write a reply..." autocomplete="off">
+                                                                <textarea name="Message" data-action="ReplyOfReplyInput" data-id="${res.id}" id="replyOfCommentInput-${res.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                        placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                                 <button type="submit" id="replyOfCommentButton-${res.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                                     <i class="bi bi-send"></i>
                                                                 </button>
@@ -1745,8 +1746,8 @@
                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                 : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                         <div class="input-group me-2" data-post-id="${comment.id}">
-                                            <input type="text" name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
-                                                    placeholder="Write a reply..." autocomplete="off">
+                                            <textarea name="Message" data-action="ReplyCommentInput" data-id="${comment.id}" id="replyCommentInput-${comment.id}" class="form-control form-control-sm rounded-pill"
+                                                    placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                             <button type="submit" id="replyCommentButton-${comment.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                 <i class="bi bi-send"></i>
                                             </button>
@@ -1832,8 +1833,8 @@
                                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                                     : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
                                                             <div class="input-group me-2" data-post-id="${data.id}">
-                                                                <input type="text" name="Message" data-action="ReplyOfReplyInput" data-id="${data.id}" id="replyOfCommentInput-${data.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
-                                                                        placeholder="Write a reply..." autocomplete="off">
+                                                                <textarea name="Message" data-action="ReplyOfReplyInput" data-id="${data.id}" id="replyOfCommentInput-${data.id}" class="form-control form-control-sm rounded-pill flex-grow-1"
+                                                                        placeholder="Write a reply..." autocomplete="off" style=" height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                                                 <button type="submit" id="replyOfCommentButton-${data.id}" class="btn d-none btn-primary btn-sm rounded-pill ms-2 px-3">
                                                                     <i class="bi bi-send"></i>
                                                                 </button>

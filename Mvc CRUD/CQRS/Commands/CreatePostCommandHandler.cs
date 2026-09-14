@@ -1,11 +1,12 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, bool>
+internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Result>
 {
     private readonly DataDbContext _context;
     private readonly IMediator _mediator;
@@ -18,14 +19,14 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
         _logger = logger;
     }
 
-    public async Task<bool> Handle(CreatePostCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreatePostCommand request, CancellationToken cancellationToken)
     {
         try
         {
             if (string.IsNullOrEmpty(request.model.Content) && (request.postImage == null || request.postImage.Length == 0))
             {
                 _logger.LogError("Text content and Image content cannot both be null/empty");
-                return false;
+                return Result.Fail("Text content and Image content cannot both be null/empty");
             }
             var model = new Posts();
             var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
@@ -53,17 +54,36 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
                     await request.postImage.CopyToAsync(stream);
                 }
 
+                string galleryFolder = Path.Combine("wwwroot/images/Gallery");
+                Directory.CreateDirectory(galleryFolder);
+                string galleryFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.postImage.FileName);
+                string galleryFilePath = Path.Combine(galleryFolder, galleryFileName);
+
+                using (var stream = new FileStream(galleryFilePath, FileMode.Create))
+                {
+                    await request.postImage.CopyToAsync(stream);
+                }
+
+                var galleryInfo = new GalleryImages()
+                {
+                    UserName = CurrentUser.UserName!,
+                    LastName = CurrentUser.LastName!,
+                    UserId = CurrentUser.UserId!,
+                    ImageUrl = "/images/Gallery/" + galleryFileName
+                };
+                await _context.Gallery.AddAsync(galleryInfo);
+
                 model.ImageContentUrl = "/images/PostPictures/" + fileName;
             }
 
             _context.Post.Add(model);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Ok();
         }
         catch (Exception Ex)
         {
            _logger.LogError($"Failed to create a new post due to : {Ex.Message}");
-            return false;
+            return Result.Fail("Failed to create a new post due to a technical issue.");
         }
     }
 }

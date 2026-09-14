@@ -35,7 +35,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> CreatePost(Posts model, IFormFile postImage)
         {
             var res = await _mediator.Send(new CreatePostCommand(model,postImage));
-            if (!res) return Json(new { success = false, message = "Failed to create a post." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successfully created a new post." });
         }
 
@@ -55,7 +55,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UnlikePost(int postId)
         {
             var res = await _mediator.Send(new UnlikePostCommand(postId));
-            if (!res) return Json(new { success = false, message = "Failed to unlike." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successfully unliked." });
         }
 
@@ -89,7 +89,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendComment(Comments model)
         {
             var res = await _mediator.Send(new SendCommentCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a comment." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Sent Successfully." });
         }
 
@@ -99,7 +99,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendReplyComment(CommentsReply model)
         {
             var res = await _mediator.Send(new SendReplyCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a reply." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Sent Successfully." });
         }
 
@@ -108,7 +108,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendReplyOfReply(ReplyOfReply model)
         {
             var res = await _mediator.Send(new SendReplyOfReplyCommand(model));
-            if (!res) return Json(new { success = false, message = "Failed to send a reply of reply." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Sent Successfully." });
         }
       
@@ -136,7 +136,7 @@ namespace Mvc_CRUD.Controllers
         {
             var res = await _mediator.Send(new SendMessageCommand(model));
             if (!res.IsSuccess) return Json(new { success = false, message = res });
-            return Json(new { success = true, message = "success" });
+            return Json(new { success = true, message = "Message Successfully sent" });
         }
 
         [Authorize]
@@ -153,7 +153,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> SendFriendRequest(FriendRequest model)
         {
             var res = await _mediator.Send(new SendFriendRequestCommand(model));
-            if (!res) return Json(new { success = false, message = "failed to send a request."});
+            if (!res.IsSuccess) return Json(new { success = false, message = res});
             return Json(new { success = true, message = "Friend Request Successfully Sent" });
         }
 
@@ -197,7 +197,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> BlockUser(BlockedUsers model)
         {
             var res = await _mediator.Send(new BlockUserCommand(model));
-            if (!res.IsSuccess) return Json(new { success = false, message = $"{res}" });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successfully blocked."});
         }               
 
@@ -206,7 +206,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> Gallery(IFormFile photo)
         {
             var res = await _mediator.Send(new GalleryCommand(photo));
-            if (!res) return Json(new { success = false, message = "Failed to save image." });
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successful saved" });
         }
 
@@ -263,7 +263,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateUserProfile(UserProfile model, string tabInfo)
         {
             var res = await _mediator.Send(new UpdateUserProfileCommand(model, tabInfo));
-            if (!res) return Json(new { success = false, messsage = "Failed to update user profile info." });
+            if (!res.IsSuccess) return Json(new { success = false, messsage = res });
             return Json(new { success = true, message = "Successfully updated user info." });
         }
 
@@ -272,8 +272,17 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateProfilePicture(IFormFile profileImage)
         {
             var res = await _mediator.Send(new UpdateProfilePictureCommand(profileImage));
-            if (!res) return Json(new { success = false, message = "Failed to update profile picture."});
+            if (!res.IsSuccess) return Json(new { success = false, message = res});
             return Json(new { success = true, message = "Successful updated profile picture"}); 
+        }
+
+        [HttpPatch]
+        [Authorize]
+        public async Task<IActionResult> RemoveProfilePicture()
+        {
+            var res = await _mediator.Send(new RemoveProfilePictureCommand());
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Successful updated profile picture" });
         }
 
         [HttpPatch]
@@ -281,23 +290,40 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> UpdateCoverPicture(IFormFile coverImage)
         {
             var res = await _mediator.Send(new UpdateCoverPictureCommand(coverImage));
-            if (!res) return Json(new { success = true, message = "Failed to update cover image."});
+            if (!res.IsSuccess) return Json(new { success = false, message = res});
             return Json(new { success = true, message = "Sucessfully updated cover image."});
-        } 
+        }
+
+        [HttpPatch]
+        [Authorize]
+        public async Task<IActionResult> RemoveCoverPicture()
+        {
+            var res = await _mediator.Send(new RemoveCoverPicureCommand());
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Sucessfully updated cover image." });
+        }
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> UserPosts()
+        public async Task<IActionResult> UserPosts(PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCurrentUserPostsQuery());
+            var res = await _mediator.Send(new GetCurrentUserPostsQuery(pgFilter));
             return Json(res);
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserPostComments(int postId)
+        public async Task<IActionResult> GetUserPostComments(int postId, PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetCurrentUserPostCommentsQuery(postId));
+            var res = await _mediator.Send(new GetCurrentUserPostCommentsQuery(postId, pgFilter));
+            return Json(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GalleryPictures(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetGalleryImagesQuery(userId, pgFilter));
             return Json(res);
         }
 

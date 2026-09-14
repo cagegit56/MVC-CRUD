@@ -1,7 +1,8 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-public record SendCommentCommand(Comments model) : IRequest<bool>;
+public record SendCommentCommand(Comments model) : IRequest<Result>;
 

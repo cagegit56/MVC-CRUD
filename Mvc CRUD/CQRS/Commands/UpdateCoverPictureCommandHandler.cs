@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
@@ -6,7 +7,7 @@ using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateCoverPictureCommand, bool>
+internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateCoverPictureCommand, Result>
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
@@ -21,7 +22,7 @@ internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateC
         _logger = logger;
     }
 
-    public async Task<bool> Handle(UpdateCoverPictureCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateCoverPictureCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -41,22 +42,41 @@ internal sealed class UpdateCoverPictureCommandHandler : IRequestHandler<UpdateC
                         await request.image.CopyToAsync(stream);
                     }
 
+                    string galleryFolder = Path.Combine("wwwroot/images/Gallery");
+                    Directory.CreateDirectory(galleryFolder);
+                    string galleryFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.image.FileName);
+                    string galleryFilePath = Path.Combine(galleryFolder, galleryFileName);
+
+                    using (var stream = new FileStream(galleryFilePath, FileMode.Create))
+                    {
+                        await request.image.CopyToAsync(stream);
+                    }
+
+                    var galleryInfo = new GalleryImages()
+                    {
+                        UserName = _currentUser.UserName!,
+                        LastName = _currentUser.LastName!,
+                        UserId = _currentUser.UserId!,
+                        ImageUrl = "/images/Gallery/" + galleryFileName
+                    };
+                    await _context.Gallery.AddAsync(galleryInfo);
+
                     res.UserCoverPicUrl = "/images/CoverPictures/" + fileName;
                     _context.Update(res);
                     await _context.SaveChangesAsync(cancellationToken);
                 }
                 _cache.Remove($"UserInfo-{_currentUser.UserId}");
-                return true;
+                return Result.Ok();
             }
             else
             {
                 _logger.LogError("No image content found/ image content cannot be null.");
-                return false;
+                return Result.Fail("No image content found/ image content cannot be null.");
             }
         }
         catch (Exception ex) {
             _logger.LogError($"Failed to save image content due to : {ex.Message}");
-            return false;
+            return Result.Fail("Technical issue, please try again later");
         }        
     }
 }

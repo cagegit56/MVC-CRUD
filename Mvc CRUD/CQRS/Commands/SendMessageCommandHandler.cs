@@ -6,7 +6,7 @@ using Mvc_CRUD.Models;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-    internal sealed class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Result<string>>
+    internal sealed class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Result>
     {
         private readonly DataDbContext _context;
         private readonly IMediator _mediator;
@@ -21,7 +21,7 @@ namespace Mvc_CRUD.CQRS.Commands;
            _logger = logger;
            _cache = cache;
         }
-        public async Task<Result<string>> Handle(SendMessageCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(SendMessageCommand command, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(command.model.ToUserName) || string.IsNullOrEmpty(command.model.ToUserId))
             {
@@ -47,7 +47,7 @@ namespace Mvc_CRUD.CQRS.Commands;
                 await _context.SaveChangesAsync(cancellationToken);
                 _cache.Remove("cacheAll");
 
-                return Result.Ok("Message succesfully sent");
+                return Result.Ok();
             }
             catch (Exception ex) 
             {

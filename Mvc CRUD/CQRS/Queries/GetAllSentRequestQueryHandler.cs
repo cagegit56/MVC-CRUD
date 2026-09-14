@@ -29,7 +29,9 @@ namespace Mvc_CRUD.CQRS.Queries;
                 var res = await _context.FriendRequests
                                  .Where(x => x.UserId == _currentUser.UserId && x.Status == "Pending" && !x.isDeleted)
                                  .GroupBy(x => x.ToUserId).Select(k => k.First()).AsNoTracking().ToListAsync();
-                return Result.Ok( _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(res, request.pgFilter));
+                var paginatedRes = _pagination.PaginateAndMap<FriendRequest, FriendRequestDto>(res, request.pgFilter);
+                paginatedRes.UserName = _currentUser.UserName;
+                return Result.Ok(paginatedRes);
             }
             catch (Exception ex)
             {

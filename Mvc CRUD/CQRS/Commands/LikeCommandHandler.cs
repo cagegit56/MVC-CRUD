@@ -19,7 +19,12 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool su
 
     public async Task<(bool success, string error)> Handle(LikeCommand request, CancellationToken cancellationToken)
     {
-        if (request.postId <= 0) return (false, "Post id is missing or null..");
+        if (request.postId == 0)
+        {
+            _logger.LogError("Post id is missing or null..");
+            return (false, "Post id is missing or null..");
+        }
+            
         try
         {
             var model = new Likes();
@@ -42,7 +47,7 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool su
             if (checkExistence != null)
             {
                 var res = await _mediator.Send(new ReLikeCommand(checkExistence.PostId, checkExistence.Username));
-                if (res) return (true, "");
+                if (res.IsSuccess) return (true, "");
                 return (false, "Failed to re-like");
             }
             else

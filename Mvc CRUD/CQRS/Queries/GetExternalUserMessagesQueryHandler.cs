@@ -35,6 +35,7 @@ internal sealed class GetExternalUserMessagesQueryHandler : IRequestHandler<GetE
             if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
             request.pgFilter.SortBy = "asc";
             var paginatedRes = _pagination.PaginateAndMap<Chat, ExternalUserMessagesDto>(res, request.pgFilter);
+            paginatedRes.UserName = _currentUser.UserName;
             return paginatedRes;
         }
         catch (Exception ex) {

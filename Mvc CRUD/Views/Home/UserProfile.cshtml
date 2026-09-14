@@ -23,6 +23,7 @@
                     </div>
                     <div id="updatedCoverImage"></div>
                 }
+                <div id="removedCoverPic"></div>
             </button>
             <ul class="custom-menu" id="dropDownMenu">
                 <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#viewCoverPic">View Cover Photo</a></li>
@@ -30,7 +31,7 @@
                         <input type="file" id="coverInput" accept="image/*" class="d-none">  </label>
                 </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#">Remove Cover Photo</a></li>
+                <li><a class="dropdown-item text-danger" id="removeCoverPic" href="#">Remove Cover Photo</a></li>
             </ul>
             </div>
 
@@ -49,7 +50,8 @@
                                 @(!string.IsNullOrEmpty(Model.UserName) ? Model.UserName.Substring(0, 1).ToUpper() : "XX")
                             </div>
                             <div id="updatedProfileImage"></div>
-                        }                        
+                        } 
+                        <div id="removedProfilePic"></div>
                         <div class="camera-icon">
                             <i class="bi bi-camera-fill"></i>
                         </div>
@@ -60,7 +62,7 @@
                         <li><label class="dropdown-item" style="cursor : pointer">Change Profile Picture
                             <input type="file" id="picInput" accept="image/*" class="d-none"></label></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#">Remove Photo</a></li>
+                        <li><a class="dropdown-item text-danger" id="removeProfilePic" href="#">Remove Photo</a></li>
                     </ul>
                 </div>
             </div>
@@ -92,7 +94,7 @@
             </li>
         </ul>
 
-        <div class="row mt-4">
+        <div class="row mt-4 mb-2">
             <div class="col-md-4">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
@@ -105,31 +107,20 @@
 
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3">Photos</h5>
-                        <div class="row g-2">
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                            <div class="col-4">
-                                <img src="~/images/cover.png" class="w-100 rounded" />
-                            </div>
-                        </div>
+                        <h5 class="fw-bold">Photos</h5>
+                        <div class="row g-2" id="galleryPics"></div>
                     </div>
                 </div>
             </div>
 
             @* ********************************** Posts **************************** *@
-            <div class="col-md-8">
+            <div class="col-md-8 mt-2">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body">
                         <div class="d-flex align-items-center gap-1 mb-2">
                             @if (!string.IsNullOrEmpty(Model.UserProfilePicUrl))
                             {
-                                <img src="@Model.UserProfilePicUrl" class="rounded-circle me-2 d-flex align-items-center justify-content-center"
-                                     style="width:45px; height:45px; object-fit: cover; cursor : pointer" />
+                                <img src="@Model.UserProfilePicUrl" class="rounded-circle me-2" style="width:45px; height:45px; object-fit: cover; cursor : pointer;" />
                             }
                             else
                             {
@@ -203,7 +194,7 @@
                 </div>
                     <div class="modal-body">                        
                         <img src="@Model.UserProfilePicUrl" class="post-image img-fluid " alt="Post image"
-                             style="height : 450px; width : 500px">
+                             style="height : 450px; width : 500px; object-fit: cover;">
                     </div>
             </div>
         </div>
@@ -229,7 +220,12 @@
 
 
 <script>
+    const currentUserName = "@Model.UserName";
+    const currentUserLastName = "@Model.LastName";
+    const currentUserId = "@Model.UserId";
+
     document.addEventListener("DOMContentLoaded", function(){
+
         const dropdown = document.getElementById("toggleDropDown");
         const menu = document.getElementById("dropDownMenu");
         const isCoverImage = document.getElementById("coverImage");
@@ -277,17 +273,24 @@
 
     });
 
-    fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  }).then(results =>{
-        if(!results)
-        {
-            return document.getElementById('postContent').innerHTML =  `<div class="alert alert-danger text-center w-100">Error loading Posts. Please try again later.</div>`;
-        }else{
-            return results.json();
-        }        
-    }).then(res =>{
+    fetch('/Home/UserPosts', {method: "GET", headers: { "X-Requested-With": "XMLHttpRequest" }  })
+    .then(response => response.json())
+    .then(results => {
+        if (results.error)
+            return document.getElementById('postContent').innerHTML =  `<div class="text-center">
+                                                                            <div class="display-1 text-muted">
+                                                                                <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                            </div>
+                                                                            <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                            <p class="text-muted">Please refresh or try again later. </p>
+                                                                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                            </button>
+                                                                        </div>`;
         const content = document.getElementById('postContent');
+        const res = results.data;
          if (res.length === 0)
-              return content.innerHTML = ` <div class="alert alert-primary text-center w-100">No Posts found. Please create a post and try again.</div>`;
+              return content.innerHTML = `<div class="alert alert-primary text-center w-100">No Posts found. Please create a post and try again.</div>`;
          content.innerHTML = '';
          res.forEach(post => {
                 const firstLetter = post.userName?.charAt(0).toUpperCase() ?? "?";
@@ -308,7 +311,7 @@
                             ${post.postBgColour ? ` <div class="post-bgcard"  style="background-color:${post.postBgColour};">
                                         <div class="post-bgtext">${post.content}</div>
                                         </div>` : `${post.content}`}
-                            ${post.imageContentUrl ? `<img src="${post.imageContentUrl}" class="w-100 rounded mb-3" />` : ''}
+                            ${post.imageContentUrl ? `<img src="${post.imageContentUrl}" class="w-100 rounded mb-3" style="object-fit: cover" />` : ''}
                             <div class="d-flex justify-content-around">
                                 <button class="btn btn-light w-100 me-2"><i class="bi bi-hand-thumbs-up"></i> Like</button>
                                 <button class="btn btn-light w-100 me-2"><i class="bi bi-chat"></i> Comment</button>
@@ -318,7 +321,56 @@
                     </div>`;
                 content.insertAdjacentHTML('beforeend', postInfo);
          });
-    }); 
+    })
+    .catch(error =>{
+        document.getElementById("postContent").innerHTML = `<div class="text-center">
+                                                                <div class="text-muted">
+                                                                    <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                </div>
+                                                                <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                <p class="text-muted">Please refresh or try again later. </p>
+                                                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                </button>
+                                                            </div>`;
+    });
+    
+    fetch(`/Home/GalleryPictures?userId=${currentUserId}&pageSize=5&pageNumber=1`, { method : "GET", headers: { "Content-Type" : "application/json"} })
+    .then( response => response.json() )
+    .then(results => {
+         if (results.error)
+              return document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                            <div class="text-muted">
+                                                                                <i class="bi bi-exclamation-triangle text-danger"></i>
+                                                                            </div>
+                                                                            <h5>Technical Issue!<br />We currently attending to the issue.</h5>
+                                                                            <p class="text-muted">Please refresh or try again later. </p>
+                                                                            <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                                <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                            </button>
+                                                                         </div>`;
+        const res = results.data;
+        if (res.length <= 0) 
+             return document.getElementById("galleryPics").innerHTML = `<div class="alert alert-primary text-center w-100">No Pictures yet. Please add a profile/cover image.</div>`;
+        const images = res.map( pics => {            
+            return `<div class="col-4">
+                        <img src="${pics.imageUrl}" class="w-100 rounded" style="height: 150px; object-fit: cover;" />
+                    </div>`;
+        }).join(""); 
+        document.getElementById("galleryPics").innerHTML = images;
+    })
+    .catch(error =>{
+        document.getElementById("galleryPics").innerHTML = `<div class="text-center">
+                                                                <div class="text-muted">
+                                                                    <i class="bi bi-exclamation-triangle fs-2 text-danger"></i>
+                                                                </div>
+                                                                <h6>Technical Issue!<br />We currently attending to the issue.</h6>
+                                                                <p class="text-muted">Please refresh or try again later. </p>
+                                                                <button class="btn btn-primary btn-sm action-btn" onclick="window.location.reload();">
+                                                                    <i class="bi bi-plus-circle me-2"></i>Refresh
+                                                                </button>
+                                                            </div>`;
+    });
          
 
     document.getElementById("picInput").addEventListener("change", async function (event) {
@@ -372,6 +424,46 @@
             }
         }
     });
+
+    const removeCoverPicBtn = document.getElementById("removeCoverPic");
+    if (removeCoverPicBtn)
+    {
+        removeCoverPicBtn.addEventListener("click", async (e) =>{
+            const response = await fetch(`RemoveCoverPicture`, {method: "PATCH", headers: {"Content-Type": "application/json"} });
+            const res = await response.json();
+            if (res.success)
+            {
+                document.getElementById("coverImage").style.display = "none";
+                document.getElementById("removedCoverPic").innerHTML = `<div id="letterCoverImage" class="bg-secondary w-100" style="height: 400px; cursor : pointer; align-content : center;">
+                                                                            <div class="text-capitalize text-white fw-bolder h1">
+                                                                                ${currentUserName.charAt(0).toUpperCase() + currentUserName.slice(1) ?? '?'}
+                                                                            </div>
+                                                                            <div> <small class="text-white h4">Add a Cover Picture</small> </div>
+                                                                        </div>`;
+            }else{
+                toastr.error("Technical issue, please try again later.");
+            }
+        });
+    }
+
+    const removeProfilePicBtn = document.getElementById("removeProfilePic");
+    if (removeProfilePicBtn)
+    {
+        removeProfilePicBtn.addEventListener("click", async (e) =>{
+            const response = await fetch(`RemoveProfilePicture`, {method: "PATCH",headers: { "X-Requested-With": "XMLHttpRequest" } });
+            const res = await response.json();
+            if (res.success)
+            {
+                document.getElementById("profileImage").style.display = "none";
+                document.getElementById("removedProfilePic").innerHTML = `<div id="letterProfileImage" class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center text-capitalize fw-bolder h2 profile-pic-phone-width'
+                                                                            style='width:150px; height:150px; min-width:50px; min-height:50px;'>
+                                                                                ${currentUserName.charAt(0).toUpperCase()}
+                                                                            </div>`;
+            }else{
+                toastr.error("Technical issue, please try again later.");
+            }
+        });
+    }
 
 </script>
 
