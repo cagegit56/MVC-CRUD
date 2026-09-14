@@ -1600,7 +1600,7 @@
                                         <input type="hidden" name="LastName" value="${loggedInLastName}" />
                                         ${loggedInUserProfile ? `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 36px; height: 36px;">`
                                                 : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 36px; height: 36px;">${loggedInUserName.charAt(0).toUpperCase() ?? "?"}</div>`}
-                                        <div class="input-group" data-post-id="${postId}">
+                                        <div class="d-flex col" data-post-id="${postId}">
                                             <textarea name="Message" id="commentInput-${postId}" data-action="CommentInput" data-id="${postId}" class="form-control form-control-sm rounded-pill flex-grow-1"
                                                     placeholder="Write a comment..." autocomplete="off" style="height: 20px; resize: none; overflow-y: hidden;"></textarea>
                                             <button type="submit" id="commentButton-${postId}" class="btn d-none btn-primary rounded-pill ms-2 px-3">

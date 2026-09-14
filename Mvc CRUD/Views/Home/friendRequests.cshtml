@@ -143,10 +143,11 @@
         
         let currentPage = 1;
         let pageSize = 5;
-        let selectedTab = "";
-        let minimizedMsgCard = false;
-        let state = { currentPage: 1, totalPages : @Model.TotalPages };
+        let totalPage = "@Model.TotalPages";
         const currentUserName = "@Model.UserName";
+        let selectedTab = "";
+        let minimizedMsgCard = false;        
+        
         
         toastr.options = {
             "closeButton": true,
@@ -178,7 +179,6 @@
                         selectedTab = "friend";
                         currentPage = 1;
                         pageSize = 5;
-                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadFriends(pageSize, currentPage);
                     }else if (activeTabId === "request-tab") 
@@ -186,14 +186,12 @@
                         selectedTab = "request";
                         currentPage = 1;
                         pageSize = 5;
-                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadFriendRequest(pageSize, currentPage);
                     }else {
                         selectedTab = "sentRequest";
                         currentPage = 1;
                         pageSize = 5;
-                        state.currentPage = 1;
                         document.getElementById("pageSize").value = 5;
                         loadSentRequest(pageSize, currentPage);
                     }
@@ -228,7 +226,7 @@
                 })
             )
             document.getElementById("loadingSpinner").classList.add("d-none");
-            update();
+            paginate(totalPage);
         }
         
         async function loadFriends(size,pageNumber) 
@@ -241,8 +239,7 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    state.totalPages = 0;
-                    update();
+                    paginate(0);
                     return document.getElementById('friend').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -258,11 +255,9 @@
                     </div> `;
                 }
                 renderFriends(result.data);
-                state.totalPages = result.totalPages;
-                update();
+                paginate(result.totalPages);
             }catch (error) {
-                state.totalPages = 0;
-                update();
+                paginate(0);
                 document.getElementById('friend').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -355,8 +350,7 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    state.totalPages = 0;
-                    update();
+                    paginate(0);
                     return document.getElementById('request').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -372,11 +366,9 @@
                     </div> `;
                 }
                 renderReceivedFriendRequests(result.data);
-                state.totalPages = result.totalPages;
-                update();
+                paginate(result.totalPages);
             }catch (error) {
-                state.totalPages = 0;
-                update();
+                paginate(0);
                 document.getElementById('request').innerHTML = `
                         <div class="container mb-1 mt-1">
                         <div class="text-center">
@@ -467,8 +459,7 @@
                 if (result.error) 
                 {
                     loadSpinner.classList.add("d-none");
-                    state.totalPages = 0;
-                    update();
+                    paginate(0);
                     return document.getElementById('sentReq').innerHTML = `
                         <div class="container mb-1 mt-1">
                             <div class="text-center">
@@ -484,11 +475,9 @@
                     </div> `;
                 }
                 renderSentRequests(result.data);
-                state.totalPages = result.totalPages;
-                update();
+                paginate(result.totalPages);
             }catch (error) {
-                state.totalPages = 0;
-                update();
+                paginate(0);
                 document.getElementById('sentReq').innerHTML = `
                     <div class="container mb-1 mt-1">
                         <div class="text-center">
@@ -908,136 +897,7 @@
             const handler = formSubmission[action];
             if (handler) return handler(e);
         }); 
-
-        // function setupPagination(totalPages) 
-        // {
-        //     const pagination = document.getElementById('pagination');
-        //     pagination.innerHTML = '';
-
-        //     if (totalPages <= 1) return;
-
-        //     const createItem = (page, label, disabled, active) => {
-        //         const li = document.createElement('li');
-        //         li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
-        //         li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
-        //         li.querySelector('a').addEventListener('click', e => {
-        //             e.preventDefault();
-        //             if (!disabled && page !== currentPage) 
-        //             {
-        //                 currentPage = page;
-        //                 switch(selectedTab)
-        //                 {
-        //                     case 'friend':
-        //                     loadFriends(pageSize, currentPage);
-        //                     break;
-        //                     case 'request' :
-        //                     loadFriendRequest(pageSize, currentPage);
-        //                     break;
-        //                     case 'sentRequest' :
-        //                     loadSentRequest(pageSize, currentPage);
-        //                     break;
-        //                     default :
-        //                     loadFriends(pageSize, currentPage);
-        //                 }
-        //             }
-        //         });
-        //         return li;
-        //     };
-
-        //     function createEllipsis() 
-        //     {
-        //         const li = document.createElement('li');
-        //         li.className = "page-item disabled";
-        //         li.innerHTML = `<span class="page-link">...</span>`;
-        //         pagination.appendChild(li);
-        //     }
-
-        //     pagination.appendChild( createItem(currentPage - 1, '«', currentPage === 1) );
-        //         if (totalPages < 5)
-        //         {
-        //             for (let i = 1; i <= totalPages; i++)
-        //             {
-        //                 pagination.appendChild( createItem(i, i, false, i === currentPage));                                            
-        //             }                           
-        //         }else{
-        //             const limiter = 5;
-        //             let displayedPages = 1;
-        //             for (let k = 1; k <= totalPages; k++)
-        //             {   
-        //                 if (currentPage >= 4 )
-        //                 {     
-        //                     const leftPages = totalPages - (currentPage -1);
-        //                     for (let g = currentPage - 1; g <= totalPages; g++) 
-        //                     {                                
-        //                         if (leftPages < 5)
-        //                         {
-        //                             if (leftPages < 3)
-        //                             {
-        //                                 for (let m = (g - 2); m <= totalPages; m++)
-        //                                 {  
-        //                                     if (displayedPages >= limiter)
-        //                                     {
-        //                                         createEllipsis();
-        //                                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
-        //                                         break;
-        //                                     }else{
-        //                                         pagination.appendChild( createItem( m, m, false, m === currentPage));
-        //                                         displayedPages++;
-        //                                     }
-        //                                 }
-        //                             }else{
-        //                                 for (let m = (g - 1); m <= totalPages; m++)
-        //                                 {  
-        //                                     if (displayedPages >= limiter)
-        //                                     {
-        //                                         createEllipsis();
-        //                                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
-        //                                         break;
-        //                                     }else{
-        //                                         pagination.appendChild( createItem( m, m, false, m === currentPage));
-        //                                         displayedPages++;
-        //                                     }
-        //                                 }
-        //                             }                                   
-        //                             break;
-        //                         } 
-
-        //                         if (displayedPages >= limiter)
-        //                         {
-        //                             createEllipsis();
-        //                             pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
-        //                             break;
-        //                         }else{
-        //                             pagination.appendChild( createItem(g, g, false, g === currentPage)); 
-        //                             displayedPages++;
-        //                         }                               
-        //                     }  
-        //                     break;
-        //                 }else
-        //                 {
-        //                     if (displayedPages >= limiter)
-        //                     {
-        //                         createEllipsis();
-        //                         pagination.appendChild( createItem(totalPages, totalPages, false, currentPage === totalPages));
-        //                         break;
-        //                     }else{
-        //                         displayedPages++;
-        //                         pagination.appendChild( createItem(k, k, false, k === currentPage));
-        //                     }
-        //                 }                        
-        //             }
-        //         }
-        //     pagination.appendChild(createItem(currentPage + 1, '»', currentPage === totalPages));            
-        // }
-
-        // function updatePaginationInfo(result) 
-        // {
-        //     const { totalRecords } = result;
-        //     const data = currentPage * pageSize;
-        //     const updatedData = data <= totalRecords ? data : totalRecords; 
-        //     const info = totalRecords === 0 ? 'Showing 0 of 0 records' : `Showing ${updatedData} of ${totalRecords} records`;
-        //     document.getElementById('paginationInfo').textContent = info;
-        // }
+      
 
         function handlePageSizeChange() 
         {
@@ -1059,10 +919,8 @@
             }
         }
 
-        const container = document.getElementById('pagination');
-        const DOTS = 'DOTS';   
-
-        function renderPagination(container, { currentPage, totalPages, onPageChange, siblingCount = 1 }) 
+        const container = document.getElementById('pagination'); 
+        function renderPagination(container, { currentPage, totalPages, onPageChange }) 
         {
             container.innerHTML = '';
             if (!totalPages || totalPages <= 1) return;
@@ -1091,10 +949,10 @@
             const isFirstPage = currentPage === 1;
             container.appendChild( createItem( isFirstPage ? 1 : currentPage - 1,'«', isFirstPage ) );
 
-            const range = getPaginationRange(currentPage, totalPages, siblingCount);
+            const range = getPaginationRange(currentPage, totalPages);
             for (const item of range) 
             {
-                if (item === DOTS) {
+                if (item === "Ellipsis") {
                     container.appendChild(createEllipsis());
                 } else {
                     container.appendChild( createItem(item, item, false, item === currentPage ));
@@ -1106,49 +964,42 @@
         }
 
         
-        function getPaginationRange(currentPage, totalPages, siblingCount = 1) 
+        function getPaginationRange(currentPage, totalPages) 
         {
             if (totalPages <= 0) return [];
+            const range = (start, end) => Array.from({ length: end - start + 1 }, (_, i) => start + i);
 
-            const range = (start, end) =>
-            Array.from({ length: end - start + 1 }, (_, i) => start + i);
-
-            const totalVisibleSlots = siblingCount * 2 + 5;
-
-            if (totalVisibleSlots >= totalPages) 
+            if ( totalPages <= 7) 
             {
                 return range(1, totalPages);
             }
 
-            const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
-            const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+            const leftSiblingIndex = Math.max(currentPage - 1, 1);  
+            const rightSiblingIndex = Math.min(currentPage + 1, totalPages);
 
-            const shouldShowLeftDots = leftSiblingIndex > 2;
+            const shouldShowLeftDots = leftSiblingIndex > 2; 
             const shouldShowRightDots = rightSiblingIndex < totalPages - 1;
 
             if (!shouldShowLeftDots && shouldShowRightDots) 
             {
-                const leftItemCount = 3 + siblingCount * 2;
-                return [...range(1, leftItemCount), DOTS, totalPages];
+                return [...range(1, 5), "Ellipsis", totalPages];
             }
 
             if (shouldShowLeftDots && !shouldShowRightDots) 
             {
-                const rightItemCount = 3 + siblingCount * 2;
-                return [1, DOTS, ...range(totalPages - rightItemCount + 1, totalPages)];
+                return [1, "Ellipsis", ...range(totalPages - 5 + 1, totalPages)];
             }
 
-            return [1, DOTS, ...range(leftSiblingIndex, rightSiblingIndex), DOTS, totalPages];
+            return [1, "Ellipsis", ...range(leftSiblingIndex, rightSiblingIndex), "Ellipsis", totalPages];
         }              
                
 
-        function update() 
+        function paginate(totalPages) 
         {
-            state.totalPages >= 1 ? document.getElementById('paginationInfo').innerHTML = ` Showing Page ${state.currentPage} of ${state.totalPages}`
+            totalPages >= 1 ? document.getElementById('paginationInfo').innerHTML = ` Showing Page ${currentPage} of ${totalPages}`
                     : document.getElementById('paginationInfo').innerHTML = "";
-            renderPagination(container, { currentPage: state.currentPage, totalPages: state.totalPages, 
-                onPageChange: (page) => {
-                    state.currentPage = page;
+            renderPagination(container, { currentPage, totalPages, onPageChange: (page) => {
+                    currentPage = page;
                     switch(selectedTab)
                     {
                         case 'friend':
@@ -1163,7 +1014,7 @@
                         default :
                         loadFriends(pageSize, page);
                     }
-                    update();
+                    paginate(totalPages);
                 },
             });
         }

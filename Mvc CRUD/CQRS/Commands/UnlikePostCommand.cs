@@ -1,5 +1,6 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-public record UnlikePostCommand(int postId) : IRequest<bool>;
+public record UnlikePostCommand(int postId) : IRequest<Result>;

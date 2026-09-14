@@ -1,11 +1,12 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
-internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, bool>
+internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Result>
 {
     private readonly DataDbContext _context;
     private readonly IMediator _mediator;
@@ -18,14 +19,14 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
         _logger = logger;
     }
 
-    public async Task<bool> Handle(CreatePostCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreatePostCommand request, CancellationToken cancellationToken)
     {
         try
         {
             if (string.IsNullOrEmpty(request.model.Content) && (request.postImage == null || request.postImage.Length == 0))
             {
                 _logger.LogError("Text content and Image content cannot both be null/empty");
-                return false;
+                return Result.Fail("Text content and Image content cannot both be null/empty");
             }
             var model = new Posts();
             var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
@@ -77,12 +78,12 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
 
             _context.Post.Add(model);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Ok();
         }
         catch (Exception Ex)
         {
            _logger.LogError($"Failed to create a new post due to : {Ex.Message}");
-            return false;
+            return Result.Fail("Failed to create a new post due to a technical issue.");
         }
     }
 }
