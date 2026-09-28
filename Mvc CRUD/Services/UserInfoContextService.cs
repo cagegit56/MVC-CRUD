@@ -11,8 +11,7 @@ internal sealed class UserInfoContextService : IUserInfoContextService
     }
 
     private ClaimsPrincipal? User => _httpContext.HttpContext?.User;
-    public string? UserName =>
-        User?.FindFirst(ClaimTypes.Name)?.Value ?? User?.FindFirst("preferred_username")?.Value;
+    public string? UserName => User?.FindFirst(ClaimTypes.Name)?.Value ?? User?.FindFirst("preferred_username")?.Value;
 
     public string? UserId => User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User?.FindFirst("sub")?.Value;
 

@@ -2,6 +2,7 @@
 using MediatR;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
+using Mvc_CRUD.Services;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Mvc_CRUD.CQRS.Commands;
@@ -9,13 +10,13 @@ namespace Mvc_CRUD.CQRS.Commands;
 internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Result>
 {
     private readonly DataDbContext _context;
-    private readonly IMediator _mediator;
+    private readonly ICurrentUserProfile _currentUser;
     private readonly ILogger<CreatePostCommandHandler> _logger;
 
-    public CreatePostCommandHandler(DataDbContext context, IMediator mediator, ILogger<CreatePostCommandHandler> logger)
+    public CreatePostCommandHandler(DataDbContext context, ICurrentUserProfile currentUser, ILogger<CreatePostCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _mediator = mediator;
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _logger = logger;
     }
 
@@ -29,13 +30,12 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
                 return Result.Fail("Text content and Image content cannot both be null/empty");
             }
             var model = new Posts();
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
-            if (CurrentUser.UserId != null && CurrentUser.UserName != null && CurrentUser.LastName != null)
+            if (_currentUser.UserId != null && _currentUser.UserName != null && _currentUser.LastName != null)
             {
-                model.UserId = CurrentUser.UserId;
-                model.UserName = CurrentUser.UserName;
-                model.LastName = CurrentUser.LastName;
-                model.UserImageUrl = CurrentUser.UserProfilePicUrl;
+                model.UserId = _currentUser.UserId;
+                model.UserName = _currentUser.UserName;
+                model.LastName = _currentUser.LastName;
+                model.UserImageUrl = _currentUser.ProfilePicUrl;
             }
 
             model.PostScope = request.model.PostScope;
@@ -66,9 +66,9 @@ internal sealed class CreatePostCommandHandler : IRequestHandler<CreatePostComma
 
                 var galleryInfo = new GalleryImages()
                 {
-                    UserName = CurrentUser.UserName!,
-                    LastName = CurrentUser.LastName!,
-                    UserId = CurrentUser.UserId!,
+                    UserName = _currentUser.UserName!,
+                    LastName = _currentUser.LastName!,
+                    UserId = _currentUser.UserId!,
                     ImageUrl = "/images/Gallery/" + galleryFileName
                 };
                 await _context.Gallery.AddAsync(galleryInfo);

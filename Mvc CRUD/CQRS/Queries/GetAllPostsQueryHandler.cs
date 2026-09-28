@@ -11,12 +11,15 @@ namespace Mvc_CRUD.CQRS.Queries;
 internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery, PaginateResponse<List<PostsDto>>>
 {
     private readonly DataDbContext _context;
+    private readonly ICurrentUserProfile _currentUser;
     private readonly IMediator _mediator;
     private readonly IPaginationService _paginatation;
     private readonly ILogger<GetAllPostsQueryHandler> _logger;
-    public GetAllPostsQueryHandler(DataDbContext context, IMediator mediator, IPaginationService paginatation, ILogger<GetAllPostsQueryHandler> logger)
+    public GetAllPostsQueryHandler(DataDbContext context, ICurrentUserProfile currentUser, IMediator mediator, 
+        IPaginationService paginatation, ILogger<GetAllPostsQueryHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _paginatation = paginatation ?? throw new ArgumentNullException(nameof(paginatation));
         _logger = logger;
@@ -32,12 +35,11 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
                 return new PaginateResponse<List<PostsDto>>() { Error = "Failed to create a new user profile." };
             }
 
-            var CurrentUser = await _mediator.Send(new GetUserProfileQuery());
-            var friends = _context.Friends.Where(x => x.UserName == CurrentUser.UserName || x.FriendName == CurrentUser.UserName)
-                          .Select(f => f.UserName == CurrentUser.UserName ? f.FriendName : f.UserName).Distinct();
+            var friends = _context.Friends.Where(x => x.UserName == _currentUser.UserName || x.FriendName == _currentUser.UserName)
+                          .Select(f => f.UserName == _currentUser.UserName ? f.FriendName : f.UserName).Distinct();
             var results = await _context.Post.Where(x => x.PostScope == "Public"
-                    || (x.PostScope == "Friends" && (x.UserName == CurrentUser.UserName || friends.Contains(x.UserName))
-                    || (x.PostScope == "Only me" && x.UserName == CurrentUser.UserName)))
+                    || (x.PostScope == "Friends" && (x.UserName == _currentUser.UserName || friends.Contains(x.UserName))
+                    || (x.PostScope == "Only me" && x.UserName == _currentUser.UserName)))
                     .Select(x => new PostsDto()
                     {
                         Id = x.Id,
@@ -66,9 +68,9 @@ internal sealed class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery
                     .AsNoTracking().ToListAsync(cancellationToken);
             if (request.pgFilter.PageSize >= 50) request.pgFilter.PageSize = 5;
             var paginatedRes = await _paginatation.Paginate(results, request.pgFilter);
-            paginatedRes.UserName = CurrentUser.UserName;
-            paginatedRes.LastName = CurrentUser.LastName;
-            paginatedRes.ProfilePicUrl = CurrentUser.UserProfilePicUrl;
+            paginatedRes.UserName = _currentUser.UserName;
+            paginatedRes.LastName = _currentUser.LastName;
+            paginatedRes.ProfilePicUrl = _currentUser.ProfilePicUrl;
 
             return paginatedRes;
         }

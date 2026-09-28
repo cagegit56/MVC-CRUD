@@ -22,8 +22,8 @@ export const friendRequestApi = {
         return res.data;
     },
 
-    acceptFriendRequest: async (userid, username) => {
-        const res = await request.post(`/AcceptRequest?FriendId=${userid}&FriendName=${username}`);
+    acceptFriendRequest: async (userid, username, lastname, picture) => {
+        const res = await request.post(`/AcceptRequest?FriendId=${encodeURIComponent(userid)}&FriendName=${encodeURIComponent(username)}&FriendLastName=${encodeURIComponent(lastname)}&FriendProfilePicUrl=${encodeURIComponent(picture)}`);
         return res.data;
     },
 

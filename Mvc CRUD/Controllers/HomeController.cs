@@ -7,17 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Mvc_CRUD.CQRS.Commands;
 using Mvc_CRUD.CQRS.Queries;
+using Mvc_CRUD.Dto;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Pagination;
+using Mvc_CRUD.Services;
 using System.Diagnostics;
 
 namespace Mvc_CRUD.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly ICurrentUserProfile _currentUser;
         private readonly IMediator _mediator;
-        public HomeController( IMediator mediator)
+        public HomeController(ICurrentUserProfile currentUser, IMediator mediator)
         {
+            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
             _mediator = mediator;
         }
 
@@ -124,11 +128,18 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Chats(string toFriend)
+        public async Task<IActionResult> Chats(PaginationFilter pgFilter)
         {
-            var res = await _mediator.Send(new GetChatsQuery(toFriend));
-            if (!string.IsNullOrEmpty(toFriend)) return Json(res);
+            var res = await _mediator.Send(new GetChatsQuery(pgFilter));
             return View(res);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAllChats(string userId, PaginationFilter pgFilter)
+        {
+            var res = await _mediator.Send(new GetAllChatsQuery(userId, pgFilter));
+            return Json(res);
         }
 
         [Authorize]
@@ -177,7 +188,7 @@ namespace Mvc_CRUD.Controllers
         [Authorize]
         public async Task<IActionResult> AcceptRequest(Friends model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var res = await _mediator.Send(new AddFriendCommand(model));
             if (!res.IsSuccess) return Json(new { success = false, message = res });
             return Json(new { success = true, message = "Successfully Accepted" });
@@ -212,18 +223,16 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> GetUserProfileInfo()
+        public IActionResult GetUserProfileInfo()
         {
-            var res = await _mediator.Send(new GetUserProfileQuery());
-            return Json(res);
+            return Json(_currentUser.UserProfileObj);
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> UserProfile()
+        public IActionResult UserProfile()
         {
-            var res = await _mediator.Send(new GetUserProfileQuery());
-            return View(res);
+            return View(_currentUser.UserProfileObj);
         }
 
         [HttpGet]
@@ -252,10 +261,9 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> UpdateUserProfile()
+        public IActionResult UpdateUserProfile()
         {
-            var res = await _mediator.Send(new GetUserProfileQuery());
-            return View(res);
+            return View(_currentUser.UserProfileObj);
         }
 
         [HttpPost]

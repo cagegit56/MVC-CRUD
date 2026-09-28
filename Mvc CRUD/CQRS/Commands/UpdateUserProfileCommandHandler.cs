@@ -71,7 +71,7 @@ internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUs
 
                 _context.Update(res);
                 await _context.SaveChangesAsync();
-                _cache.Remove("UserProfile-Info");
+                _cache.Remove($"UserProfile-{_currentUser.UserId}");
                 return Result.Ok();
             }else {
                 _logger.LogError("User profile not found.");

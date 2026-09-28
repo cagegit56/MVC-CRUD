@@ -21,6 +21,10 @@ body {
   margin-bottom: 60px;
 }
 
+.remove-link-underline {
+    text-decoration: none;
+}
+
 .logo {
     font-family: 'Playfair Display', serif;
     font-weight: 600;

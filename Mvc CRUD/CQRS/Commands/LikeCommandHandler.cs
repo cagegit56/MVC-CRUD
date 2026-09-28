@@ -2,18 +2,22 @@
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
+using Mvc_CRUD.Services;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
 internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool success, string error)>
 {
     private readonly DataDbContext _context;
+    private readonly ICurrentUserProfile _currentUser;
     private readonly IMediator _mediator;
     private readonly ILogger<LikeCommandHandler> _logger;
-    public LikeCommandHandler(DataDbContext context, IMediator mediator, ILogger<LikeCommandHandler> logger)
+    public LikeCommandHandler(DataDbContext context, IMediator mediator, ICurrentUserProfile currentUser,
+        ILogger<LikeCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _mediator = mediator;
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _logger = logger;
     }
 
@@ -28,11 +32,10 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool su
         try
         {
             var model = new Likes();
-            var currentUser = await _mediator.Send(new GetUserProfileQuery());
-            if (currentUser.UserName != null && currentUser.LastName != null)
+            if (_currentUser.UserName != null && _currentUser.LastName != null)
             {
-                model.Username = currentUser.UserName;
-                model.Lastname = currentUser.LastName;
+                model.Username = _currentUser.UserName;
+                model.Lastname = _currentUser.LastName;
             }
             else
             {
@@ -40,10 +43,10 @@ internal sealed class LikeCommandHandler : IRequestHandler<LikeCommand, (bool su
                 return (false, "Current user info missing.");
             }
             
-            model.UserProfilePicUrl = currentUser?.UserProfilePicUrl;
+            model.UserProfilePicUrl = _currentUser?.ProfilePicUrl;
             model.PostId = request.postId;
             var checkExistence = await _context.Like.Where(x => x.PostId == request.postId &&
-                                  x.Username == currentUser!.UserName).FirstOrDefaultAsync();
+                                  x.Username == _currentUser!.UserName).FirstOrDefaultAsync();
             if (checkExistence != null)
             {
                 var res = await _mediator.Send(new ReLikeCommand(checkExistence.PostId, checkExistence.Username));

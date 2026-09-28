@@ -3,19 +3,16 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
-using System.Net.NetworkInformation;
-using System.Security.Claims;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mvc_CRUD.CQRS.Commands;
 
 internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand, Result<string>>
 {
     private readonly DataDbContext _context;
-    private readonly IUserInfoContextService _currentUser;
+    private readonly ICurrentUserProfile _currentUser;
     private readonly ILogger<AddFriendCommandHandler> _logger;
 
-    public AddFriendCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<AddFriendCommandHandler> logger)
+    public AddFriendCommandHandler(DataDbContext context, ICurrentUserProfile currentUser, ILogger<AddFriendCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
@@ -24,9 +21,11 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
 
     public async Task<Result<string>> Handle(AddFriendCommand command, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_currentUser.UserId) && string.IsNullOrEmpty(_currentUser.UserName))
-            return Result.Fail("Current user userid or username cannot be null.");
+        if (string.IsNullOrEmpty(command.model.FriendId) || string.IsNullOrEmpty(command.model.FriendName) || string.IsNullOrEmpty(command.model.FriendLastName))
+            return Result.Fail("Friend Id,Name, or Lastname cannot be null.");
+
         using var transaction = await _context.Database.BeginTransactionAsync();
+
         try
         {
             bool exists = await _context.Friends.AnyAsync(x =>
@@ -37,16 +36,24 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
 
             await _context.Friends.AddRangeAsync(new Friends
                 {
-                    UserId = _currentUser.UserId,
+                    UserId = _currentUser.UserId!,                   
+                    UserName = _currentUser.UserName!,
+                    LastName = _currentUser.LastName!,
+                    ProfilePicUrl = _currentUser.ProfilePicUrl,
                     FriendId = command.model.FriendId,
                     FriendName = command.model.FriendName,
-                    UserName = _currentUser.UserName
+                    FriendLastName = command.model.FriendLastName,
+                    FriendProfilePicUrl = command.model.FriendProfilePicUrl,
                 }, new Friends
                 {
                     UserId = command.model.FriendId,
+                    UserName = command.model.FriendName,
+                    LastName = command.model.FriendLastName,
+                    ProfilePicUrl = command.model.FriendProfilePicUrl,
                     FriendId = _currentUser.UserId!,
                     FriendName = _currentUser.UserName!,
-                    UserName = command.model.FriendName
+                    FriendLastName = _currentUser.LastName!,
+                    FriendProfilePicUrl = _currentUser.ProfilePicUrl,                     
                 }
             );
 
