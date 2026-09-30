@@ -834,7 +834,9 @@
                 try 
                 {
                     const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
-                    if (response.ok) {
+                    const res = await response.json();
+                    if (res.success) 
+                    {
                         let imageContent = '';
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
@@ -906,8 +908,11 @@
                     if (response.status === 429){
                         const retryTime = parseInt(response.headers.get("Retry-After")) || 15;
                         return rateLimitingError(retryTime);
-                    }                   
-                    if (response.ok) {
+                    }  
+
+                    const res = await response.json();
+                    if (res.success) 
+                    {
                         let imageContent = '';
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;
@@ -966,7 +971,9 @@
                 try 
                 {
                     const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
-                    if (response.ok) {
+                    const res = await response.json();
+                    if (res.success) 
+                    {
                         let imageContent = '';
                         if(loggedInUserProfile && loggedInUserProfile.trim() !== "") {
                             imageContent = `<img src="${loggedInUserProfile}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`;

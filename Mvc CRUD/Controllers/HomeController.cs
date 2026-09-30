@@ -142,6 +142,7 @@ namespace Mvc_CRUD.Controllers
             return Json(res);
         }
 
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> SendMessage(Chat model)
         {

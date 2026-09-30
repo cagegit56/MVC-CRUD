@@ -47,7 +47,7 @@ internal sealed class GetAllChatsQueryHandler : IRequestHandler<GetAllChatsQuery
             }
 
             var paginatedRes = _pagination.PaginateAndMap<Chat, ChatsDto>(res, request.pgFilter, cancellationToken);
-
+            paginatedRes.Data = paginatedRes.Data.OrderBy(x => x.SentOn).ToList();
             return paginatedRes;
         }
         catch (Exception ex) {

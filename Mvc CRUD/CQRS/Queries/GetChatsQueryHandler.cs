@@ -69,7 +69,7 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
                 }  
             }
 
-            var res = chats.Select(x => new ChatsDto() {
+            var res = chats.OrderByDescending(s => s.SentOn).Select(x => new ChatsDto() {
                 Id = x.Id,
                 UserName = x.UserName == _currentUser.UserName ? x.ToUserName : x.UserName,
                 LastName = x.LastName == _currentUser.LastName ? x.ToLastName! : x.LastName,
@@ -81,7 +81,7 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
                 ToUserProfilePicUrl = x.ToUserProfilePicUrl != _currentUser.ProfilePicUrl ? x.ProfilePicUrl : x.ToUserProfilePicUrl,
                 SentOn = x.SentOn,
                 Sender = x.UserName == _currentUser.UserName ? "CurrentUser" : "Receiver",
-            }).DistinctBy(g => g.UserName).OrderByDescending(s => s.SentOn).ToList();
+            }).DistinctBy(g => g.UserName).ToList();
 
             var paginatedResults = await _pagination.Paginate(res, request.pgFilter, cancellationToken);
             paginatedResults.UserName = _currentUser.UserName;
