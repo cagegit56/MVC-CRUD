@@ -19,6 +19,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IGetAllService, GetAllService>();
 builder.Services.AddScoped<IPaginationService, PaginationService>();
 builder.Services.AddScoped<IRateLimitViolationTracker, RateLimitViolationTracker>();
+builder.Services.AddScoped<ICurrentUserProfile, CurrentUserProfileService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(Program));
  builder.Services.AddMediatR(cfg =>

@@ -75,7 +75,7 @@ internal sealed class UpdateProfilePictureCommandHandler : IRequestHandler<Updat
                     await _context.SaveChangesAsync(cancellationToken);
                     await trans.CommitAsync(cancellationToken);
                 }
-                _cache.Remove($"UserInfo-{_currentUser.UserId}");
+                _cache.Remove($"UserProfile-{_currentUser.UserId}");
                 return Result.Ok();
             }
             else

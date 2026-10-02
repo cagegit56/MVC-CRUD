@@ -10,13 +10,14 @@ namespace Mvc_CRUD.CQRS.Commands;
 internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequestCommand, Result>
 { 
     private readonly DataDbContext _context;
-    private readonly IMediator _mediator;
+    private readonly ICurrentUserProfile _currentUser;
     private readonly ILogger<SendFriendRequestCommandHandler> _logger;
 
-    public SendFriendRequestCommandHandler(DataDbContext context, IMediator mediator, ILogger<SendFriendRequestCommandHandler> logger)
+    public SendFriendRequestCommandHandler(DataDbContext context, ICurrentUserProfile currentUser,
+        ILogger<SendFriendRequestCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _logger = logger;
     }
 
@@ -31,9 +32,8 @@ internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFrie
 
         try
         {
-            var currentUser = await _mediator.Send(new GetUserProfileQuery());
             var exists = await _context.FriendRequests
-                .FirstOrDefaultAsync(x => x.UserId == currentUser.UserId && x.ToUserId == command.model.ToUserId);
+                .FirstOrDefaultAsync(x => x.UserId == _currentUser.UserId && x.ToUserId == command.model.ToUserId);
             if (exists is not null)
             {
                 if (exists.Status == "Cancelled")
@@ -46,10 +46,10 @@ internal sealed class SendFriendRequestCommandHandler : IRequestHandler<SendFrie
             }
             else
             {
-                command.model.UserId = currentUser.UserId;
-                command.model.UserName = currentUser.UserName;
-                command.model.LastName = currentUser.LastName;
-                command.model.ProfilePicUrl = currentUser.UserProfilePicUrl;
+                command.model.UserId = _currentUser.UserId!;
+                command.model.UserName = _currentUser.UserName!;
+                command.model.LastName = _currentUser.LastName!;
+                command.model.ProfilePicUrl = _currentUser.ProfilePicUrl;
                 await _context.AddAsync(command.model);
                 await _context.SaveChangesAsync(cancellationToken);
                 return Result.Ok();

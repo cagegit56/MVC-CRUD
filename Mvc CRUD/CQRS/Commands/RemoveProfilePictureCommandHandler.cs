@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.Models;
 using Mvc_CRUD.Services;
 
@@ -10,12 +11,15 @@ internal sealed class RemoveProfilePictureCommandHandler : IRequestHandler<Remov
 {
     private readonly DataDbContext _context;
     private readonly IUserInfoContextService _currentUser;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<RemoveProfilePictureCommandHandler> _logger;
 
-    public RemoveProfilePictureCommandHandler(DataDbContext context, IUserInfoContextService currentUser, ILogger<RemoveProfilePictureCommandHandler> logger)
+    public RemoveProfilePictureCommandHandler(DataDbContext context, IUserInfoContextService currentUser, IMemoryCache cache,
+        ILogger<RemoveProfilePictureCommandHandler> logger)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(_currentUser));
+        _cache = cache ?? throw new ArgumentNullException(nameof(_cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -37,6 +41,8 @@ internal sealed class RemoveProfilePictureCommandHandler : IRequestHandler<Remov
                 .ExecuteUpdateAsync(u => u.SetProperty(p => p.UserImageUrl, ""));
 
             await transaction.CommitAsync();
+
+            _cache.Remove($"UserProfile-{_currentUser.UserId}");
 
             return Result.Ok();
         }
