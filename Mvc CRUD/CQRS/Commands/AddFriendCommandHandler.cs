@@ -24,6 +24,8 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
         if (string.IsNullOrEmpty(command.model.FriendId) || string.IsNullOrEmpty(command.model.FriendName) || string.IsNullOrEmpty(command.model.FriendLastName))
             return Result.Fail("Friend Id,Name, or Lastname cannot be null.");
 
+        if (!string.IsNullOrEmpty(command.model.FriendProfilePicUrl)) if (command.model.FriendProfilePicUrl == "null") command.model.FriendProfilePicUrl = null;
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -35,32 +37,32 @@ internal sealed class AddFriendCommandHandler : IRequestHandler<AddFriendCommand
             if (exists) return Result.Ok();
 
             await _context.Friends.AddRangeAsync(new Friends
-                {
-                    UserId = _currentUser.UserId!,                   
-                    UserName = _currentUser.UserName!,
-                    LastName = _currentUser.LastName!,
-                    ProfilePicUrl = _currentUser.ProfilePicUrl,
-                    FriendId = command.model.FriendId,
-                    FriendName = command.model.FriendName,
-                    FriendLastName = command.model.FriendLastName,
-                    FriendProfilePicUrl = command.model.FriendProfilePicUrl,
-                }, new Friends
-                {
-                    UserId = command.model.FriendId,
-                    UserName = command.model.FriendName,
-                    LastName = command.model.FriendLastName,
-                    ProfilePicUrl = command.model.FriendProfilePicUrl,
-                    FriendId = _currentUser.UserId!,
-                    FriendName = _currentUser.UserName!,
-                    FriendLastName = _currentUser.LastName!,
-                    FriendProfilePicUrl = _currentUser.ProfilePicUrl,                     
-                }
+            {
+                UserId = _currentUser.UserId!,
+                UserName = _currentUser.UserName!,
+                LastName = _currentUser.LastName!,
+                ProfilePicUrl = _currentUser.ProfilePicUrl,
+                FriendId = command.model.FriendId,
+                FriendName = command.model.FriendName,
+                FriendLastName = command.model.FriendLastName,
+                FriendProfilePicUrl = command.model.FriendProfilePicUrl,
+            }, new Friends
+            {
+                UserId = command.model.FriendId,
+                UserName = command.model.FriendName,
+                LastName = command.model.FriendLastName,
+                ProfilePicUrl = command.model.FriendProfilePicUrl,
+                FriendId = _currentUser.UserId!,
+                FriendName = _currentUser.UserName!,
+                FriendLastName = _currentUser.LastName!,
+                FriendProfilePicUrl = _currentUser.ProfilePicUrl,
+            }
             );
 
-            var res = await _context.FriendRequests.Where(x => 
-                                    ( (x.UserId == command.model.FriendId && x.ToUserId == _currentUser.UserId)
-                                    || (x.UserId == _currentUser.UserId && x.ToUserId == command.model.FriendId) ) 
-                                    && x.Status == "Pending")
+            var res = await _context.FriendRequests.Where(x =>
+                    ((x.UserId == command.model.FriendId && x.ToUserId == _currentUser.UserId)
+                    || (x.UserId == _currentUser.UserId && x.ToUserId == command.model.FriendId))
+                    && x.Status == "Pending")
                     .ExecuteUpdateAsync(g => g.SetProperty(y => y.Status, "Accepted"), cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

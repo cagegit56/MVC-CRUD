@@ -71,6 +71,7 @@ namespace Mvc_CRUD.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Message")
@@ -80,14 +81,14 @@ namespace Mvc_CRUD.Migrations
                     b.Property<string>("ProfilePicUrl")
                         .HasColumnType("text");
 
+                    b.Property<bool>("Seen")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("SentOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ToLastName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ToUserId")
@@ -101,6 +102,9 @@ namespace Mvc_CRUD.Migrations
                     b.Property<string>("ToUserProfilePicUrl")
                         .HasColumnType("text");
 
+                    b.Property<int>("UnreadMsgCount")
+                        .HasColumnType("integer");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -111,7 +115,7 @@ namespace Mvc_CRUD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ToUserName", "UserName");
+                    b.HasIndex("UserId", "ToUserId");
 
                     b.HasIndex("UserName", "ToUserName");
 

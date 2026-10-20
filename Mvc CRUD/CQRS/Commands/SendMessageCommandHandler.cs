@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Mvc_CRUD.CQRS.Queries;
 using Mvc_CRUD.Models;
@@ -42,8 +43,12 @@ namespace Mvc_CRUD.CQRS.Commands;
                 command.model.UserId = _currentUser.UserId!;
                 command.model.LastName= _currentUser.LastName!;
                 command.model.ProfilePicUrl = _currentUser.ProfilePicUrl;
+           
+                command.model.UnreadMsgCount += await _context.Chats
+                    .Where(x => (x.UserId == _currentUser.UserId && x.ToUserId == command.model.ToUserId) && !x.Seen)
+                    .CountAsync();
 
-                var res = await _context.Chats.AddAsync(command.model);
+                await _context.Chats.AddAsync(command.model);                
                 await _context.SaveChangesAsync(cancellationToken);
 
                 return Result.Ok();

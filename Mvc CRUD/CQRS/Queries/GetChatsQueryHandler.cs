@@ -28,7 +28,7 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
         try
         {
             var chats = await _context.Chats.AsNoTracking()
-               .Where(x => x.UserId == _currentUser.UserId || x.ToUserId == _currentUser.UserId).ToListAsync();
+               .Where(x => x.UserId == _currentUser.UserId || x.ToUserId == _currentUser.UserId).ToListAsync();            
 
             var existingChatsId = new List<string?>();
 
@@ -39,19 +39,20 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
             existingChatsId.AddRange(chatsFromFriendsId);
 
             var newChat = await _context.Friends.AsNoTracking()
-                .Where(x => (x.UserId == _currentUser.UserId && !existingChatsId.Contains(x.FriendId))
-                || (x.FriendId == _currentUser.UserId && !existingChatsId.Contains(x.UserId)) && !x.IsDeleted)
+                .Where(x => (x.UserId == _currentUser.UserId && !existingChatsId.Contains(x.FriendId)) && !x.IsDeleted)
                 .Select(g => new Chat()
                 {
-                    UserName = g.UserName,
-                    UserId = g.UserId,
-                    LastName = g.LastName,
-                    ProfilePicUrl = g.ProfilePicUrl,
+                    UserName = g.FriendName,
+                    UserId = g.FriendId,
+                    LastName = g.FriendLastName,
+                    ProfilePicUrl = g.FriendProfilePicUrl,
                     Message = $"You are now Friends with {char.ToUpper(g.FriendName[0]) + g.FriendName.Substring(1)} Send a Message to Start a Chat.",
-                    ToUserName = g.FriendName,
-                    ToLastName = g.FriendLastName,
-                    ToUserId = g.FriendId,
-                    ToUserProfilePicUrl = g.FriendProfilePicUrl,
+                    ToUserName = g.UserName,
+                    ToLastName = g.LastName,
+                    ToUserId = g.UserId,
+                    ToUserProfilePicUrl = g.ProfilePicUrl,
+                    Seen = false,
+                    UnreadMsgCount = 0,
                     SentOn = g.CreatedOn
                 }).ToListAsync();
 
@@ -68,7 +69,7 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
                     chats.Add(msg);
                 }  
             }
-
+            
             var res = chats.OrderByDescending(s => s.SentOn).Select(x => new ChatsDto() {
                 Id = x.Id,
                 UserName = x.UserName == _currentUser.UserName ? x.ToUserName : x.UserName,
@@ -79,6 +80,8 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
                 ToUserName = x.ToUserName != _currentUser.UserName ? x.UserName : x.ToUserName,
                 ToLastName = x.ToLastName != _currentUser.LastName ? x.LastName : x.ToLastName,
                 ToUserProfilePicUrl = x.ToUserProfilePicUrl != _currentUser.ProfilePicUrl ? x.ProfilePicUrl : x.ToUserProfilePicUrl,
+                Seen = x.Seen,
+                UnreadMsgCount = x.UnreadMsgCount,
                 SentOn = x.SentOn,
                 Sender = x.UserName == _currentUser.UserName ? "CurrentUser" : "Receiver",
             }).DistinctBy(g => g.UserName).ToList();

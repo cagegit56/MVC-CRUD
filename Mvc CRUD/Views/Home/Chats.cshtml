@@ -50,16 +50,23 @@
                                     </div>
                                 }
                                 <div class="flex-grow-1 overflow-hidden">
-                                    <h6 class="mb-1 text-truncate" style="max-width: 70%;" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl">
-                                        @(char.ToUpper(contact.UserName[0]) + contact.UserName.Substring(1)) @(char.ToUpper(contact.LastName[0]) + contact.LastName.Substring(1))
-                                    </h6>
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1 text-truncate" style="max-width: 70%;" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl">
+                                            @(char.ToUpper(contact.UserName[0]) + contact.UserName.Substring(1)) @(char.ToUpper(contact.LastName[0]) + contact.LastName.Substring(1))
+                                        </h6>
+                                        @if (contact.UnreadMsgCount > 0 && contact.Sender != "CurrentUser")
+                                        {
+                                            <div id="unreadMsgIcon-@contact.UserId" class="avatar rounded-circle bg-primary text-white small align-items-center justify-content-center flex-shrink-0" style="width: 17px; height: 17px;">@contact.UnreadMsgCount</div>
+                                        }
+                                        <div id="unreadMsgXIcon-@contact.UserId" class="avatar rounded-circle d-none bg-primary text-white small align-items-center justify-content-center flex-shrink-0" style="width: 17px; height: 17px;">0</div>
+                                    </div>
                                     <div class="d-flex justify-content-between">
                                         <span class="mb-0 text-truncate text-muted small" id="message-@contact.UserId" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl">
                                             @contact.Message
                                         </span>
                                         @if (contact.Sender == "CurrentUser" && contact.Message != $"You are now Friends with {char.ToUpper(contact.UserName[0]) + contact.UserName.Substring(1)} Send a Message to Start a Chat.")
                                         {
-                                            <i class="bi bi-check-all text-success" id="contactMsgCheckIcon-@contact.UserId" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl"></i>
+                                            <i class="bi bi-check-all @(contact.Seen ? "text-primary" : "text-success")" id="contactMsgCheckIcon-@contact.UserId" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl"></i>
                                         }
                                         else
                                         {
@@ -113,6 +120,7 @@
     const currentUserProfilePic = "@Model.ProfilePicUrl";
     
     let activeChat = "";
+    let randomNumber = 1;
 
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -175,54 +183,12 @@
                                                                      </button>
                                                                   </div>`;
 
-                let res = results.data; 
-                res.map(msg =>{
-                    if (msg.message === "DeletedChat") return displayMsg;
-                    const isMine = msg.userName === currentUserName;
-                    let userImage = "";
-                    const div = document.createElement('div');
-                    div.className = 'd-flex mb-3 ' + (isMine ? 'justify-content-end' : 'justify-content-start');
-                    const newChat = msg.message === "NewChat";
-                    profilePic ? userImage = `<img src="${profilePic}" class="rounded-circle clickable" style="width:45px; height:45px; object-fit: cover;" data-action="ViewContactProfile" data-id="${userId}" />`
-                               : userImage = `<div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center clickable'
-                                                style='width:40px; height:40px; min-width:40px; min-height:40px;' data-action="ViewContactProfile" data-id="${userId}">
-                                                    ${contactName.charAt(0).toUpperCase()}
-                                              </div>`;
-
-                    if (newChat)
-                    {
-                         div.className = 'd-flex justify-content-center my-3';
-                         div.innerHTML = `<div id="newChat" class="friend-alert-message text-center px-4 py-2">
-                                              <p>You are now Friends with ${ contactName.charAt(0).toUpperCase() + contactName.slice(1) } Send a Message to Start a Chat.</p>
-                                          </div>`;
-                    }else {
-                        div.innerHTML = `
-                        <div class="d-flex align-items-end" style="max-width:75%;">
-                            ${!isMine ? userImage  : '' }
-                            <div style="max-width:100%;">
-                                <div class="card shadow-sm ${isMine ? 'bg-primary text-white' : 'bg-white'}" style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
-                                    <div class="card-body p-2 small">${msg.message}</div>
-                                </div>
-                                <div class="small text-muted mt-1">
-                                    ${new Date(msg.sentOn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </div>
-                            </div>
-                        </div>`;
-                    }
-                    displayMsg.appendChild(div);
-                    displayMsg.scrollTop = messagesContainer.scrollHeight;
-                    document.getElementById("sendMsgInput").innerHTML = `<form action="SendMessage" data-action="SendMsgForm" method="post" enctype="multipart/form-data" class="d-flex align-items-end">
-                                                                             <input type="hidden" name="ToUserName" value="${contactName}"/>
-                                                                             <input type="hidden" name="ToLastName" value="${contactLastName}"/>
-                                                                             <input type="hidden" name="ToUserId" value="${userId}"/>
-                                                                             <input type="hidden" name="ToUserProfilePicUrl" value="${profilePic}"/>
-                                                                             <textarea id="messageInput" name="Message" class="form-control ms-2 me-2 mb-0" data-action="SendMessageTextArea" placeholder="Type a message..." maxlength="2000" autocomplete="off" style="height: 1rem;"></textarea>
-                                                                             <button id="sendMsgBtn" class="btn btn-primary d-none h-50 rounded-pill px-3 mb-0 lh-2 flex-shrink-0" type="submit">
-                                                                                  <i class="bi bi-send"></i>
-                                                                             </button>
-                                                                         </form>`;
-                    activeChat = userId;
-                });
+                renderChats(results.data, userId, contactName, contactLastName, profilePic);
+                const unreadMsgIcon = document.getElementById(`unreadMsgIcon-${userId}`);
+                const unreadMsgXIcon = document.getElementById(`unreadMsgXIcon-${userId}`);
+                if (unreadMsgIcon) unreadMsgIcon.classList.add("d-none");
+                if (unreadMsgXIcon) unreadMsgXIcon.classList.add("d-none");
+                activeChat = userId;
             }catch(error){
                 document.getElementById("messagesContainer").innerHTML = `<div class="text-center py-3">
                                                                              <div class="display-1 text-muted mb-1">
@@ -289,6 +255,7 @@
                     const newChat = document.getElementById("newChat");
                     if (newChat) newChat.classList.add("d-none");
 
+                    randomNumber = Math.floor(Math.random() * 250) + 1;
                     chatDisplay.insertAdjacentHTML("beforeend",  `<div class="d-flex justify-content-end">
                                                                      <div>                                                                      
                                                                          <div class="card shadow-sm bg-primary text-white" style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
@@ -296,7 +263,7 @@
                                                                          </div>
                                                                          <div class="d-flex justify-content-between">
                                                                              <p class="d-flex small text-muted">now</p>
-                                                                             <i class="bi bi-check text-success" id="msgCheckIcon"></i>
+                                                                             <i class="bi bi-check text-success" id="msgCheckIcon-${randomNumber}"></i>
                                                                          </div>
                                                                      </div>
                                                                     </div>`);
@@ -311,7 +278,8 @@
                     const contact = document.getElementById(`contactId-${userId}`);
                     parent.prepend(contact);
 
-                    document.getElementById(`message-${userId}`).innerHTML = `${message}`; 
+                    document.getElementById(`message-${userId}`).innerHTML = `${message}`;
+                    
                     const contactMsgTime = document.getElementById(`contactMsgTime-${userId}`);
                     const contactMsgCheckIcon = document.getElementById(`contactMsgCheckIcon-${userId}`);
                     const contactIcon = document.getElementById(`newContactCheckIcon-${userId}`);
@@ -339,9 +307,7 @@
                     {
                         contactTime.classList.add("d-none");
                         contactIcon.classList.remove("d-none");
-                    }
-                    
-                 
+                    }  
 
                     await connection.invoke('SendPrivateMessage', userName, message, userId);     
                 }else 
@@ -375,7 +341,7 @@
                     contactMsg.innerHTML = "";
                     contactMsg.innerHTML = `<i class="bi- bi-exclamation-circle-fill text-danger"></i> ${message}`;
                 }
-            }catch(error) {
+            }catch(error) {               
                 const newChat = document.getElementById("newChat");
                 if (newChat) newChat.classList.add("d-none");
 
@@ -437,44 +403,149 @@
         }
     });
 
+    function renderChats(data, userId, contactName, contactLastName, profilePicture)
+    {
+        let displayMsg = document.getElementById("messagesContainer");
+        displayMsg.innerHTML = "";
+
+        data.map(msg => {
+            if (msg.message === "DeletedChat") return displayMsg;
+            const isMine = msg.userName === currentUserName;
+            let userImage = "";            
+            const div = document.createElement('div');
+            div.className = 'd-flex mb-3 ' + (isMine ? 'justify-content-end' : 'justify-content-start');
+            const newChat = msg.message === "NewChat";
+            profilePicture ? userImage = `<img src="${profilePicture}" class="rounded-circle clickable" style="width:45px; height:45px; object-fit: cover;" data-action="ViewContactProfile" data-id="${userId}" />`
+                           : userImage = `<div class='avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center clickable'
+                                               style='width:40px; height:40px; min-width:40px; min-height:40px;' data-action="ViewContactProfile" data-id="${userId}">
+                                                   ${contactName.charAt(0).toUpperCase()}
+                                          </div>`;
+
+            if (newChat)
+            {
+                div.className = 'd-flex justify-content-center my-3';
+                div.innerHTML = `<div id="newChat" class="friend-alert-message text-center px-4 py-2">
+                                    <p>You are now Friends with ${ contactName.charAt(0).toUpperCase() + contactName.slice(1) } Send a Message to Start a Chat.</p>
+                                </div>`;
+            }else {
+                let sentByMe = "";
+                let seenMsg = "";
+
+                if (isMine)
+                {
+                    {msg.seen ? seenMsg = '<i class="bi bi-check-all text-primary"></i>'
+                              : seenMsg = '<i class="bi bi-check-all text-success"></i>'}
+
+                    sentByMe = `<div class="d-flex justify-content-between">
+                                    <small class="small text-muted msgTime" data-msgtime="${msg.sentOn}"></small>
+                                    ${seenMsg}
+                                </div>`
+                }
+
+                div.innerHTML = `
+                <div class="d-flex align-items-end" style="max-width:75%;">
+                    ${!isMine ? userImage  : '' }
+                    <div style="max-width:100%;">
+                        <div class="card shadow-sm ${isMine ? 'bg-primary text-white' : 'bg-white'}" style="word-break: break-all; overflow-wrap: break-word; white-space: pre-wrap; max-width:100%;">
+                            <div class="card-body p-2 small">${msg.message}</div>
+                        </div>
+                        ${ isMine ? sentByMe : `<div class="small text-muted mt-1 msgTime" data-msgtime="${msg.sentOn}"></div>`}
+                    </div>
+                </div>`;
+            }           
+
+            displayMsg.appendChild(div);
+            displayMsg.scrollTop = messagesContainer.scrollHeight;
+            document.getElementById("sendMsgInput").innerHTML = `<form action="SendMessage" data-action="SendMsgForm" method="post" enctype="multipart/form-data" class="d-flex align-items-end">
+                                                                    <input type="hidden" name="ToUserName" value="${contactName}"/>
+                                                                    <input type="hidden" name="ToLastName" value="${contactLastName}"/>
+                                                                    <input type="hidden" name="ToUserId" value="${userId}"/>
+                                                                    <input type="hidden" name="ToUserProfilePicUrl" value="${profilePicture}"/>
+                                                                    <textarea id="messageInput" name="Message" class="form-control ms-2 me-2 mb-0" data-action="SendMessageTextArea" placeholder="Type a message..." maxlength="2000" autocomplete="off" style="height: 1rem;"></textarea>
+                                                                    <button id="sendMsgBtn" class="btn btn-primary d-none h-50 rounded-pill px-3 mb-0 lh-2 flex-shrink-0" type="submit">
+                                                                        <i class="bi bi-send"></i>
+                                                                    </button>
+                                                                </form>`;
+            document.querySelectorAll(".msgTime").forEach(e => {
+                const unformattedDate = e.dataset.msgtime;
+                const date = chatsDate(unformattedDate);
+                e.innerHTML = date;
+            })
+
+        });
+    }
+
+    function chatsDate(dateData)
+    {
+        if (!dateData || dateData === "2020-02-20T20:20:20") return null;
+
+        const date = new Date(dateData);
+        if (Number.isNaN(date.getTime())) return null;
+
+        const seconds = Math.floor( (Date.now() - date.getTime()) / 1000 );
+        if (seconds < 60) return "now";
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m`;
+
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h`;
+
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `${days}d`;
+
+        const weeks = Math.floor(days / 7);
+        if (weeks < 5) return `${weeks}w`;
+
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months}mo`;
+
+        const years = Math.floor(days / 365);
+        return `${years}y`;
+    }
+
     function DateProcessing(dateInfo)
     {
-        if (dateInfo === "2/20/2020 8:20:20 PM") return null;
-        let timeFormat = "";
-        const utcDate = new Date(dateInfo);
-        const nowSA = new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Johannesburg" }));
-        const sentOnSA = new Date(utcDate.toLocaleString("en-US", { timeZone: "Africa/Johannesburg" }));
+        if (!dateInfo || dateInfo === "2/20/2020 8:20:20 PM") return null;
 
-        const diffMs = nowSA - sentOnSA;
-        const diffSeconds = Math.floor(diffMs / 1000);
-        const diffMinutes = Math.floor(diffSeconds / 60);
-        const diffHours = Math.floor(diffMinutes / 60);
-        const diffDays = Math.floor(diffHours / 24);
-        const diffWeeks = Math.floor(diffDays / 7);
-        const diffMonths = Math.floor(diffDays / 30);
-        const diffYears = Math.floor(diffDays / 365);
+        const match = dateInfo.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)$/i);
+        if (!match) return null;
 
-        if (diffSeconds < 60) {  timeFormat = "just now"; }
-        else if (diffMinutes < 60) { timeFormat = `${diffMinutes}m`; }
-        else if (diffHours < 24) { timeFormat = `${diffHours}h`; }
-        else if (diffDays < 7) { timeFormat = `${diffDays}d`; }
-        else if (diffWeeks < 5) { timeFormat = `${diffWeeks}w`; }
-        else if (diffMonths <= 12) { timeFormat = `${diffMonths}mo`; }
-        else if (diffYears <= 2) { timeFormat = `${diffYears}y`; }
-        else {
-            timeFormat = sentOnSA.toLocaleDateString();
-        }
+        const [, month, day, year, hour, minute, second, period] = match;
+        let hours = Number(hour) % 12;
+        if (period.toUpperCase() === "PM") hours += 12;
+        const timestamp = Date.UTC( Number(year), Number(month) - 1, Number(day), hours, Number(minute), Number(second) );
 
-        return timeFormat;
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        if (seconds < 0) return "now";
+        if (seconds < 60) return "now";
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m`;
+
+        const hoursAgo = Math.floor(minutes / 60);
+        if (hoursAgo < 24) return `${hoursAgo}h`;
+
+        const days = Math.floor(hoursAgo / 24);
+        if (days < 7) return `${days}d`;
+
+        const weeks = Math.floor(days / 7);
+        if (weeks < 5) return `${weeks}w`;
+
+        const months = Math.floor(days / 30);
+        if (months < 12) return `${months}mo`;
+
+        const years = Math.floor(days / 365);
+        return `${years}y`;
     }
 
     const connection = new signalR.HubConnectionBuilder().withUrl('/signalRHub').withAutomaticReconnect().build();
     connection.start().catch(err => console.error(err.toString()));
 
     connection.on("MessageConfirmation", (ToUserId) => {
-        const checkIcon = document.getElementById("msgCheckIcon");
+        const checkIcon = document.getElementById(`msgCheckIcon-${randomNumber}`);
         checkIcon.classList.remove("bi-check");
-        checkIcon.classList.add("bi-check-all");       
+        checkIcon.classList.add("bi-check-all");
 
         const contactCheckIcon = document.getElementById(`newContactCheckIcon-${ToUserId}`)
         contactCheckIcon.classList.remove("bi-check");
@@ -486,17 +557,28 @@
         const contact = document.getElementById(`contactId-${userId}`);
         parent.prepend(contact);
 
+        const unreadMsgIcon = document.getElementById(`unreadMsgIcon-${userId}`);
+        const unreadMsgXIcon = document.getElementById(`unreadMsgXIcon-${userId}`);
+        if (unreadMsgXIcon)
+        {
+            if (unreadMsgIcon) 
+            {
+                const currentUnreadMsgCount =  Number(unreadMsgIcon.innerHTML)
+                unreadMsgIcon.innerHTML = currentUnreadMsgCount + 1;
+            }else{
+                const currentNewMsgCount =Number(unreadMsgXIcon.innerHTML)
+                unreadMsgXIcon.classList.remove("d-none");
+                unreadMsgXIcon.innerHTML = currentNewMsgCount + 1;
+            }           
+        }
+
         document.getElementById(`message-${userId}`).innerHTML = Message;
         const contactMsgTime = document.getElementById(`contactMsgTime-${userId}`);
         const contactMsgCheckIcon = document.getElementById(`contactMsgCheckIcon-${userId}`);
         const contactTime = document.getElementById(`newContactTime-${userId}`);
         const contactIcon = document.getElementById(`newContactCheckIcon-${userId}`);
 
-        if (contactMsgTime) 
-        {
-            contactMsgTime.innerHTML = "";
-            contactMsgTime.innerHTML = 'now';
-        }       
+        if (contactMsgTime) contactMsgTime.classList.add("d-none");       
 
         if (contactMsgCheckIcon)
         {
