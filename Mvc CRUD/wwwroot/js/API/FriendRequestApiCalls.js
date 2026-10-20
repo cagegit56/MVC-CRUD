@@ -18,22 +18,25 @@ export const friendRequestApi = {
     },
 
     sendfriendRequest: async (userid, username, lastname, profilePic, email) => {
-        const res = await request.post(`/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(username)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(lastname)}&ToUser_ProfilePicUrl=${encodeURIComponent(profilePic)}`);
+        const res = await request.post(`/SendFriendRequest?ToUserId=${encodeURIComponent(userid)}&ToUserName=${encodeURIComponent(username)}&ToUserEmail=${encodeURIComponent(email)}&ToUser_LastName=${encodeURIComponent(lastname)}&ToUser_ProfilePicUrl=${profilePic}`);
         return res.data;
     },
 
     acceptFriendRequest: async (userid, username, lastname, picture) => {
-        const res = await request.post(`/AcceptRequest?FriendId=${encodeURIComponent(userid)}&FriendName=${encodeURIComponent(username)}&FriendLastName=${encodeURIComponent(lastname)}&FriendProfilePicUrl=${encodeURIComponent(picture)}`);
+        const fd = new FormData();
+        fd.append("FriendProfilePicUrl", null);
+        if (picture !== null && picture !== undefined) fd.append("middleName", picture);
+        const res = await request.post(`/AcceptRequest?FriendId=${encodeURIComponent(userid)}&FriendName=${encodeURIComponent(username)}&FriendLastName=${encodeURIComponent(lastname)}&${fd}`);
         return res.data;
     },
 
     rejectRecievedRequest: async (userid) => {
-        const res = await request.put(`/RejectRequest?friendUserId=${userid}`);
+        const res = await request.put(`/RejectRequest?friendUserId=${encodeURIComponent(userid)}`);
         return res.data;
     },
 
     cancelSentRequest: async (userid) => {
-        const res = await request.put(`/RejectRequest?friendUserId=${userid}`);
+        const res = await request.put(`/RejectRequest?friendUserId=${useencodeURIComponent(userid)}`);
         return res.data;
     },
 

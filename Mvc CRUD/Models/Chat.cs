@@ -14,7 +14,8 @@ namespace Mvc_CRUD.Models;
        public string ToUserId { get; set; }
        public string? ToUserProfilePicUrl { get; set; }
        public string Message { get; set; }
-       public string Status { get; set; } = "New";
+       public bool Seen { get; set; } = false;
+       public int UnreadMsgCount { get; set; } = 1;
        public bool IsDeleted { get; set; } = false;       
        public DateTime SentOn { get; set; } = DateTime.UtcNow;       
     }

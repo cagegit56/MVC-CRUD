@@ -4,5 +4,5 @@ using Mvc_CRUD.Pagination;
 
 namespace Mvc_CRUD.CQRS.Queries;
 
-public record GetExternalUserProfileQuery(string userId, PaginationFilter pgFilter) : IRequest<UserProfileDTO>;
+public record GetExternalUserProfileQuery(string userId) : IRequest<UserProfileDTO>;
 

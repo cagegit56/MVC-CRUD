@@ -1889,23 +1889,23 @@
             displayReplyOfReply = res.map(replyOf => {  
                 const replyOfReplyTime = dateProcessing(replyOf.sentOn);
                 return `<div class="d-flex mb-2">
-                                                ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
-                                                : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOf.userName.charAt(0).toUpperCase() ?? "?"}</div>`}
-                                                <ul class="list-unstyled overflow-hidden px-1">
-                                                    <li>
-                                                        <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
-                                                            <small class="fw-bold">${replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1)}</small>
-                                                            <p class="mb-1 small">${replyOf.message}</p>
-                                                        </div>
-                                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                                            <span class="text-muted small lh-sm flex-shrink-0 me-2">${replyOfReplyTime}</span>
-                                                            <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
-                                                                <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
-                                                            </div>
-                                                            </div>
-                                                    </li>
-                                                </ul>
-                                            </div>`;
+                            ${replyOf.userImageUrl ? `<img src="${replyOf.userImageUrl}" class="rounded-circle me-2" style="width: 32px; height: 32px;">`
+                            : `<div class="avatar rounded-circle me-2 bg-primary text-white" style="width: 32px; height: 32px;">${replyOf.userName.charAt(0).toUpperCase() ?? "?"}</div>`}
+                            <ul class="list-unstyled overflow-hidden px-1">
+                                <li>
+                                    <div class="bg-light rounded p-2 flex-grow-1 text-break gap-2">
+                                        <small class="fw-bold">${replyOf.userName.charAt(0).toUpperCase() + replyOf.userName.slice(1) + ' ' + replyOf.lastName.charAt(0).toUpperCase() + replyOf.lastName.slice(1)}</small>
+                                        <p class="mb-1 small">${replyOf.message}</p>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-muted small lh-sm flex-shrink-0 me-2">${replyOfReplyTime}</span>
+                                        <div class="ms-auto d-flex align-items-center gap-1 pe-2 flex-shrink-0">
+                                            <button class="btn btn-sm p-0 text-muted lh-sm"> Like</button>
+                                        </div>
+                                        </div>
+                                </li>
+                            </ul>
+                        </div>`;
             }).join("");
             document.getElementById(`replyOfView-${replyId}`).insertAdjacentHTML("beforeend", displayReplyOfReply);
         }catch(error){

@@ -238,9 +238,9 @@ namespace Mvc_CRUD.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> ExternalUserProfile(string userId, PaginationFilter pgFilter)
+        public async Task<IActionResult> ExternalUserProfile(string userId)
         {
-            var res = await _mediator.Send(new GetExternalUserProfileQuery(userId, pgFilter));
+            var res = await _mediator.Send(new GetExternalUserProfileQuery(userId));
             return View(res);
         }
 

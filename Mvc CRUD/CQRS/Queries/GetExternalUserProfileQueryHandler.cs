@@ -12,16 +12,14 @@ namespace Mvc_CRUD.CQRS.Queries;
     {
         private readonly DataDbContext _context;
         private readonly ICurrentUserProfile _currentUser;
-        private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly ILogger<GetExternalUserProfileQueryHandler> _logger;
 
-        public GetExternalUserProfileQueryHandler(DataDbContext context, ICurrentUserProfile currentUser, IMediator mediator, IMapper mapper,
+        public GetExternalUserProfileQueryHandler(DataDbContext context, ICurrentUserProfile currentUser, IMapper mapper,
                ILogger<GetExternalUserProfileQueryHandler> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }

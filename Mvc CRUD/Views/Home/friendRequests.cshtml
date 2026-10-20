@@ -392,14 +392,15 @@
             container.innerHTML = '';
             if (!friends || friends.length === 0) return container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
 
-            const card = document.createElement('div');
+            const card = document.createElement('div');            
             card.className = 'card friend-card w-100 p-3';
             const div = document.createElement('div');
+            div.id = 'receivedFriendRequestContainer';
             div.className = 'd-flex flex-column align-items-center gap-3';
             friends.forEach(friend => {
                 div.innerHTML += `                   
                            <div id="row-${friend.id}" class="card h-card w-100 shadow-sm border-0 p-3">
-                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap" id="friendRecord">
                                     <div class="d-flex">
                                         ${friend.profilePicUrl ? `<img src="${friend.profilePicUrl}" id="viewProfile" data-id="${friend.userId}" class="rounded-circle clickable me-1 friend-request-pic"
                                                                         style="width: 50px; height: 50px; object-fit: cover; cursor : pointer" />` 
@@ -438,8 +439,8 @@
                        </div>`;
                 card.appendChild(div);
                 container.appendChild(card);
-            });
-
+            }); 
+            
             const profileView = document.querySelectorAll('#viewProfile');
             profileView.forEach( element => {
                 element.addEventListener("click", (e) => {
@@ -647,16 +648,20 @@
                 try
                 {
                     const result = await friendRequestApi.acceptFriendRequest(userid,username,lastname,profilePic);
-                    if (res.success)
+                    if (result.success)
                     {
                         toastr.success("Friend Request Accepted.");
 
                         const row = document.getElementById("row-" + id);
                         if (row) row.remove();
 
-                        const container = document.getElementById('request');
-                        if (container.textContent === "")
-                             container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                        const container = document.getElementById('friendRecord');
+                        if (!container) {
+                            const display = document.getElementById('request');
+                            display.innerHTML = "";
+                            display.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                        }
+                           
                     }else{
                         btn.disabled = false;
                         toastr.error("Failed to accept friend request");
@@ -681,11 +686,16 @@
                     if(result.success)
                     {
                         toastr.success("Successfully Rejected");
+
                         const row = document.getElementById("row-" + id);
                         if(row) row.remove();
-                        const container = document.getElementById('request');
-                        if(container.textContent === "")
-                           container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+
+                        const container = document.getElementById('friendRecord');
+                        if (!container) {
+                            const display = document.getElementById('request');
+                            display.innerHTML = "";
+                            display.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending friend request.</div>`;
+                        }
                     }else{
                         toastr.error("Failed to cancel friend Request");
                          rejectButton.disabled = false;
@@ -714,7 +724,7 @@
                         const row = document.getElementById("row-" + id);
                         if(row) row.remove();
                         const container = document.getElementById('sentReq');
-                        if (container.textContent === "")
+                        if (container.textContent === " ")
                             container.innerHTML = `<div class="alert alert-info text-center w-100">You have no pending sent friend request.</div>`;
                     }else{
                         toastr.error("Failed to cancel sent friend Request");

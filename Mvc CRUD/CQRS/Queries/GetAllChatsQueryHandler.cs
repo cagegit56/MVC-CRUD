@@ -35,11 +35,14 @@ internal sealed class GetAllChatsQueryHandler : IRequestHandler<GetAllChatsQuery
 
             if (res.Any())
             {
-                var deletedChat = res.Where(x => x.IsDeleted).FirstOrDefault();
+                await _context.Chats.Where(x => x.UserId == request.userId && x.ToUserId == _currentUser.UserId)
+                      .ExecuteUpdateAsync(p => p.SetProperty(v => v.Seen, true).SetProperty(y => y.UnreadMsgCount, 0));
+
+                var deletedChat = res.Where(x => x.IsDeleted);
                 if (deletedChat != null)
                 {
                     res = res.Where(x => !x.IsDeleted).ToList();
-                    res.Add(new Chat() { Message = "DeletedChat" });
+                    res.Add(new Chat() { Message = "DeletedChat", SentOn = new DateTime(2020, 02, 20, 20, 20, 20) });
                 }
             }
             else {

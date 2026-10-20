@@ -15,7 +15,8 @@ namespace Mvc_CRUD.Dto;
         public string? ToUserProfilePicUrl { get; set; }
         public string Message { get; set; }
         public DateTime SentOn { get; set; }
-        public string? ChatStatus { get; set; }
+        public bool Seen { get; set; }
+        public int UnreadMsgCount { get; set; }
         public string? Sender { get; set; } 
     }
 
