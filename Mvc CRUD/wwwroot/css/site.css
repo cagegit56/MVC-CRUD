@@ -207,6 +207,10 @@ td.message-cell {
     }
 }
 
+.no-word-break{
+    word-break: normal
+}
+
 .circle-btn {
     width: 20px;
     height: 20px;

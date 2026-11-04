@@ -152,6 +152,15 @@ namespace Mvc_CRUD.Controllers
         }
 
         [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ConvertMessageToSeen(string userId)
+        {
+            var res = await _mediator.Send(new  ConvertMessageToSeenCommand(userId));
+            if (!res.IsSuccess) return Json(new { success = false, message = res });
+            return Json(new { success = true, message = "Success" });
+        }
+
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> friendRequests([FromQuery] PaginationFilter pgFilter)
         {
