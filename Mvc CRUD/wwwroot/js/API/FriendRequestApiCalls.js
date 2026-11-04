@@ -23,10 +23,7 @@ export const friendRequestApi = {
     },
 
     acceptFriendRequest: async (userid, username, lastname, picture) => {
-        const fd = new FormData();
-        fd.append("FriendProfilePicUrl", null);
-        if (picture !== null && picture !== undefined) fd.append("middleName", picture);
-        const res = await request.post(`/AcceptRequest?FriendId=${encodeURIComponent(userid)}&FriendName=${encodeURIComponent(username)}&FriendLastName=${encodeURIComponent(lastname)}&${fd}`);
+        const res = await request.post(`/AcceptRequest?FriendId=${encodeURIComponent(userid)}&FriendName=${encodeURIComponent(username)}&FriendLastName=${encodeURIComponent(lastname)}&FriendProfilePicUrl${encodeURIComponent(picture)}`);
         return res.data;
     },
 

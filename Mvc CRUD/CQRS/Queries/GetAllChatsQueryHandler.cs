@@ -35,8 +35,9 @@ internal sealed class GetAllChatsQueryHandler : IRequestHandler<GetAllChatsQuery
 
             if (res.Any())
             {
-                await _context.Chats.Where(x => x.UserId == request.userId && x.ToUserId == _currentUser.UserId)
-                      .ExecuteUpdateAsync(p => p.SetProperty(v => v.Seen, true).SetProperty(y => y.UnreadMsgCount, 0));
+                await _context.Chats
+                    .Where(x => (x.UserId == request.userId && x.ToUserId == _currentUser.UserId) && !x.Seen)
+                    .ExecuteUpdateAsync(p => p.SetProperty(v => v.Seen, true).SetProperty(y => y.UnreadMsgCount, 0));
 
                 var deletedChat = res.Where(x => x.IsDeleted);
                 if (deletedChat != null)

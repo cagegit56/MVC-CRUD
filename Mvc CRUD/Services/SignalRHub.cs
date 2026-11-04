@@ -6,10 +6,12 @@ public class SignalRHub : Hub
 {
     private static readonly ConcurrentDictionary<string, string> _connections = new();
     private readonly ICurrentUserProfile _currentUser;
+    private readonly SignalRConnectedUserId _connectedUserIdChats;
 
-    public SignalRHub(ICurrentUserProfile currentUser)
+    public SignalRHub(ICurrentUserProfile currentUser, SignalRConnectedUserId connectedUserIdChats)
     {
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
+        _connectedUserIdChats = connectedUserIdChats ?? throw new ArgumentNullException(nameof(_connectedUserIdChats));
     }
 
     public override async Task OnConnectedAsync()
@@ -32,13 +34,22 @@ public class SignalRHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
+    public void LiveChat() => _connectedUserIdChats.AddUserId(_currentUser.UserId!);    
+
+    public async Task IsTypingMessage(string toUser, string userId)
+    {
+        if (_connectedUserIdChats.CheckUserId(userId))
+        {
+            if (_connections.TryGetValue(toUser, out var connectionId))
+                await Clients.Client(connectionId).SendAsync("TypingMessage");
+        }
+    } 
+
     public async Task SendPrivateMessage(string toUser, string message, string userId)
     {
-        var fromUser = Context.User?.FindFirst("preferred_username")?.Value ?? Context.User?.Identity?.Name;
-
         if (_connections.TryGetValue(toUser, out var connectionId))
         {
-            await Clients.Client(connectionId).SendAsync("ReceiveMessage", fromUser, message, _currentUser.UserId, _currentUser.ProfilePicUrl);
+            await Clients.Client(connectionId).SendAsync("ReceiveMessage", _currentUser.UserName, message, _currentUser.UserId, _currentUser.ProfilePicUrl, _currentUser.LastName);
             await Clients.Caller.SendAsync("MessageConfirmation", userId);
         }
     }
