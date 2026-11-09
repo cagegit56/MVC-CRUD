@@ -6,43 +6,28 @@ public class SignalRHub : Hub
 {
     private static readonly ConcurrentDictionary<string, string> _connections = new();
     private readonly ICurrentUserProfile _currentUser;
-    private readonly SignalRConnectedUserId _connectedUserIdChats;
 
-    public SignalRHub(ICurrentUserProfile currentUser, SignalRConnectedUserId connectedUserIdChats)
+    public SignalRHub(ICurrentUserProfile currentUser)
     {
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
-        _connectedUserIdChats = connectedUserIdChats ?? throw new ArgumentNullException(nameof(_connectedUserIdChats));
     }
 
     public override async Task OnConnectedAsync()
     {
-        var username = Context.User?.FindFirst("preferred_username")?.Value ?? Context.User?.Identity?.Name;
-        if (!string.IsNullOrEmpty(username))
-        {
-            _connections[username] = Context.ConnectionId;
-        }
+        _connections[_currentUser.UserName!] = Context.ConnectionId;
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var username = Context.User?.FindFirst("preferred_username")?.Value ?? Context.User?.Identity?.Name;
-        if (!string.IsNullOrEmpty(username))
-        {
-            _connections.TryRemove(username, out _);
-        }
+        _connections.TryRemove(_currentUser.UserName!, out _);
         await base.OnDisconnectedAsync(exception);
     }
 
-    public void LiveChat() => _connectedUserIdChats.AddUserId(_currentUser.UserId!);    
-
-    public async Task IsTypingMessage(string toUser, string userId)
+    public async Task IsTypingMessage(string toUser)
     {
-        if (_connectedUserIdChats.CheckUserId(userId))
-        {
-            if (_connections.TryGetValue(toUser, out var connectionId))
-                await Clients.Client(connectionId).SendAsync("TypingMessage");
-        }
+        if (_connections.TryGetValue(toUser, out var connectionId))
+            await Clients.Client(connectionId).SendAsync("TypingMessage", _currentUser.UserId);            
     } 
 
     public async Task SendPrivateMessage(string toUser, string message, string userId)

@@ -58,7 +58,12 @@
                                         {
                                             <div id="unreadMsgIcon-@contact.UserId" class="avatar rounded-circle bg-primary text-white small align-items-center justify-content-center flex-shrink-0" style="width: 17px; height: 17px;">@contact.UnreadMsgCount</div>
                                         }
+                                        else
+                                        {
+                                            <small class="text-muted flex-shrink-0 chatTime" id="contactMsgTime-@contact.UserId" data-time="@contact.SentOn" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl" style="white-space: nowrap; margin-left: 8px;"></small>
+                                        }
                                         <div id="unreadMsgXIcon-@contact.UserId" class="avatar rounded-circle d-none bg-primary text-white small align-items-center justify-content-center flex-shrink-0" style="width: 17px; height: 17px;">0</div>
+                                        <small class="text-muted flex-shrink-0 d-none chatTime" id="contactMsgXTime-@contact.UserId" data-time="@contact.SentOn" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl" style="white-space: nowrap; margin-left: 8px;"></small>
                                     </div>
                                     <div class="d-flex justify-content-between" id="message-@contact.UserId">
                                         <span class="mb-0 text-truncate text-muted small" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl">
@@ -67,10 +72,6 @@
                                         @if (contact.Sender == "CurrentUser" && contact.Message != $"You are now Friends with {char.ToUpper(contact.UserName[0]) + contact.UserName.Substring(1)} Send a Message to Start a Chat.")
                                         {
                                             <i class="bi bi-check-all @(contact.Seen ? "text-primary" : "text-success")" id="contactMsgCheckIcon-@contact.UserId" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl"></i>
-                                        }
-                                        else
-                                        {
-                                            <small class="text-muted posi flex-shrink-0 chatTime" id="contactMsgTime-@contact.UserId" data-time="@contact.SentOn" data-action="DisplayChat" data-userid="@contact.UserId" data-contactname="@contact.UserName" data-lastname="@contact.LastName" data-picture="@contact.ProfilePicUrl" style="white-space: nowrap; margin-left: 8px;"></small>
                                         }
                                     </div>
                                 </div>
@@ -186,11 +187,24 @@
 
                 const unreadMsgIcon = document.getElementById(`unreadMsgIcon-${userId}`);
                 const unreadMsgXIcon = document.getElementById(`unreadMsgXIcon-${userId}`);
-                if (unreadMsgIcon) unreadMsgIcon.classList.add("d-none");
-                if (unreadMsgXIcon) unreadMsgXIcon.classList.add("d-none");
-               
+                const displayDate = document.getElementById(`contactMsgXTime-${userId}`);
+                if (unreadMsgIcon)
+                {
+                    unreadMsgIcon.classList.add("d-none");
+                    displayDate.classList.remove("d-none");
+                    const recentTime = document.getElementById(`newContactTime-${userId}`);
+                    if (recentTime) recentTime.classList.add("d-none");
+                }
+
+                if (!unreadMsgXIcon.classList.contains("d-none")) 
+                {
+                    unreadMsgXIcon.classList.add("d-none"); 
+                    displayDate.classList.remove("d-none");
+                    const recentTime = document.getElementById(`newContactTime-${userId}`);
+                    if (recentTime) recentTime.classList.add("d-none");
+                }            
+                
                 activeChat = userId;
-                await connection.invoke('LiveChat');
 
             }catch(error){
                 document.getElementById("messagesContainer").innerHTML = `<div class="text-center py-3">
@@ -224,7 +238,6 @@
         async SendMessageTextArea(e)
         {
             const friendName = e.target.dataset.name;
-            const userId = e.target.dataset.userid;
             const sendMsgBtn = document.getElementById("sendMsgBtn");
             sendMsgBtn.classList.toggle("d-none", e.target.value.trim() === "");
             
@@ -234,13 +247,12 @@
                 e.target.style.height = Math.min(e.target.scrollHeight, 325) + 'px';
                 msgContent.scrollTop = msgContent.scrollHeight;
 
-                await connection.invoke('IsTypingMessage', friendName, userId);
+                await connection.invoke('IsTypingMessage', friendName);
             }else{
                 e.target.style.height = 1 + 'rem';               
             }
-
-
         }
+
     };
 
     const submmissionEventListenerMethods = 
@@ -268,9 +280,10 @@
                     const newChat = document.getElementById("newChat");
                     if (newChat) newChat.classList.add("d-none");
 
+                    const dateNow = new Date();
                     randomNumber = Math.floor(Math.random() * 250) + 1;
                     const newMsgInfo = `<div class="d-flex justify-content-end mt-2 text-white no-word-break" >
-                                         <small>now</small>
+                                         <small class="justnow" data-msgtime="${dateNow}">now</small>
                                          <i class="bi bi-check" id="msgCheckIcon-${randomNumber}"></i>
                                      </div>`;
 
@@ -288,18 +301,29 @@
                     const msgContent = document.getElementById("messagesContainer");
                     msgContent.scrollTop = msgContent.scrollHeight;
 
-                    document.getElementById("messageInput").value = "";
+                    document.getElementById(`messageInput-${userId}`).value = "";
                     document.getElementById("sendMsgBtn").classList.add("d-none");
 
                     const parent = document.getElementById("contactUsers");
                     const contact = document.getElementById(`contactId-${userId}`);
                     parent.prepend(contact);
 
+                    const displayedDate = document.getElementById(`contactMsgTime-${userId}`);
+                    if (displayedDate) displayedDate.textContent = "now";
+
                     document.getElementById(`message-${userId}`).innerHTML = 
                         `<span class="text-muted small text-truncate">${message}</span>
                          <i class="bi bi-check text-success" id="newContactCheckIcon-${userId}" data-action="DisplayChat" data-userid="${userId}" data-contactname="${userName}" data-lastname="${lastName}" data-picture="${profilePic}"></i>`;
                      
-                    await connection.invoke('SendPrivateMessage', userName, message, userId);     
+                    await connection.invoke('SendPrivateMessage', userName, message, userId); 
+
+                    setInterval(() => { 
+                        document.querySelectorAll(".justnow").forEach(e => {
+                            e.textContent = chatsDate(dateNow)
+                            displayedDate.textContent = chatsDate(dateNow);
+                        }
+                    )}, 61_000)
+
                 }else 
                 {
                     const newChat = document.getElementById("newChat");
@@ -326,7 +350,7 @@
                     const msgContent = document.getElementById("messagesContainer");
                     msgContent.scrollTop = msgContent.scrollHeight;
 
-                    document.getElementById("messageInput").value = "";
+                    document.getElementById(`messageInput-${userId}`).value = "";
                     document.getElementById("sendMsgBtn").classList.add("d-none");
 
                     const parent = document.getElementById("contactUsers");
@@ -365,7 +389,7 @@
                 const msgContent = document.getElementById("messagesContainer");
                 msgContent.scrollTop = msgContent.scrollHeight;
 
-                document.getElementById("messageInput").value = "";
+                document.getElementById(`messageInput-${userId}`).value = "";
                 document.getElementById("sendMsgBtn").classList.add("d-none");
 
                 const parent = document.getElementById("contactUsers");
@@ -469,8 +493,8 @@
                                                                     <input type="hidden" name="ToLastName" value="${contactLastName}"/>
                                                                     <input type="hidden" name="ToUserId" value="${userId}"/>
                                                                     <input type="hidden" name="ToUserProfilePicUrl" value="${profilePicture}"/>
-                                                                    <textarea id="messageInput" name="Message" class="form-control ms-2 me-2 mb-0" data-action="SendMessageTextArea" 
-                                                                        data-name="${contactName}" data-userid="${userId}" placeholder="Type a message..." maxlength="2000" autocomplete="off" style="height: 1rem;"></textarea>
+                                                                    <textarea id="messageInput-${userId}" name="Message" class="form-control ms-2 me-2 mb-0" data-action="SendMessageTextArea"
+                                                                        data-name="${contactName}" placeholder="Type a message..." maxlength="2000" autocomplete="off" style="height: 1rem;"></textarea>
                                                                     <button id="sendMsgBtn" class="btn btn-primary d-none h-50 rounded-pill px-3 mb-0 lh-2 flex-shrink-0" type="submit">
                                                                         <i class="bi bi-send"></i>
                                                                     </button>
@@ -489,7 +513,7 @@
         if (!dateData || dateData === "2020-02-20T20:20:20") return null;
 
         const date = new Date(dateData);
-        if (Number.isNaN(date.getTime())) return null;
+        if (Number.isNaN(date.getTime())) return null;        
 
         const seconds = Math.floor( (Date.now() - date.getTime()) / 1000 );
         if (seconds < 60) return "now";
@@ -503,14 +527,31 @@
         const days = Math.floor(hours / 24);
         if (days < 7) return `${days}d`;
 
-        const weeks = Math.floor(days / 7);
-        if (weeks < 5) return `${weeks}w`;
+        // const weeks = Math.floor(days / 7);
+        // if (weeks < 5) return `${weeks}w`;
 
-        const months = Math.floor(days / 30);
-        if (months < 12) return `${months}mo`;
+        // const months = Math.floor(days / 30);
+        // if (months < 12) return `${months}mo`;
 
-        const years = Math.floor(days / 365);
-        return `${years}y`;
+        // const years = Math.floor(days / 365);
+        // return `${years}y`;    
+        
+        const dateParts = new Intl.DateTimeFormat("en-ZA", {
+            month: "long",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+            timeZone: "Africa/Johannesburg"
+        }).formatToParts(date);
+
+        const monthOnly = dateParts.find(x => x.type === "month").value;
+        const dayOnly = dateParts.find(x => x.type === "day").value;
+        const hoursOnly = dateParts.find(x => x.type === "hour").value;
+        const minutesOnly = dateParts.find(x => x.type === "minute").value;
+        const period = hoursOnly >= 12 ? "PM" : "AM";
+        return `${monthOnly} ${dayOnly} at ${hoursOnly}:${minutesOnly} ${period}`;
     }
 
     function DateProcessing(dateInfo)
@@ -551,9 +592,21 @@
     const connection = new signalR.HubConnectionBuilder().withUrl('/signalRHub').withAutomaticReconnect().build();
     connection.start().catch(err => console.error(err.toString()));
 
-    connection.on("TypingMessage",() => {
-        const textInput = document.getElementById("messageInput");
-        if (textInput) textInput.placeholder = "Typing.........";
+    connection.on("TypingMessage",(userId) => {
+        const textInput = document.getElementById(`messageInput-${userId}`);
+        if (textInput)
+        {
+            textInput.placeholder = "Typing.....";
+            textInput.classList.add("blinker");
+
+            let isActive = true;
+            setInterval(() => {
+                if (!isActive) return;
+                textInput.placeholder = "Type a message...";
+                textInput.classList.remove("blinker");
+                isActive = false;
+            }, 8000);
+        }        
     });
 
     connection.on("MessageConfirmation", (ToUserId) =>  {
@@ -564,12 +617,26 @@
         const contactCheckIcon = document.getElementById(`newContactCheckIcon-${ToUserId}`)
         contactCheckIcon.classList.remove("bi-check");
         contactCheckIcon.classList.add("bi-check-all");
+
+        const liveTexting = document.getElementById(`messageInput-${ToUserId}`);
+        if (liveTexting)
+        {
+            contactCheckIcon.classList.remove("text-success");
+            contactCheckIcon.classList.add("text-primary");
+
+            checkIcon.classList.remove("text-white");
+            checkIcon.style.color = `#00FFFF`;
+        }
     });
 
     connection.on("ReceiveMessage", async (fromUser, Message, userId, ProfilePic, lastName) => {
+        const justRNow = new Date();
         const parent = document.getElementById("contactUsers");
         const contact = document.getElementById(`contactId-${userId}`);
         parent.prepend(contact);
+
+        const displayedDate = document.getElementById(`contactMsgTime-${userId}`);
+        if (displayedDate) displayedDate.classList.add("d-none");
 
         const unreadMsgIcon = document.getElementById(`unreadMsgIcon-${userId}`);
         const unreadMsgXIcon = document.getElementById(`unreadMsgXIcon-${userId}`);
@@ -585,23 +652,28 @@
                 unreadMsgXIcon.innerHTML = currentNewMsgCount + 1;
             }           
         }
-
+         
         document.getElementById(`message-${userId}`).innerHTML = 
-             `<small class="text-muted text-truncate">${Message}</small>
-              <small class="text-muted flex-shrink-0 chatTime" id="newContactTime-${userId}" data-action="DisplayChat" data-userid="${userId}" data-contactname="${fromUser}" data-lastname="${lastName}" data-picture="${ProfilePic}" style="white-space: nowrap; margin-left: 8px;">now</small>`;
+          `<small class="text-muted text-truncate">${Message}</small>
+           <small class="text-muted flex-shrink-0 receivedNow" id="newContactTime-${userId}" data-action="DisplayChat" data-userid="${userId}" data-contactname="${fromUser}" data-lastname="${lastName}" data-picture="${ProfilePic}" style="white-space: nowrap; margin-left: 8px;">now</small>`;
 
+        const displayNewDate = document.getElementById(`contactMsgXTime-${userId}`);
         const liveMsgDisplay = document.getElementById("messagesContainer");
         if (activeChat === userId)
         {
             document.addEventListener("click", function (e) {
                 if (unreadMsgIcon) unreadMsgIcon.classList.add("d-none");
                 if (unreadMsgXIcon) unreadMsgXIcon.classList.add("d-none");
+                
+                document.getElementById(`newContactTime-${userId}`).classList.add("d-none");
+                displayNewDate.classList.remove("d-none");
+                displayNewDate.textContent = chatsDate(justRNow);
             });
 
             await fetch(`ConvertMessageToSeen?userId=${userId}`, {method : "POST"});
 
             const liveMsgInfo = `<div class="d-flex justify-content-end mt-2">
-                                     <small>now</small>
+                                     <small class="receivedNow" id="newTime-${userId}">now</small>
                                  </div>`;
 
             liveMsgDisplay.insertAdjacentHTML("beforeend", `<div class="d-flex justify-content-start mb-3">
@@ -617,8 +689,16 @@
                                                                     </div>
                                                                 </div>
                                                             </div>`);
-            liveMsgDisplay.scrollTop = liveMsgDisplay.scrollHeight;
+            liveMsgDisplay.scrollTop = liveMsgDisplay.scrollHeight;           
         }
+
+        setInterval(() => {
+            document.querySelectorAll(".receivedNow").forEach(e =>{
+                e.textContent = chatsDate(justRNow);
+                displayNewDate.textContent = chatsDate(justRNow);
+            });
+        }, 61_000);
+
     });
 
 
