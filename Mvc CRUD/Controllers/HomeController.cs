@@ -131,6 +131,7 @@ namespace Mvc_CRUD.Controllers
         public async Task<IActionResult> Chats(PaginationFilter pgFilter)
         {
             var res = await _mediator.Send(new GetChatsQuery(pgFilter));
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Json(res);
             return View(res);
         }
 

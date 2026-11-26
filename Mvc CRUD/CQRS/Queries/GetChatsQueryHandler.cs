@@ -79,13 +79,14 @@ internal sealed class GetChatsQueryHandler : IRequestHandler<GetChatsQuery, Pagi
                 Message = x.Message,
                 ToUserName = x.ToUserName != _currentUser.UserName ? x.UserName : x.ToUserName,
                 ToLastName = x.ToLastName != _currentUser.LastName ? x.LastName : x.ToLastName,
-                ToUserProfilePicUrl = x.ToUserProfilePicUrl != _currentUser.ProfilePicUrl ? x.ProfilePicUrl : x.ToUserProfilePicUrl,
+                ToUserProfilePicUrl = _currentUser.ProfilePicUrl,
                 Seen = x.Seen,
                 UnreadMsgCount = x.UnreadMsgCount,
                 SentOn = x.SentOn,
                 Sender = x.UserName == _currentUser.UserName ? "CurrentUser" : "Receiver",
             }).DistinctBy(g => g.UserName).ToList();
 
+            request.pgFilter.PageSize = 6;
             var paginatedResults = await _pagination.Paginate(res, request.pgFilter, cancellationToken);
             paginatedResults.UserName = _currentUser.UserName;
             paginatedResults.ProfilePicUrl = _currentUser.ProfilePicUrl;
